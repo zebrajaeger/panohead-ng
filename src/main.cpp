@@ -4,15 +4,15 @@
 #include <driver/ledc.h>
 
 // #include "net/ota.h"
-// #include "wifiutils.h"
-#include "display.h"
-#include "joystick.h"
-#include "statistic.h"
+// #include "net/wifiutils.h"
+#include "ui/display.h"
+#include "ui/joystick.h"
+#include "util/statistic.h"
 #include "util/encoder.h"
 #include "util/logger.h"
 
-#include "pano/adc.h"
-#include "pano/camera.h"
+#include "hal/adc.h"
+#include "hal/camera.h"
 #include "pano/motor_driver.h"
 #include "pano/pano_automat.h"
 #include "pano/pano_calculator.h"

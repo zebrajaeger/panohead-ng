@@ -5,8 +5,7 @@
 
 #include <TMC429.h>
 
-#include "pano/actor.h"
-#include "pano/clocksource.h"
+#include "hal/clocksource.h"
 #include "pano/translator.h"
 #include "util/logger.h"
 #include "util/singletimer.h"
