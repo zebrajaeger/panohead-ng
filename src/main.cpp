@@ -8,8 +8,8 @@
 #include "display.h"
 #include "joystick.h"
 #include "statistic.h"
-#include "util/logger.h"
 #include "util/encoder.h"
+#include "util/logger.h"
 
 #include "pano/adc.h"
 #include "pano/camera.h"
@@ -30,10 +30,6 @@ ADC adc;
 
 // OTA ota;
 
-#define I2C_SPEED 400000
-#define I2C_SCL 18
-#define I2C_SDA 19
-
 // ESP -> TMC (PIN)
 // GPIO 16 (CS) -> 9(CS)
 // GPIO 14 (SCK) -> 10(SCK)
@@ -53,11 +49,13 @@ ADC adc;
 // ESP -> I²C (ADC,FRAM,)
 // GPIO 18 -> SCL
 // GPIO 19 -> SDA
+#define I2C_SPEED 400000
+#define I2C_SCL 18
+#define I2C_SDA 19
 
 // ESP -> Camera
 // GPIO 22 -> Focus
 // GPIO 23 -> Trigger
-
 
 // // --------------------------------------------------------------------------------
 // void setupWiFi()
@@ -88,13 +86,12 @@ ADC adc;
 //   });
 // }
 
-
-
 // --------------------------------------------------------------------------------
 void setup()
 // --------------------------------------------------------------------------------
 {
-  delay(1500);
+  delay(1500); // lets the visual studio code/platformIO console work...
+
   Serial.begin(115200);
 
   LOG.i("========================================");
