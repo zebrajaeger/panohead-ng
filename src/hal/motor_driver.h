@@ -6,11 +6,11 @@
 #include <TMC429.h>
 
 #include "hal/clocksource.h"
-#include "pano/translator.h"
+#include "hal/translator.h"
 #include "util/logger.h"
 #include "util/singletimer.h"
 
-// class Actor;
+// requires https://platformio.org/lib/show/5822/TMC429
 class MotorDriver {
  public:
   typedef std::function<void(uint8_t axisIndex, const std::array<bool, 3>& axisMoving)> movementStatusChangeCallback_t;

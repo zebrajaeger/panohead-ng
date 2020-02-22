@@ -5,6 +5,8 @@
 
 #include <MPU9250.h>
 
+// requires https://platformio.org/lib/show/5602/Bolder%20Flight%20Systems%20MPU9250
+
 class PositionSensor {
  public:
   PositionSensor() : IMU(Wire, 0x68){};

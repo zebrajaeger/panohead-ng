@@ -13,7 +13,7 @@
 
 #include "hal/adc.h"
 #include "hal/camera.h"
-#include "pano/motor_driver.h"
+#include "hal/motor_driver.h"
 #include "pano/pano_automat.h"
 #include "pano/pano_calculator.h"
 

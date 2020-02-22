@@ -1,4 +1,4 @@
-#include <hal/ads1115.h>
+#include "ads1115.h"
 
 #include <Wire.h>
 
