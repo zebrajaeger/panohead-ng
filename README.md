@@ -24,3 +24,7 @@ Motorized panoramic head based on
   - Single LiPo cell [2.5 - 4.2]V.
 - 2 x Step-Up (to ~12V) module based on [MT3608](https://prom-electric.ru/media/MT3608.pdf) to power stepper driver.
 - Step Down (to ~3.3V) module based on [MP2315](https://www.monolithicpower.com/en/documentview/productdocument/index/version/2/document_type/Datasheet/lang/en/sku/MP2315/document_id/513/) to power logic.
+
+## TODO
+
+- Jogging in velocity Mode?

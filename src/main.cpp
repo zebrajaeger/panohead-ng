@@ -9,6 +9,7 @@
 #include "ui/joystick.h"
 #include "util/encoder.h"
 #include "util/logger.h"
+#include "util/singletimer.h"
 #include "util/statistic.h"
 
 #include "hal/adc.h"
@@ -22,6 +23,7 @@ Logger LOG("MAIN");
 Statistic statistic;
 Display display;
 Joystick joystick;
+SingleTimer joystickTimer("Joystick");
 Encoder encoder;
 MotorDriver motorDriver;
 PanoAutomat panoAutomat;
@@ -31,7 +33,6 @@ ADC adc;
 // OTA ota;
 
 // test
-// #include "util/singletimer.h"
 // SingleTimer timer("TEST");
 // double posX = 0;
 
@@ -131,8 +132,8 @@ void setup()
 
   // MotorDriver
 
-  // limits: min: 40Steps/s; max: 7 revs/s
-  MotorDriver::Limit_t limit = {16 * 40, 200 * 16 * 7, 75000};
+  // limits: min: 10Steps/s; max: 7 revs/s
+  MotorDriver::Limit_t limit = {16 * 10, 200 * 16 * 7, 75000};
   LambdaTranslator *translator = new LambdaTranslator([](double pos) {
     // 200 st/rev
     // 16µSteps
@@ -144,10 +145,10 @@ void setup()
                         {(Translator *)translator, (Translator *)translator, (Translator *)translator})) {
     LOG.i("MotorDriver initialized");
     motorDriver.onStatusChange([](uint8_t axisIndex, const std::array<bool, 3> &axisMoving) {
-      LOG.d("onStatusChange: %d (%d, %d, %d)", axisIndex, axisMoving[0], axisMoving[1], axisMoving[2]);
+      // LOG.d("onStatusChange: %d (%d, %d, %d)", axisIndex, axisMoving[0], axisMoving[1], axisMoving[2]);
 
       if (!axisMoving[0] && !axisMoving[1] && !axisMoving[2]) {
-        LOG.i("MOVE DONE");
+        // LOG.i("MOVE DONE");
         panoAutomat.moveDone();
       }
     });
@@ -166,14 +167,19 @@ void setup()
   if (panoAutomat.begin()) {
     LOG.i("PanoAutomat initialized");
     panoAutomat.onCamera([](bool focus, bool trigger) {
-      LOG.d("Camera: %d, %d", focus, trigger);
+      // LOG.d("Camera: %d, %d", focus, trigger);
       camera.set(focus, trigger);
     });
     panoAutomat.onMove([](pano::Position pos) {
-      LOG.d("GoTo: %f, %f", pos.getX(), pos.getY());
+      // LOG.d("GoTo: %f, %f", pos.getX(), pos.getY());
       motorDriver.goTo(0, pos.getX());
       motorDriver.goTo(1, pos.getY());
     });
+    panoAutomat.onStatus(
+        [](uint32_t columnIndex, uint32_t rowIndex, uint32_t shotIndex, PanoAutomat::state_t stateFrom, PanoAutomat::state_t stateTo) {
+          LOG.d("@%d,%d[%d], %s -> %s", columnIndex, rowIndex, shotIndex, PanoAutomat::stateToName(stateFrom),
+                PanoAutomat::stateToName(stateTo));
+        });
   } else {
     LOG.e("PanoAutomat failed");
   }
@@ -188,34 +194,29 @@ void setup()
   shots += {500, 500};
   // shots += {500, 1000};
   // shots += {500, 2000};
-  panoAutomat.start(raster, shots);
+  // panoAutomat.start(raster, shots);
 
   // ADC
   if (adc.begin()) {
     LOG.i("ADS1115 found");
     adc.onResult([](uint8_t channel, uint16_t value) {
-      // LOG.i("ON.CH: %u, v: %u", channel, value);
+      // LOG.i("ADC : %u[%u]", channel, value);
       switch (channel) {
         case 0: {
           if (joystick.getXAxis().isCalibrated()) {
             joystick.setRawX(value);
           } else {
-            joystick.setCenterX(value);
+            joystick.setRawCenterX(value);
+            LOG.d("joy.x calibrated");
           }
-          //       int32_t from = tmc429.getTargetPosition(0);
-          //       int32_t to = from + (joystick.setRawX(value) * 1000);
-          //       tmc429.setTargetPosition(0, to);
         } break;
         case 1: {
           if (joystick.getYAxis().isCalibrated()) {
             joystick.setRawY(value);
           } else {
-            joystick.setCenterY(value);
+            joystick.setRawCenterY(value);
+            LOG.d("joy.y calibrated");
           }
-
-          //       int32_t from = tmc429.getTargetPosition(0);
-          //       int32_t to = from + (joystick.setRawY(value) * 1000);
-          //       tmc429.setTargetPosition(1, to);
         } break;
         case 2:
           break;
@@ -228,8 +229,18 @@ void setup()
   }
 
   // Joystick
-  if (joystick.begin()) {
+  if (joystick.begin(0.05, 5000, true)) {
     LOG.i("Joystick initialized");
+    joystickTimer.startMs(50, false, true, [] {
+      if (joystick.getXAxis().hasValue()) {
+        float v = joystick.getXAxis().getValue();
+        motorDriver.jogTo(0, 0.01 * v * v * v);  // v³ for better handling on slowmo
+      }
+      if (joystick.getYAxis().hasValue()) {
+        float v = joystick.getYAxis().getValue();
+        motorDriver.jogTo(1, 0.01 * v * v * v);  // v³ for better handling on slowmo
+      }
+    });
   } else {
     LOG.e("Joystick failed");
   }
@@ -245,6 +256,7 @@ void setup()
       // encoder.statistics();
       motorDriver.statistic();
       panoAutomat.statistic();
+      joystick.statistics();
     });
   } else {
     LOG.e("Statistic failed");
@@ -271,6 +283,7 @@ void loop()
   motorDriver.loop();
   panoAutomat.loop();
   encoder.loop();
+  joystickTimer.loop();
   // timer.loop();
   // }
 }

@@ -14,8 +14,7 @@ class ADC {
   bool begin(uint32_t periodMs = 5) {
     bool result = adc_.begin();
     if (result) {
-      timer_.start(periodMs * 1000, false, true);
-      timer_.onTimer(std::bind(&ADC::onTimer, this));
+      timer_.startMs(periodMs, false, true, std::bind(&ADC::onTimer, this));
     }
     return result;
   }

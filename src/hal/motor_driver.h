@@ -22,15 +22,19 @@ class MotorDriver {
 
   MotorDriver();
   bool begin(uint8_t pinCS, uint8_t pinClockSource, uint8_t clockSpeedMHz, std::array<Limit_t*, 3> limits, std::array<Translator*, 3> translators);
-  void statistic();
-  void goTo(uint8_t axisIndex, double pos);
   void loop();
+  void statistic();
+
+  void goTo(uint8_t axisIndex, double pos);
+  void jogTo(uint8_t axisIndex, double delta);
+  bool isAtTargetPos(uint8_t axisIndex);
+
   void onStatusChange(movementStatusChangeCallback_t cb);
 
  protected:
   void initMotor(uint8_t axisIndex,Limit_t* limit);
   void updateState();
-  void updateAxis(uint8_t axis, bool isMoving);
+  void updateAxis(uint8_t axisIndex, bool isMoving);
 
  private:
   Logger LOG;

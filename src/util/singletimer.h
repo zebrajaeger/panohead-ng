@@ -7,56 +7,27 @@
 
 class SingleTimer {
  public:
-  SingleTimer(const String& name) : LOG("SingleTimer(" + name + ")"), running_(false) {}
+  SingleTimer(const String& name);
 
-  void startS(double periodS, bool strict = false, bool recurrent = false) { start(periodS * 1000000.0, strict, recurrent); }
-  void startMs(uint64_t periodMs, bool strict = false, bool recurrent = false) { start(periodMs * 1000, strict, recurrent); }
-  void start(uint64_t periodUs, bool strict = false, bool recurrent = false) {
-    periodUs_ = periodUs;
-    strict_ = strict;
-    recurrent_ = recurrent;
-    nextEvent_ = micros() + periodUs;
-    running_ = true;
-  }
+  void startS(double periodS, bool strict = false, bool recurrent = false);
+  void startS(double periodS, bool strict, bool recurrent, std::function<void()> cb);
 
-  void stop() { running_ = false; }
-  void onTimer(std::function<void()> cb) { cb_ = cb; }
+  void startMs(uint64_t periodMs, bool strict = false, bool recurrent = false);
+  void startMs(uint64_t periodMs, bool strict, bool recurrent, std::function<void()> cb);
 
-  bool isRunning() { return running_; }
+  void startUs(uint64_t periodUs, bool strict = false, bool recurrent = false);
+  void startUs(uint64_t periodUs, bool strict, bool recurrent, std::function<void()> cb);
 
-  uint32_t getMsToNextEvent() { return (nextEvent_ - micros()) / 1000; }
+  void stop();
+  void onTimer(std::function<void()> cb);
+  bool isRunning();
 
-  void loop() {
-    if (!running_) {
-      return;
-    }
+  uint32_t getMsToNextEvent();
 
-    uint64_t now = micros();
-    if (now >= nextEvent_) {
-      if (recurrent_) {
-        if (strict_) {
-          nextEvent_ = nextEvent_ + periodUs_;
-          trigger();
-          if (nextEvent_ < micros()) {
-            LOG.w("Event handler needs more time than timer period length is");
-          }
-        } else {
-          trigger();
-          nextEvent_ = micros() + periodUs_;
-        }
-      } else {
-        running_ = false;
-        trigger();
-      }
-    }
-  }
+  void loop();
 
  protected:
-  void trigger() {
-    if (cb_) {
-      cb_();
-    }
-  }
+  void trigger();
 
  private:
   Logger LOG;

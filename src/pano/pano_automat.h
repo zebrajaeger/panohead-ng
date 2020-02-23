@@ -11,12 +11,6 @@
 
 class PanoAutomat {
  public:
-  typedef std::function<void(bool focus, bool trigger)> cameraCallback_t;
-  typedef std::function<void(uint32_t columnIndex, uint32_t rowIndex, uint32_t shotIndex)> pictureCallback_t;
-  typedef std::function<void(pano::Position position)> moveCallback_t;
-  typedef std::function<void(double progress)> progressCallback_t;
-  typedef std::function<void()> panoFinishCallback_t;
-
   typedef enum {
     UNINITIALIZED,
     INITAILIZED,
@@ -29,6 +23,14 @@ class PanoAutomat {
     FINISH
   } state_t;
 
+  typedef std::function<void(bool focus, bool trigger)> cameraCallback_t;
+  typedef std::function<void(uint32_t columnIndex, uint32_t rowIndex, uint32_t shotIndex)> pictureCallback_t;
+  typedef std::function<void(pano::Position position)> moveCallback_t;
+  typedef std::function<void(double progress)> progressCallback_t;
+  typedef std::function<void()> panoFinishCallback_t;
+  typedef std::function<void(uint32_t columnIndex, uint32_t rowIndex, uint32_t shotIndex, state_t stateFrom, state_t stateTo)>
+      statusCallback_t;
+
   PanoAutomat()
       : LOG("PanoAutomat"),
         raster_(NULL),
@@ -39,15 +41,15 @@ class PanoAutomat {
         currentRow_(0),
         currentShot_(0),
         cameraCallback_([this](bool, bool) { LOG.d("cameraCallback_ uninitialized"); }),
-        beforePictureCallback_([this](uint32_t, uint32_t, uint32_t) {}),
-        afterPictureCallback_([this](uint32_t, uint32_t, uint32_t) {}),
+        beforePictureCallback_([](uint32_t, uint32_t, uint32_t) {}),
+        afterPictureCallback_([](uint32_t, uint32_t, uint32_t) {}),
         moveCallback_([this](pano::Position) { LOG.d("moveCallback_ uninitialized"); }),
-        progressCallback_([this](double) {}),
-        panoFinishCallback_([this]() {}) {}
+        progressCallback_([](double) {}),
+        panoFinishCallback_([] {}),
+        statusCallback_([](uint32_t columnIndex, uint32_t rowIndex, uint32_t shotIndex, state_t stateFrom, state_t stateTo) {}) {}
 
   bool begin() {
     timer_.onTimer(std::bind(&PanoAutomat::onTimer, this));
-    timer_.start(1);
     setState(INITAILIZED);
     return true;
   }
@@ -71,7 +73,7 @@ class PanoAutomat {
   bool moveDone() {
     if (state_ == MOVE) {
       setState(WAIT_AFTER_MOVE);
-      LOG.i("Wait for %dms", shots_.getDelayAfterMoveMs());
+      // LOG.i("Wait for %dms", shots_.getDelayAfterMoveMs());
       triggerTimerMs(shots_.getDelayAfterMoveMs());
       return true;
     }
@@ -84,6 +86,7 @@ class PanoAutomat {
   void onMove(moveCallback_t cb) { moveCallback_ = cb; }
   void onProgress(progressCallback_t cb) { progressCallback_ = cb; }
   void onPanoFinish(panoFinishCallback_t cb) { panoFinishCallback_ = cb; }
+  void onStatus(statusCallback_t cb) { statusCallback_ = cb; }
 
   void loop() { timer_.loop(); }
 
@@ -99,11 +102,45 @@ class PanoAutomat {
     LOG.d("# Sht: %d", currentShot_);
   }
 
+  static const char* stateToName(state_t state) {
+    switch (state) {
+      case UNINITIALIZED:
+        return "UNINITIALIZED";
+        break;
+      case INITAILIZED:
+        return "INITAILIZED";
+        break;
+      case MOVE:
+        return "MOVE";
+        break;
+      case WAIT_AFTER_MOVE:
+        return "WAIT_AFTER_MOVE";
+        break;
+      case FOCUS:
+        return "FOCUS";
+        break;
+      case TRIGGER:
+        return "TRIGGER";
+        break;
+      case WAIT_BETWEEN_SHOTS:
+        return "WAIT_BETWEEN_SHOTS";
+        break;
+      case WAIT_AFTER_LAST_SHOT:
+        return "WAIT_AFTER_LAST_SHOT";
+        break;
+      case FINISH:
+        return "FINISH";
+        break;
+    }
+    return "?unknown?";
+  }
+
  protected:
   state_t setState(state_t newState) {
     state_t temp = state_;
     state_ = newState;
-    LOG.i("State change %s -> %s", stateToName(temp), stateToName(newState));
+    statusCallback_(currentColumn_, currentRow_, currentShot_, temp, state_);
+    // LOG.i("State change %s -> %s", stateToName(temp), stateToName(newState));
     return temp;
   }
 
@@ -160,7 +197,7 @@ class PanoAutomat {
 
   bool prepareNextShot() {
     currentShot_++;
-    LOG.d("prepareNextShot() ->  current:%d max:%d", currentShot_, shots_.getShotCount());
+    // LOG.d("prepareNextShot() ->  current:%d max:%d", currentShot_, shots_.getShotCount());
     if (currentShot_ >= shots_.getShotCount()) {
       currentShot_ = 0;
       return false;
@@ -188,46 +225,13 @@ class PanoAutomat {
   }
 
   void triggerTimerMs(uint32_t ms) {
-    LOG.i("Timer startet for %dms", ms);
-    timer_.start(ms * 1000);
+    // LOG.i("Timer startet for %dms", ms);
+    timer_.startMs(ms);
   }
 
   void triggerMove() {
     pano::Position p = raster_->getPositionFor(currentColumn_, currentRow_);
     moveCallback_(p);
-  }
-
-  const char* stateToName(state_t state) {
-    switch (state) {
-      case UNINITIALIZED:
-        return "UNINITIALIZED";
-        break;
-      case INITAILIZED:
-        return "INITAILIZED";
-        break;
-      case MOVE:
-        return "MOVE";
-        break;
-      case WAIT_AFTER_MOVE:
-        return "WAIT_AFTER_MOVE";
-        break;
-      case FOCUS:
-        return "FOCUS";
-        break;
-      case TRIGGER:
-        return "TRIGGER";
-        break;
-      case WAIT_BETWEEN_SHOTS:
-        return "WAIT_BETWEEN_SHOTS";
-        break;
-      case WAIT_AFTER_LAST_SHOT:
-        return "WAIT_AFTER_LAST_SHOT";
-        break;
-      case FINISH:
-        return "FINISH";
-        break;
-    }
-    return "?unknown?";
   }
 
  private:
@@ -245,4 +249,5 @@ class PanoAutomat {
   moveCallback_t moveCallback_;
   progressCallback_t progressCallback_;
   panoFinishCallback_t panoFinishCallback_;
+  statusCallback_t statusCallback_;
 };

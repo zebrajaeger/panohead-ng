@@ -33,13 +33,19 @@ bool MotorDriver::begin(uint8_t pinCS, uint8_t pinClockSource, uint8_t clockSpee
     }
 
     // axis watcher timer
-    timer_.onTimer(std::bind(&MotorDriver::updateState, this));
-    timer_.start(1000 * 50, false, true);
+    timer_.startMs(50, false, true,std::bind(&MotorDriver::updateState, this));
 
     return true;
   }
 
   return false;
+}
+
+//------------------------------------------------------------------------------
+void MotorDriver::loop()
+//------------------------------------------------------------------------------
+{
+  timer_.loop();
 }
 
 //------------------------------------------------------------------------------
@@ -75,7 +81,7 @@ void MotorDriver::statistic()
     } else if (i == 2) {
       LOG.d("#    @TargetPos: %d ", s.at_target_position_2);
     }
-    LOG.d("#    -POS(0) curr: %d -> target: %d", tmc429_.getActualPosition(0), tmc429_.getTargetPosition(0));
+    LOG.d("#    -POS curr: %d -> target: %d, off: %d", tmc429_.getActualPosition(i), tmc429_.getTargetPosition(i), axisOffset_[i]);
     LOG.d("#    -V   curr: %d", tmc429_.getActualVelocityInHz(i));
   }
 }
@@ -87,12 +93,9 @@ void MotorDriver::goTo(uint8_t axisIndex, double pos)
   Translator* t = translators_[axisIndex];
   if (t) {
     int64_t stepsPos = t->revolutionToSteps(pos);
-    int64_t relPos = stepsPos - axisOffset_[axisIndex];
-    int32_t currentPos = tmc429_.getActualPosition(axisIndex);
-
-    LOG.d("Go %i from %i to %i", axisIndex, currentPos, (int32_t)relPos);
+    // LOG.d("Go %i from %i to %i", axisIndex, currentPos, (int32_t)stepsPos);
     tmc429_.setSoftMode(axisIndex);
-    tmc429_.setTargetPosition(axisIndex, relPos);
+    tmc429_.setTargetPosition(axisIndex, stepsPos);
     updateAxis(axisIndex, true);
   } else {
     LOG.e("Cannot go to pos. Translator for axis %u is NULL", axisIndex);
@@ -100,10 +103,22 @@ void MotorDriver::goTo(uint8_t axisIndex, double pos)
 }
 
 //------------------------------------------------------------------------------
-void MotorDriver::loop()
+void MotorDriver::jogTo(uint8_t axisIndex, double delta)
 //------------------------------------------------------------------------------
 {
-  timer_.loop();
+  if (isAtTargetPos(axisIndex)) {
+    // not moving. 
+    goTo(axisIndex, delta);
+  } else {
+    // already moving. take current pos and add jogging delta
+    Translator* t = translators_[axisIndex];
+    if (t) {
+      int32_t newPos = tmc429_.getActualPosition(axisIndex) + t->revolutionToSteps(delta);
+      tmc429_.setTargetPosition(axisIndex, newPos);
+    } else {
+      LOG.e("Cannot jog to pos. Translator for axis %u is NULL", axisIndex);
+    }
+  }
 }
 
 //------------------------------------------------------------------------------
@@ -117,34 +132,51 @@ void MotorDriver::updateState()
 }
 
 //------------------------------------------------------------------------------
-void MotorDriver::updateAxis(uint8_t axis, bool isMoving)
+bool MotorDriver::isAtTargetPos(uint8_t axisIndex)
+//------------------------------------------------------------------------------
+{
+  TMC429::Status s = tmc429_.getStatus();
+  switch (axisIndex) {
+    case 0:
+      return s.at_target_position_0;
+    case 1:
+      return s.at_target_position_1;
+    case 2:
+      return s.at_target_position_2;
+    default:
+      return true;
+  }
+}
+
+//------------------------------------------------------------------------------
+void MotorDriver::updateAxis(uint8_t axisIndex, bool isMoving)
 //------------------------------------------------------------------------------
 {
   // if state has changes...
-  if (axisMoving_[axis] != isMoving) {
+  if (axisMoving_[axisIndex] != isMoving) {
     // and motor has reached target pos
     if (!isMoving) {
       // check for no velocity before send stop message
-      if (tmc429_.getActualVelocityInHz(axis) == 0) {
-        tmc429_.stop(axis);  // velocity mode, speed 0
+      if (tmc429_.getActualVelocityInHz(axisIndex) == 0) {
+        tmc429_.stop(axisIndex);  // velocity mode, speed 0
 
-        axisMoving_[axis] = false;
+        axisMoving_[axisIndex] = false;
         // reset internal pos add it to offset
-        axisOffset_[axis] += tmc429_.getActualPosition(axis);
-        tmc429_.setActualPosition(axis, 0);
-        tmc429_.setTargetPosition(axis, 0);
-        LOG.d("Axis %d movement STOPPED", axis);
+        axisOffset_[axisIndex] += tmc429_.getActualPosition(axisIndex);
+        tmc429_.setActualPosition(axisIndex, 0);
+        tmc429_.setTargetPosition(axisIndex, 0);
+        // LOG.d("Axis %d movement STOPPED", axisIndex);
         // callback
         if (movementStatusChangeCallback_) {
-          movementStatusChangeCallback_(axis, axisMoving_);
+          movementStatusChangeCallback_(axisIndex, axisMoving_);
         }
       }
     } else {
       // not @ target pos
-      axisMoving_[axis] = true;
-      LOG.d("Axis %d movement STARTED", axis);
+      axisMoving_[axisIndex] = true;
+      // LOG.d("Axis %d movement STARTED", axisIndex);
       if (movementStatusChangeCallback_) {
-        movementStatusChangeCallback_(axis, axisMoving_);
+        movementStatusChangeCallback_(axisIndex, axisMoving_);
       }
     }
   }
