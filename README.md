@@ -27,4 +27,24 @@ Motorized panoramic head based on
 
 ## TODO
 
-- Jogging in velocity Mode?
+- Menu shows always
+  - Battery level
+  - Mode
+- Main Menu to switch between IDLE, LEVELING, JOGGING and PANO mode.
+- SubMenu for LEVELING.
+- Sub Menu for JOGGING
+  - Show pano bounds
+  - Show current pos
+  - Show leveling
+- JOGGING in velocity Mode!?.
+  - Encoder for jogging!?
+- Sub Menu for PANO
+  - Pause and Stop for PANO mode.
+- SubMenu to show battery Voltage.
+  - Edit Battery level warning.
+- Shaking sensor.
+- SubMenu to calibrate Motor speed values.
+- Scopes for Logger.
+- WiFi
+  - WS Server
+  - Angular Frontend
