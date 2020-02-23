@@ -88,7 +88,11 @@ class PanoAutomat {
   void loop() { timer_.loop(); }
 
   void statistic() {
-    raster_->statistics();
+    if (raster_) {
+      raster_->statistics();
+    } else {
+      LOG.d("# Raster: null");
+    }
     LOG.d("# State: %s", stateToName(state_));
     LOG.d("# Col: %d", currentColumn_);
     LOG.d("# Row: %d", currentRow_);

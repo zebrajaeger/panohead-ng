@@ -9,6 +9,8 @@ class SingleTimer {
  public:
   SingleTimer(const String& name) : LOG("SingleTimer(" + name + ")"), running_(false) {}
 
+  void startS(double periodS, bool strict = false, bool recurrent = false) { start(periodS * 1000000.0, strict, recurrent); }
+  void startMs(uint64_t periodMs, bool strict = false, bool recurrent = false) { start(periodMs * 1000, strict, recurrent); }
   void start(uint64_t periodUs, bool strict = false, bool recurrent = false) {
     periodUs_ = periodUs;
     strict_ = strict;

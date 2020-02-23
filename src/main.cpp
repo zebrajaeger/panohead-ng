@@ -7,9 +7,9 @@
 // #include "net/wifiutils.h"
 #include "ui/display.h"
 #include "ui/joystick.h"
-#include "util/statistic.h"
 #include "util/encoder.h"
 #include "util/logger.h"
+#include "util/statistic.h"
 
 #include "hal/adc.h"
 #include "hal/camera.h"
@@ -29,6 +29,11 @@ Camera camera;
 ADC adc;
 
 // OTA ota;
+
+// test
+// #include "util/singletimer.h"
+// SingleTimer timer("TEST");
+// double posX = 0;
 
 // ESP -> TMC (PIN)
 // GPIO 16 (CS) -> 9(CS)
@@ -90,7 +95,7 @@ ADC adc;
 void setup()
 // --------------------------------------------------------------------------------
 {
-  delay(1500); // lets the visual studio code/platformIO console work...
+  delay(1500);  // lets the visual studio code/platformIO console work...
 
   Serial.begin(115200);
 
@@ -125,16 +130,23 @@ void setup()
   }
 
   // MotorDriver
+
+  // limits: min: 40Steps/s; max: 7 revs/s
+  MotorDriver::Limit_t limit = {16 * 40, 200 * 16 * 7, 75000};
   LambdaTranslator *translator = new LambdaTranslator([](double pos) {
-    // https://www.omc-stepperonline.com/download/11HS12-0674D1-PG27.pdf
-    return pos * (double)(200 * 32 * 5 * 26 * 103) / (double)121;
+    // 200 st/rev
+    // 16µSteps
+    // gear1: 1:5
+    // gear2: 26+(103/121) ->  https://www.omc-stepperonline.com/download/11HS12-0674D1-PG27.pdf
+    return pos * 200.0 * 16.0 * 5.0 * (26.0 + (103.0 / 121.0));
   });
-  if (motorDriver.begin(16, 21, 10, {(Translator *)translator, (Translator *)translator, (Translator *)NULL})) {
+  if (motorDriver.begin(16, 21, 20, {&limit, &limit, &limit},
+                        {(Translator *)translator, (Translator *)translator, (Translator *)translator})) {
     LOG.i("MotorDriver initialized");
     motorDriver.onStatusChange([](uint8_t axisIndex, const std::array<bool, 3> &axisMoving) {
       LOG.d("onStatusChange: %d (%d, %d, %d)", axisIndex, axisMoving[0], axisMoving[1], axisMoving[2]);
 
-      if (!axisMoving[0] && !axisMoving[1]) {
+      if (!axisMoving[0] && !axisMoving[1] && !axisMoving[2]) {
         LOG.i("MOVE DONE");
         panoAutomat.moveDone();
       }
@@ -172,10 +184,10 @@ void setup()
   pano::Picture picture(pano::degToRev(30), pano::degToRev(40), pano::degToRev(12), pano::degToRev(16));
   pano::Raster *raster = calc.createMatrixRasterForPano(view, picture);
 
-  pano::Shots shots(1000, 500, 0);
+  pano::Shots shots(500, 500, 0);
   shots += {500, 500};
-  shots += {500, 1000};
-  shots += {500, 2000};
+  // shots += {500, 1000};
+  // shots += {500, 2000};
   panoAutomat.start(raster, shots);
 
   // ADC
@@ -230,13 +242,22 @@ void setup()
   if (statistic.begin()) {
     LOG.i("Statistic initialized");
     statistic.onStatistic([]() {
-      encoder.statistics();
+      // encoder.statistics();
       motorDriver.statistic();
       panoAutomat.statistic();
     });
   } else {
     LOG.e("Statistic failed");
   }
+
+  // test:
+  // timer.startS(5.0, false, true);
+  // timer.onTimer([]{
+  //   // motorDriver.statistic();
+  //   posX += 0.05;
+  //   motorDriver.goTo(0, posX);
+  // });
+  // motorDriver.goTo(0, 0.2);  // 1 rev of stepper
 }
 
 // --------------------------------------------------------------------------------
@@ -250,5 +271,6 @@ void loop()
   motorDriver.loop();
   panoAutomat.loop();
   encoder.loop();
+  // timer.loop();
   // }
 }

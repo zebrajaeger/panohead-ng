@@ -13,7 +13,8 @@ MotorDriver::MotorDriver()
 {}
 
 //------------------------------------------------------------------------------
-bool MotorDriver::begin(uint8_t pinCS, uint8_t pinClockSource, uint8_t clockSpeedMHz, std::array<Translator*, 3> translators)
+bool MotorDriver::begin(uint8_t pinCS, uint8_t pinClockSource, uint8_t clockSpeedMHz, std::array<Limit_t*, 3> limits,
+                        std::array<Translator*, 3> translators)
 //------------------------------------------------------------------------------
 {
   translators_ = translators;
@@ -27,9 +28,9 @@ bool MotorDriver::begin(uint8_t pinCS, uint8_t pinClockSource, uint8_t clockSpee
     tmc429_.disableRightSwitches();
     tmc429_.setSwitchesActiveLow();
 
-    initMotor(0);
-    initMotor(1);
-    initMotor(2);
+    for (uint8_t i = 0; i < 3; ++i) {
+      initMotor(i, limits[i]);
+    }
 
     // axis watcher timer
     timer_.onTimer(std::bind(&MotorDriver::updateState, this));
@@ -42,12 +43,12 @@ bool MotorDriver::begin(uint8_t pinCS, uint8_t pinClockSource, uint8_t clockSpee
 }
 
 //------------------------------------------------------------------------------
-void MotorDriver::initMotor(uint8_t axisIndex)
+void MotorDriver::initMotor(uint8_t axisIndex, Limit_t* limit)
 //------------------------------------------------------------------------------
 {
   LOG.d("Init axis %d", axisIndex);
   tmc429_.stop(axisIndex);  // velocity mode, speed 0
-  tmc429_.setLimitsInHz(axisIndex, 5000, 1000000, 5000000);
+  tmc429_.setLimitsInHz(axisIndex, limit->velocityMinHz, limit->velocityMaxHz, limit->acceleration_max_hz_per_s);
   tmc429_.setActualPosition(axisIndex, 0);
   tmc429_.setTargetPosition(axisIndex, 0);
   tmc429_.disableLeftSwitchStop(axisIndex);
@@ -59,7 +60,6 @@ void MotorDriver::initMotor(uint8_t axisIndex)
   LOG.d("   - Vmin: %d Vmax:%d VmaxUL:%d", tmc429_.getVelocityMinInHz(axisIndex), tmc429_.getVelocityMaxInHz(axisIndex),
         tmc429_.getVelocityMaxUpperLimitInHz());
 }
-
 
 //------------------------------------------------------------------------------
 void MotorDriver::statistic()
@@ -131,8 +131,8 @@ void MotorDriver::updateAxis(uint8_t axis, bool isMoving)
         axisMoving_[axis] = false;
         // reset internal pos add it to offset
         axisOffset_[axis] += tmc429_.getActualPosition(axis);
-        tmc429_.setActualPosition(0, 0);
-        tmc429_.setTargetPosition(0, 0);
+        tmc429_.setActualPosition(axis, 0);
+        tmc429_.setTargetPosition(axis, 0);
         LOG.d("Axis %d movement STOPPED", axis);
         // callback
         if (movementStatusChangeCallback_) {

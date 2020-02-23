@@ -1,6 +1,7 @@
-#include "util/encoder.h"
 
-#include "util/callback.h"
+#include "encoder.h"
+
+#include "callback.h"
 
 //------------------------------------------------------------------------------
 void IRAM_ATTR Encoder::isr()
