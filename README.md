@@ -8,7 +8,9 @@ Motorized panoramic head based on
 - [Stepper 11HS12-0674D1-PG27](https://www.omc-stepperonline.com/download/11HS12-0674D1-PG27.pdf) (NEMA 11, ~27:1 gearbox, 0.67A, 5.6ohms).
 - Additional GT2 belt gear 1:5 to increase torque and reduce backlash.
 - Optocouplers for Focus/Trigger.
-- [ADS1115](http://www.ti.com/lit/ds/symlink/ads1115.pdf) (I²C 4-channel ADC) for joystick, battery voltage and current.
+- ~~[ADS1115](http://www.ti.com/lit/ds/symlink/ads1115.pdf) (I²C 4-channel ADC) for joystick, battery voltage and current.~~
+  - [INA219](http://www.ti.com/lit/ds/symlink/ina219.pdf) (I²C current and voltage sensor, 12Bit resolution) for battery voltage and current.
+  - Joystick read via [ESP32 ADC](https://randomnerdtutorials.com/esp32-adc-analog-read-arduino-ide/).
 - OLED Display (I²C) for menu and status.
 - Rotary encoder with knob for menu.
 - Analog console joystick for jogging.
@@ -44,6 +46,7 @@ Motorized panoramic head based on
 - SubMenu to show battery Voltage.
   - Edit Battery level warning.
 - Shaking sensor.
+- ~~Leveling sensor.~~
 - SubMenu to calibrate Motor speed values.
 - Scopes for Logger.
 - WiFi
