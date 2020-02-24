@@ -10,8 +10,8 @@ class Encoder {
  public:
   typedef enum { DOWN = 0, PUSHED = 1, UP = 2, RELEASED = 3 } ButtonState;
 
-  typedef void (*ValueCallback_t)(int16_t oldValue, int16_t newValue);
-  typedef void (*ButtonCallback_t)(ButtonState buttonState);
+  typedef std::function<void(int16_t oldValue, int16_t newValue)> ValueCallback_t;
+  typedef std::function<void(ButtonState buttonState)> ButtonCallback_t;
 
   Encoder();
   bool begin(uint8_t encoderAPin, uint8_t encoderBPin, uint8_t encoderButtonPin = -1, uint8_t encoderVccPin = -1);

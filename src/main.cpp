@@ -7,6 +7,7 @@
 // #include "net/wifiutils.h"
 #include "ui/display.h"
 #include "ui/joystick.h"
+#include "ui/position_sensor.h"
 #include "util/encoder.h"
 #include "util/logger.h"
 #include "util/singletimer.h"
@@ -29,6 +30,7 @@ MotorDriver motorDriver;
 PanoAutomat panoAutomat;
 Camera camera;
 ADC adc;
+PositionSensor position;
 
 // OTA ota;
 
@@ -245,6 +247,15 @@ void setup()
     LOG.e("Joystick failed");
   }
 
+  // Position
+  if (position.begin()) {
+    LOG.i("Position sensor initialized");
+    position.onData([]{
+      display.showLeveling(position.getRevX(), position.getRevY());
+    });
+  } else {
+    LOG.e("Position sensor failed");
+  }
   // Net
   // setupWiFi();
   // ota.begin();
@@ -284,6 +295,7 @@ void loop()
   panoAutomat.loop();
   encoder.loop();
   joystickTimer.loop();
+  position.loop();
   // timer.loop();
   // }
 }

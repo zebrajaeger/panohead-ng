@@ -18,13 +18,14 @@
 #pragma once
 
 #include "Arduino.h"
+#include <functional>
 
 #include "util/logger.h"
 
 class OTA {
  public:
-  typedef void (*StartEndCallback)();
-  typedef void (*ProgressCallback)(double uploaded);
+ typedef std::function<void()> StartEndCallback_t;
+ typedef std::function<void(double uploaded)> ProgressCallback_t;
 
   OTA();
   bool begin();
@@ -32,14 +33,14 @@ class OTA {
 
   bool isUpdating();
 
-  void onStart(StartEndCallback cb);
-  void onEnd(StartEndCallback cb);
-  void onProgress(ProgressCallback cb);
+  void onStart(StartEndCallback_t cb);
+  void onEnd(StartEndCallback_t cb);
+  void onProgress(ProgressCallback_t cb);
 
  private:
   Logger LOG;
   bool isUpdating_;
-  StartEndCallback startCallback_;
-  StartEndCallback endCallback_;
-  ProgressCallback progressCallback_;
+  StartEndCallback_t startCallback_;
+  StartEndCallback_t endCallback_;
+  ProgressCallback_t progressCallback_;
 };

@@ -15,7 +15,7 @@ void SingleTimer::startS(double periodS, bool strict, bool recurrent)
 }
 
 //------------------------------------------------------------------------------
-void SingleTimer::startS(double periodS, bool strict, bool recurrent, std::function<void()> cb)
+void SingleTimer::startS(double periodS, bool strict, bool recurrent, callback_t cb)
 //------------------------------------------------------------------------------
 {
   startUs(periodS * 1000000.0, strict, recurrent, cb);
@@ -29,7 +29,7 @@ void SingleTimer::startMs(uint64_t periodMs, bool strict, bool recurrent)
 }
 
 //------------------------------------------------------------------------------
-void SingleTimer::startMs(uint64_t periodMs, bool strict, bool recurrent, std::function<void()> cb)
+void SingleTimer::startMs(uint64_t periodMs, bool strict, bool recurrent, callback_t cb)
 //------------------------------------------------------------------------------
 {
   startUs(periodMs * 1000, strict, recurrent, cb);
@@ -47,7 +47,7 @@ void SingleTimer::startUs(uint64_t periodUs, bool strict , bool recurrent)
 }
 
 //------------------------------------------------------------------------------
-void SingleTimer::startUs(uint64_t periodUs, bool strict, bool recurrent, std::function<void()> cb)
+void SingleTimer::startUs(uint64_t periodUs, bool strict, bool recurrent, callback_t cb)
 //------------------------------------------------------------------------------
 {
   periodUs_ = periodUs;
@@ -66,7 +66,7 @@ void SingleTimer::stop()
 }
 
 //------------------------------------------------------------------------------
-void SingleTimer::onTimer(std::function<void()> cb)
+void SingleTimer::onTimer(callback_t cb)
 //------------------------------------------------------------------------------
 {
   cb_ = cb;

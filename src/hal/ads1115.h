@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Arduino.h>
+#include <functional>
 
 #include "util/logger.h"
 
@@ -45,16 +46,15 @@
 #define ADS1015_REG_CONFIG_MODE_CONTIN (0x0000)  ///< Continuous conversion mode
 #define ADS1015_REG_CONFIG_MODE_SINGLE (0x0100)  ///< Power-down single-shot mode (default)
 
-#define ADS1015_REG_CONFIG_DR_MASK (0x00E0)     ///< Data Rate Mask
-#define ADS1015_REG_CONFIG_DR_8SPS (0x0000)  
-#define ADS1015_REG_CONFIG_DR_16SPS (0x020)  
-#define ADS1015_REG_CONFIG_DR_32SPS (0x0040) 
-#define ADS1015_REG_CONFIG_DR_64SPS (0x0060) 
+#define ADS1015_REG_CONFIG_DR_MASK (0x00E0)  ///< Data Rate Mask
+#define ADS1015_REG_CONFIG_DR_8SPS (0x0000)
+#define ADS1015_REG_CONFIG_DR_16SPS (0x020)
+#define ADS1015_REG_CONFIG_DR_32SPS (0x0040)
+#define ADS1015_REG_CONFIG_DR_64SPS (0x0060)
 #define ADS1015_REG_CONFIG_DR_128SPS (0x0080)
 #define ADS1015_REG_CONFIG_DR_250SPS (0x00A0)
 #define ADS1015_REG_CONFIG_DR_475SPS (0x00B0)
 #define ADS1015_REG_CONFIG_DR_860SPS (0x00E0)
-
 
 #define ADS1015_REG_CONFIG_CMODE_MASK (0x0010)    ///< CMode Mask
 #define ADS1015_REG_CONFIG_CMODE_TRAD (0x0000)    ///< Traditional comparator with hysteresis (default)
@@ -87,14 +87,14 @@ typedef enum {
 
 class ADS1115 {
  public:
-  typedef void (*conversionCallback_t)(uint8_t channel, uint16_t value);
+  typedef std::function<void(uint8_t channel, uint16_t value)> conversionCallback_t;
 
   ADS1115();
   bool begin(uint8_t i2cAddress = 0x48);
   void loop();
   void onResult(conversionCallback_t cb);
   bool triggerConversion(uint8_t channel);
-  bool readSync(uint8_t channel, uint16_t & result);
+  bool readSync(uint8_t channel, uint16_t& result);
 
  private:
   bool trigger_(uint8_t channel);
