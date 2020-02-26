@@ -2,9 +2,15 @@
 
 Motorized panoramic head based on
 
+## Current prototype setup
+
 - [ESP32 WROOM](https://www.espressif.com/en/products/hardware/esp-wroom-32/overview) (dual core) as controller.
 - [TMC429](https://www.trinamic.com/fileadmin/assets/Products/ICs_Documents/TMC429_datasheet.pdf) (ramp generator) for smooth and software independent realtime movement of the stepper motors.
+  - ESP works as clock source.
 - [TMC2208](https://shop.watterott.com/SilentStepStick-TMC2208_1) (stepper driver) modules.
+  - Low noises.
+  - Low power cause of coolstep.
+  - Available as 3D printer compatible module.
 - [Stepper 11HS12-0674D1-PG27](https://www.omc-stepperonline.com/download/11HS12-0674D1-PG27.pdf) (NEMA 11, ~27:1 gearbox, 0.67A, 5.6ohms).
 - Additional GT2 belt gear 1:5 to increase torque and reduce backlash.
 - Optocouplers for Focus/Trigger.
@@ -12,6 +18,7 @@ Motorized panoramic head based on
   - [INA219](http://www.ti.com/lit/ds/symlink/ina219.pdf) (I²C current and voltage sensor, 12Bit resolution) for battery voltage and current.
   - Joystick read via [ESP32 ADC](https://randomnerdtutorials.com/esp32-adc-analog-read-arduino-ide/).
 - OLED Display (I²C) for menu and status.
+  - 128x64 Pixel
 - Rotary encoder with knob for menu.
 - Analog console joystick for jogging.
 - Some status LED's for focus, trigger, ...
@@ -29,17 +36,18 @@ Motorized panoramic head based on
 
 ## TODO
 
+- Consider backlash on movement.
 - Menu shows always.
   - Battery level.
   - Mode.
-- Main Menu to switch between IDLE, LEVELING, JOGGING and PANO mode.
-- SubMenu for LEVELING.
+- ~~Main Menu to switch between IDLE, LEVELING, JOGGING and PANO mode.~~
+- ~~SubMenu for LEVELING.~~
 - Sub Menu for JOGGING.
   - Show pano bounds.
   - Show current pos.
   - Show leveling.
-- JOGGING in velocity Mode!?.
-  - Encoder for jogging!?
+- ~~JOGGING in velocity Mode!?. Maybe that works better than in position mode.~~
+  - Also Encoder for jogging!? For more accurate movement.
 - Sub Menu for PANO.
   - Pause and Stop for PANO mode.
   - Show current column,row,shot; focus,trigger; current image of whole images.
@@ -47,8 +55,29 @@ Motorized panoramic head based on
   - Edit Battery level warning.
 - Shaking sensor.
 - ~~Leveling sensor.~~
-- SubMenu to calibrate Motor speed values.
+- SubMenu to calibrate Motor speed and accleration values.
 - Scopes for Logger.
+  - Static map to see/reach all loggers for changing level.
+  - Check current level to avoid useless calculations. isDebug(), isInfo(), ...
+  - Using Lambdas? LOG.onDebug([]{ LOG.d("foo: %f", myComplicatedCalculation(); )})
 - WiFi
   - WS Server.
   - Angular Frontend.
+
+## Technical stuff
+
+### Camera
+
+- Measured on Canon EOS 7d MARK II
+  - Trigger and focus voltages are 3.3V.
+  - Current to switch is ca. 60µA.
+- Nearly every optocoupler with transistor or fet output should be ok.
+
+### Battery
+
+- I plan to use [INR18650-29E](https://irp-cdn.multiscreensite.com/80106371/files/uploaded/file9.pdf) because of it weight and price.
+- Two 3S packs. I calculate with 9Wh/Cell. A pack has 27Wh.
+- Power consumption
+  - ca 1W with disabled steppers
+  - ca. 5W with stopped steppers (and TMC2208 coolstep2)
+  - ca. 17W peak with both stepepers moving.

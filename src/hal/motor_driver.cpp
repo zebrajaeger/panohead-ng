@@ -33,7 +33,7 @@ bool MotorDriver::begin(uint8_t pinCS, uint8_t pinClockSource, uint8_t clockSpee
     }
 
     // axis watcher timer
-    timer_.startMs(50, false, true,std::bind(&MotorDriver::updateState, this));
+    timer_.startMs(50, false, true, std::bind(&MotorDriver::updateState, this));
 
     return true;
   }
@@ -107,7 +107,7 @@ void MotorDriver::jogTo(uint8_t axisIndex, double delta)
 //------------------------------------------------------------------------------
 {
   if (isAtTargetPos(axisIndex)) {
-    // not moving. 
+    // not moving.
     goTo(axisIndex, delta);
   } else {
     // already moving. take current pos and add jogging delta
@@ -118,6 +118,19 @@ void MotorDriver::jogTo(uint8_t axisIndex, double delta)
     } else {
       LOG.e("Cannot jog to pos. Translator for axis %u is NULL", axisIndex);
     }
+  }
+}
+
+//------------------------------------------------------------------------------
+void MotorDriver::jogV(uint8_t axisIndex, double revPerSecond)
+//------------------------------------------------------------------------------
+{
+  Translator* t = translators_[axisIndex];
+  if (t) {
+    tmc429_.setVelocityMode(axisIndex);
+    tmc429_.setTargetVelocityInHz(axisIndex, t->revolutionToSteps(revPerSecond));
+  } else {
+    LOG.e("Cannot jog to pos. Translator for axis %u is NULL", axisIndex);
   }
 }
 

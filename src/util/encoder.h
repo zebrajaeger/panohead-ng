@@ -23,7 +23,8 @@ class Encoder {
 
   ButtonState getButtonState(bool peek = false);
   static const char* buttonStateToName(ButtonState buttonState);
-  int16_t getValue();
+  int16_t getValue() const;
+  void setValue(int16_t v);
 
  protected:
   typedef void (*IsrCallback_t)();

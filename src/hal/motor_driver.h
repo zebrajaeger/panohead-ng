@@ -27,6 +27,7 @@ class MotorDriver {
 
   void goTo(uint8_t axisIndex, double pos);
   void jogTo(uint8_t axisIndex, double delta);
+  void jogV(uint8_t axisIndex, double revPerSecond);
   bool isAtTargetPos(uint8_t axisIndex);
 
   void onStatusChange(movementStatusChangeCallback_t cb);

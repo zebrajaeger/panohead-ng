@@ -31,7 +31,6 @@ PanoAutomat panoAutomat;
 Camera camera;
 ADC adc;
 PositionSensor position;
-
 // OTA ota;
 
 // test
@@ -109,15 +108,19 @@ void setup()
   // Display
   if (display.begin(17, 5)) {
     LOG.i("Display started");
-    display.showBootScreen();
+    display.loop();  // show first screen. Otherwise we have to wait until control reaches main loop code
   } else {
     LOG.i("Display failed");
   }
 
   // Encoder
   encoder.begin(36, 39, 34);
-  encoder.onValueChanged([](int16_t oldValue, int16_t newValue) { LOG.d("ENCODER: %d -> %d", oldValue, newValue); });
-  encoder.onButtonChanged([](Encoder::ButtonState buttonState) { LOG.d("ENCODER-BUTTON: %s", Encoder::buttonStateToName(buttonState)); });
+  encoder.onValueChanged([](int16_t oldValue, int16_t newValue) { display.moveSelection(newValue - oldValue); });
+  encoder.onButtonChanged([](Encoder::ButtonState buttonState) {
+    if (buttonState == Encoder::ButtonState::PUSHED) {
+      display.onButton();
+    }
+  });
 
   // I²C
   if (Wire.begin(I2C_SDA, I2C_SCL, I2C_SPEED)) {
@@ -236,11 +239,15 @@ void setup()
     joystickTimer.startMs(50, false, true, [] {
       if (joystick.getXAxis().hasValue()) {
         float v = joystick.getXAxis().getValue();
-        motorDriver.jogTo(0, 0.01 * v * v * v);  // v³ for better handling on slowmo
+        motorDriver.jogV(0, 0.05 * v * v * v);  // v³ for better handling on slowmo
+      } else {
+        motorDriver.jogV(0, 0.0);
       }
       if (joystick.getYAxis().hasValue()) {
         float v = joystick.getYAxis().getValue();
-        motorDriver.jogTo(1, 0.01 * v * v * v);  // v³ for better handling on slowmo
+        motorDriver.jogV(1, 0.05 * v * v * v);  // v³ for better handling on slowmo
+      } else {
+        motorDriver.jogV(0, 0.0);
       }
     });
   } else {
@@ -250,9 +257,7 @@ void setup()
   // Position
   if (position.begin()) {
     LOG.i("Position sensor initialized");
-    position.onData([]{
-      display.showLeveling(position.getRevX(), position.getRevY());
-    });
+    position.onData([] { display.setLeveling(position.getRevX(), position.getRevY()); });
   } else {
     LOG.e("Position sensor failed");
   }
@@ -272,15 +277,6 @@ void setup()
   } else {
     LOG.e("Statistic failed");
   }
-
-  // test:
-  // timer.startS(5.0, false, true);
-  // timer.onTimer([]{
-  //   // motorDriver.statistic();
-  //   posX += 0.05;
-  //   motorDriver.goTo(0, posX);
-  // });
-  // motorDriver.goTo(0, 0.2);  // 1 rev of stepper
 }
 
 // --------------------------------------------------------------------------------
@@ -296,6 +292,7 @@ void loop()
   encoder.loop();
   joystickTimer.loop();
   position.loop();
+  display.loop();
   // timer.loop();
   // }
 }
