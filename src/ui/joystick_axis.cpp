@@ -1,6 +1,7 @@
 #include "joystick_axis.h"
 
 #include <limits>
+
 //------------------------------------------------------------------------------
 JoystickAxis::JoystickAxis(const String& name)
     : LOG(name),

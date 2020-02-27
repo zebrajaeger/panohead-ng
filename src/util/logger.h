@@ -20,7 +20,7 @@
 #include <Arduino.h>
 #include <Print.h>
 #include <chrono>
-#include <map>
+// #include <map>
 
 #ifndef LOGGER_BUFFER_SIZE
 #define LOGGER_BUFFER_SIZE 1024
@@ -42,7 +42,7 @@ class Logger : public Print {
   virtual size_t write(uint8_t c);
 
  private:
- static std::map<char*,Logger*> loggers_;
+//  static std::map<char*,Logger*> loggers_;
  
   const void printPrefix(Loglevel_t loglevel);
 

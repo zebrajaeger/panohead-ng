@@ -7,9 +7,11 @@ class Selection {
   Selection(int16_t max, uint16_t stepsPerIndex_, bool circular = false)
       : stepsPerIndex_(stepsPerIndex_), index_(0), min_(0 * stepsPerIndex_), max_(((max + 1) * stepsPerIndex_) - 1), circular_(circular) {}
 
-  void add(int16_t delta) { setIndex(index_ + delta); }
+  bool add(int16_t delta) { return setIndex(index_ + delta); }
 
-  void setIndex(int16_t v) {
+  bool setIndex(int16_t v) {
+    int16_t oldIndex = getIndex();
+
     if (v < min_) {
       if (circular_) {
         v = v % getSize();
@@ -25,6 +27,8 @@ class Selection {
       }
     }
     index_ = v;
+
+    return oldIndex != getIndex();
   }
 
   int16_t getIndex() const { return index_ / stepsPerIndex_; }

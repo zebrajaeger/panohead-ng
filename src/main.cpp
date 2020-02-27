@@ -18,6 +18,7 @@
 #include "hal/motor_driver.h"
 #include "pano/pano_automat.h"
 #include "pano/pano_calculator.h"
+#include "pano/panoutils.h"
 
 Logger LOG("MAIN");
 
@@ -175,7 +176,7 @@ void setup()
       // LOG.d("Camera: %d, %d", focus, trigger);
       camera.set(focus, trigger);
     });
-    panoAutomat.onMove([](pano::Position pos) {
+    panoAutomat.onMove([](Position pos) {
       // LOG.d("GoTo: %f, %f", pos.getX(), pos.getY());
       motorDriver.goTo(0, pos.getX());
       motorDriver.goTo(1, pos.getY());
@@ -191,9 +192,9 @@ void setup()
 
   // Create raster, shots and start pano
   PanoCalculator calc;
-  pano::View view(pano::degToRev(30), pano::degToRev(330), pano::degToRev(30), pano::degToRev(150));
-  pano::Picture picture(pano::degToRev(30), pano::degToRev(40), pano::degToRev(12), pano::degToRev(16));
-  pano::Raster *raster = calc.createMatrixRasterForPano(view, picture);
+  View view(PanoUtils::degToRev(30), PanoUtils::degToRev(330), PanoUtils::degToRev(30), PanoUtils::degToRev(150));
+  Picture picture(PanoUtils::degToRev(30), PanoUtils::degToRev(40), PanoUtils::degToRev(12), PanoUtils::degToRev(16));
+  Raster *raster = calc.createMatrixRasterForPano(view, picture);
 
   pano::Shots shots(500, 500, 0);
   shots += {500, 500};
@@ -270,13 +271,16 @@ void setup()
     LOG.i("Statistic initialized");
     statistic.onStatistic([]() {
       // encoder.statistics();
-      motorDriver.statistic();
-      panoAutomat.statistic();
-      joystick.statistics();
+      // motorDriver.statistic();
+      // panoAutomat.statistic();
+      // joystick.statistics();
+      display.statistics();
     });
   } else {
     LOG.e("Statistic failed");
   }
+
+   display.bootDone();
 }
 
 // --------------------------------------------------------------------------------

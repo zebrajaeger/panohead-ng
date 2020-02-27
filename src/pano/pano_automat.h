@@ -6,8 +6,9 @@
 #include "util/logger.h"
 #include "util/singletimer.h"
 
-#include "pano/pano.h"
 #include "pano/shot.h"
+#include "pano/position.h"
+#include "pano/raster.h"
 
 class PanoAutomat {
  public:
@@ -25,7 +26,7 @@ class PanoAutomat {
 
   typedef std::function<void(bool focus, bool trigger)> cameraCallback_t;
   typedef std::function<void(uint32_t columnIndex, uint32_t rowIndex, uint32_t shotIndex)> pictureCallback_t;
-  typedef std::function<void(pano::Position position)> moveCallback_t;
+  typedef std::function<void(Position position)> moveCallback_t;
   typedef std::function<void(double progress)> progressCallback_t;
   typedef std::function<void()> panoFinishCallback_t;
   typedef std::function<void(uint32_t columnIndex, uint32_t rowIndex, uint32_t shotIndex, state_t stateFrom, state_t stateTo)>
@@ -43,7 +44,7 @@ class PanoAutomat {
         cameraCallback_([this](bool, bool) { LOG.d("cameraCallback_ uninitialized"); }),
         beforePictureCallback_([](uint32_t, uint32_t, uint32_t) {}),
         afterPictureCallback_([](uint32_t, uint32_t, uint32_t) {}),
-        moveCallback_([this](pano::Position) { LOG.d("moveCallback_ uninitialized"); }),
+        moveCallback_([this](Position) { LOG.d("moveCallback_ uninitialized"); }),
         progressCallback_([](double) {}),
         panoFinishCallback_([] {}),
         statusCallback_([](uint32_t columnIndex, uint32_t rowIndex, uint32_t shotIndex, state_t stateFrom, state_t stateTo) {}) {}
@@ -54,7 +55,7 @@ class PanoAutomat {
     return true;
   }
 
-  bool start(pano::Raster* raster, const pano::Shots& shots) {
+  bool start(Raster* raster, const pano::Shots& shots) {
     if (raster_) {
       delete raster_;
     }
@@ -230,13 +231,13 @@ class PanoAutomat {
   }
 
   void triggerMove() {
-    pano::Position p = raster_->getPositionFor(currentColumn_, currentRow_);
+    Position p = raster_->getPositionFor(currentColumn_, currentRow_);
     moveCallback_(p);
   }
 
  private:
   Logger LOG;
-  pano::Raster* raster_;
+  Raster* raster_;
   pano::Shots shots_;
   SingleTimer timer_;
   state_t state_;

@@ -2,11 +2,13 @@
 
 #include <Arduino.h>
 
-#include "pano/pano.h"
+#include "pano/picture.h"
+#include "pano/position.h"
+#include "pano/view.h"
 
 class PanoCalculator {
  public:
-  pano::Raster* createMatrixRasterForPano(const pano::View& view, const pano::Picture& panoPicture) {
+  Raster* createMatrixRasterForPano(const View& view, const Picture& panoPicture) {
     // pano size
     double panoWidth = view.width();
     double panoHeight = view.height();
@@ -29,13 +31,11 @@ class PanoCalculator {
     double realOverlapHeight = panoPicture.height() - realPictureHeightWithinPano;
 
     // calculate matrix
-    double startX = view.x1() - (realOverlapWidth / 2.0);
-    double startY = view.y1() - (realOverlapHeight / 2.0);
-    pano::Position startPos(startX, startY);
-    pano::Picture realPanoPicture(realPictureWidthWithinPano + realOverlapWidth, realPictureHeightWithinPano + realOverlapHeight,
-                                      realOverlapWidth, realOverlapHeight);
-    return new pano::Matrix(startPos, realPanoPicture, pictureCountX, pictureCountY);
+    double startX = view.getX1() - (realOverlapWidth / 2.0);
+    double startY = view.getY1() - (realOverlapHeight / 2.0);
+    Position startPos(startX, startY);
+    Picture realPanoPicture(realPictureWidthWithinPano + realOverlapWidth, realPictureHeightWithinPano + realOverlapHeight,
+                            realOverlapWidth, realOverlapHeight);
+    return new Matrix(startPos, realPanoPicture, pictureCountX, pictureCountY);
   }
-
- private:
 };
