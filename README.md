@@ -42,10 +42,10 @@ Motorized panoramic head based on
   - Mode.
 - ~~Main Menu to switch between IDLE, LEVELING, JOGGING and PANO mode.~~
 - ~~SubMenu for LEVELING.~~
-- Sub Menu for JOGGING.
-  - Show pano bounds.
+- ~~Sub Menu for JOGGING.~~
+  - ~~Show pano bounds.~~
   - Show current pos.
-  - Show leveling.
+  - ~~Show leveling.~~ Display to small...
 - ~~JOGGING in velocity Mode!?. Maybe that works better than in position mode.~~
   - Also Encoder for jogging!? For more accurate movement.
 - Sub Menu for PANO Settings.
