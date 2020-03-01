@@ -156,7 +156,7 @@ void Display::renderBootScreen(MenuItem &menu)
   u8g2_->setContrast(255);  // !!!
 
   u8g2_->clearBuffer();
-  u8g2_->setFont(u8g2_font_ncenB10_tr);
+  u8g2_->setFont(u8g2_font_timR10_tf);
 
   drawStringAt(0, 0, false, false, "Booting...");
 
@@ -168,13 +168,14 @@ void Display::renderMainMenu(MenuItem &menu)
 //------------------------------------------------------------------------------
 {
   u8g2_->clearBuffer();
-  u8g2_->setFont(u8g2_font_ncenB10_tr);
+  u8g2_->setFont(u8g2_font_timR10_tf);
 
+  uint8_t h = u8g2_->getMaxCharHeight() - 2;
   uint8_t selected = menu.getCounter().getIndex();
   const std::vector<MenuItem *> &items = menu.getItems();
   for (std::size_t i = 0; i < items.size(); ++i) {
     const MenuItem &item = *items[i];
-    drawStringAt(0, i * 16, (i == selected), false, item.getName().c_str());
+    drawStringAt(0, i * h, (i == selected), false, item.getName().c_str());
   }
 
   u8g2_->sendBuffer();
@@ -194,18 +195,18 @@ void Display::drawStringAt(uint8_t x, uint8_t y, bool selected, bool invers, con
 //------------------------------------------------------------------------------
 {
   uint8_t stringWidth = u8g2_->getStrWidth(text);
-  uint8_t height = u8g2_->getMaxCharHeight();
+  uint8_t height = u8g2_->getMaxCharHeight() - 3;
 
   if (invers) {
     u8g2_->setFontMode(1);
     u8g2_->setDrawColor(1);
-    u8g2_->drawBox(x + 2, y + 2, stringWidth + 1, height - 1);
+    u8g2_->drawBox(x + 2, y + 2, stringWidth + 1, height - 2);
     u8g2_->setDrawColor(0);
   } else {
     u8g2_->setFontMode(0);
     u8g2_->setDrawColor(1);
   }
-  u8g2_->drawStr(x + 3, y + height - 2, text);
+  u8g2_->drawStr(x + 2, y + height - 2, text);
 
   if (selected) {
     u8g2_->setDrawColor(1);
@@ -265,7 +266,7 @@ void Display::renderSetBounds(MenuItem &menu)
   bool isSave = i == PanoBoundsState::SAVE;
   bool isCancel = i == PanoBoundsState::CANCEL;
 
-  u8g2_->setFont(u8g2_font_ncenB10_tr);
+  u8g2_->setFont(u8g2_font_timR10_tf);
 
   drawAngleAt(50, 0, isTop, false, view_.getX1());
   drawAngleAt(50, 48, isBottom, false, view_.getX2());
