@@ -116,7 +116,7 @@ bool loopWiFi() { return true; }
 void setup()
 // --------------------------------------------------------------------------------
 {
-  delay(1500);  // lets the visual studio code/platformIO console work...
+  delay(1100);  // lets the visual studio code/platformIO console work...
 
   Serial.begin(115200);
 

@@ -1,21 +1,29 @@
 #include "menuitem.h"
 
 MenuItem::MenuItem(std::string name)
-    : name_(name), parent_(NULL), items_(), active_(this), requireRepaint_(true), renderCallback_(), counter_(4, 0, 0, 0, true) {}
+    : name_(name), parent_(NULL), items_(), active_(this), requireRepaint_(true), renderCallback_(), counter_(4, 0, 0, 0, true) {
+  counter_.onIndexChange([this](int16_t from, int16_t to) { requireRepaint(); });
+}
 
 void MenuItem::add(MenuItem* newItem) {
   newItem->setParent(this);
   items_.push_back(newItem);
+  counter_.setMax(items_.size() - 1);
 }
 
 bool MenuItem::isLeaf() const { return items_.empty(); }
 
-void MenuItem::setActiveItem(int16_t index) {
+bool MenuItem::setActiveItem(int16_t index) {
   if (index == -1) {
     active_ = this;
+    return true;
   } else {
-    active_ = items_[index];
+    if (items_.size() > index) {
+      active_ = items_[index];
+      return true;
+    }
   }
+  return false;
 }
 
 bool MenuItem::setActiveItem(std::string name) {
@@ -53,14 +61,7 @@ const std::vector<MenuItem*>& MenuItem::getItems() const { return items_; }
 
 void MenuItem::encoderChanged(int16_t diff) {
   if (isActive()) {
-    uint16_t a = counter_.getIndex();
     counter_.add(diff);
-    uint16_t b = counter_.getIndex();
-    Serial.printf("encoderChanged: %s %d/%d", name_.c_str(), a, b);
-
-    // if(counter_.add(diff)){
-    // requireRepaint();
-    // }
   } else {
     active_->encoderChanged(diff);
   }
@@ -68,8 +69,9 @@ void MenuItem::encoderChanged(int16_t diff) {
 
 void MenuItem::buttonPushed() {
   if (isActive()) {
-    setActiveItem(counter_.getIndex());
-    requireRepaint();
+    if (setActiveItem(counter_.getIndex())) {
+      requireRepaint();
+    }
   } else {
     active_->buttonPushed();
   }

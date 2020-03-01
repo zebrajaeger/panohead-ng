@@ -2,4 +2,4 @@
 .pio
 .vscode
 
-src/mywifi.h
+src/mywifi.*

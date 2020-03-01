@@ -17,7 +17,7 @@ class MenuItem {
   virtual void add(MenuItem* newItem);
   bool isLeaf() const;
 
-  void setActiveItem(int16_t index);
+  bool setActiveItem(int16_t index);
   bool setActiveItem(std::string name);
   MenuItem* getActiveItem();
   const MenuItem* getActiveItem() const;
