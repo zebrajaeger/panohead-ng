@@ -13,6 +13,12 @@ void MenuItem::add(MenuItem* newItem) {
 
 bool MenuItem::isLeaf() const { return items_.empty(); }
 
+void MenuItem::goUp(){
+    if(parent_){
+        parent_->setActiveItem(-1);
+    }
+}
+
 bool MenuItem::setActiveItem(int16_t index) {
   if (index == -1) {
     active_ = this;
@@ -69,6 +75,9 @@ void MenuItem::encoderChanged(int16_t diff) {
 
 void MenuItem::buttonPushed() {
   if (isActive()) {
+    if (buttonPushCallback_) {
+      buttonPushCallback_(*this);
+    }
     if (setActiveItem(counter_.getIndex())) {
       requireRepaint();
     }
@@ -89,7 +98,7 @@ void MenuItem::loop() {
 }
 
 void MenuItem::onRender(RenderCallback_t cb) { renderCallback_ = cb; }
-
+void MenuItem::onButtonPushed(ButtonPushCallback_t cb) { buttonPushCallback_ = cb; }
 void MenuItem::requireRepaint() { requireRepaint_ = true; }
 
 void MenuItem::setParent(MenuItem* parent) { parent_ = parent; }

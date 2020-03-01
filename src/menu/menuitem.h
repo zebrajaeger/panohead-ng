@@ -12,11 +12,13 @@ class MenuItem;
 class MenuItem {
  public:
   typedef std::function<void(MenuItem& self, RangeCounter&counter)> RenderCallback_t;
+  typedef std::function<void(MenuItem& self)> ButtonPushCallback_t;
 
   MenuItem(std::string name);
   virtual void add(MenuItem* newItem);
   bool isLeaf() const;
 
+  void goUp();
   bool setActiveItem(int16_t index);
   bool setActiveItem(std::string name);
   MenuItem* getActiveItem();
@@ -32,6 +34,7 @@ class MenuItem {
 
   void loop();
   void onRender(RenderCallback_t cb);
+  void onButtonPushed(ButtonPushCallback_t cb);
   void requireRepaint();
 
  private:
@@ -43,6 +46,7 @@ class MenuItem {
   MenuItem* active_;
   bool requireRepaint_;
   RenderCallback_t renderCallback_;
+  ButtonPushCallback_t buttonPushCallback_ ;
   RangeCounter counter_;
 };
 

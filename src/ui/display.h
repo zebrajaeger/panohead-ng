@@ -63,7 +63,7 @@ class Display {
   // void showUnimplementedScreen();
   void renderBootScreen(MenuItem& menu, RangeCounter& counter);
   void renderMainMenu(MenuItem& menu, RangeCounter& counter);
-  // void showLeveling();
+  void renderLeveling(MenuItem& menu, RangeCounter& counter);
   // void showSetPanoBounds();
 
   // bool isRedrawRequired();

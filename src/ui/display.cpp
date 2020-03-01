@@ -56,6 +56,8 @@ bool Display::begin(uint8_t sclGpio, uint8_t sdaGpio)
   MenuItem *setBounds = new MenuItem("Set bounds");
   MenuItem *takePano = new MenuItem("Take pano");
   MenuItem *leveling = new MenuItem("Leveling");
+  leveling->onRender(bind(&Display::renderLeveling, this, _1, _2));
+  leveling->onButtonPushed([](MenuItem &self) { self.goUp(); });
 
   // Pano Config
   MenuItem *delayAfterMove = new MenuItem("Delay after move");
@@ -180,7 +182,7 @@ void Display::renderMainMenu(MenuItem &menu, RangeCounter &counter)
   const std::vector<MenuItem *> &items = menu.getItems();
   for (std::size_t i = 0; i < items.size(); ++i) {
     const MenuItem &item = *items[i];
-    drawStringAt(0, i*16, (i == selected), false, item.getName().c_str());
+    drawStringAt(0, i * 16, (i == selected), false, item.getName().c_str());
   }
 
   u8g2_->sendBuffer();
@@ -462,24 +464,24 @@ void Display::drawStringAt(uint8_t x, uint8_t y, bool selected, bool invers, con
 //   u8g2_->sendBuffer();
 // }
 
-// //------------------------------------------------------------------------------
-// void Display::showLeveling()
-// //------------------------------------------------------------------------------
-// {
-//   u8g2_->clearBuffer();
+//------------------------------------------------------------------------------
+void Display::renderLeveling(MenuItem &menu, RangeCounter &counter)
+//------------------------------------------------------------------------------
+{
+  u8g2_->clearBuffer();
 
-//   u8g2_->setDrawColor(1);
-//   u8g2_->drawHLine(33, 32, 63);
-//   u8g2_->drawVLine(64, 1, 63);
-//   u8g2_->drawCircle(64, 32, 31);
-//   u8g2_->drawCircle(64, 32, 3);
+  u8g2_->setDrawColor(1);
+  u8g2_->drawHLine(33, 32, 63);
+  u8g2_->drawVLine(64, 1, 63);
+  u8g2_->drawCircle(64, 32, 31);
+  u8g2_->drawCircle(64, 32, 3);
 
-//   float posX = 64 + (levelX_ * 128.0);
-//   float posY = 32 + (levelY_ * 128.0);
-//   u8g2_->drawCircle(posX, posY, 5);
+  float posX = 64 + (levelX_ * 128.0);
+  float posY = 32 + (levelY_ * 128.0);
+  u8g2_->drawCircle(posX, posY, 5);
 
-//   u8g2_->sendBuffer();
-// }
+  u8g2_->sendBuffer();
+}
 
 // //------------------------------------------------------------------------------
 // void Display::showSetPanoBounds()
