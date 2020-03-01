@@ -1,25 +1,49 @@
 #include "menuitem.h"
 
+//------------------------------------------------------------------------------
 MenuItem::MenuItem(std::string name)
-    : name_(name), parent_(NULL), items_(), active_(this), requireRepaint_(true), renderCallback_(), counter_(4, 0, 0, 0, true) {
+    : name_(name),
+      parent_(NULL),
+      items_(),
+      active_(this),
+      requireRepaint_(true),
+      renderCallback_(),
+      counter_(4, 0, 0, 0, true)
+//------------------------------------------------------------------------------
+{
   counter_.onIndexChange([this](int16_t from, int16_t to) { requireRepaint(); });
 }
 
-void MenuItem::add(MenuItem* newItem) {
+//------------------------------------------------------------------------------
+void MenuItem::add(MenuItem* newItem)
+//------------------------------------------------------------------------------
+{
   newItem->setParent(this);
   items_.push_back(newItem);
   counter_.setMax(items_.size() - 1);
 }
 
-bool MenuItem::isLeaf() const { return items_.empty(); }
-
-void MenuItem::goUp(){
-    if(parent_){
-        parent_->setActiveItem(-1);
-    }
+//------------------------------------------------------------------------------
+bool MenuItem::isLeaf() const
+//------------------------------------------------------------------------------
+{
+  return items_.empty();
 }
 
-bool MenuItem::setActiveItem(int16_t index) {
+//------------------------------------------------------------------------------
+void MenuItem::goUp()
+//------------------------------------------------------------------------------
+{
+  if (parent_) {
+    parent_->setActiveItem(-1);
+    requireRepaint();
+  }
+}
+
+//------------------------------------------------------------------------------
+bool MenuItem::setActiveItem(int16_t index)
+//------------------------------------------------------------------------------
+{
   if (index == -1) {
     active_ = this;
     return true;
@@ -32,7 +56,10 @@ bool MenuItem::setActiveItem(int16_t index) {
   return false;
 }
 
-bool MenuItem::setActiveItem(std::string name) {
+//------------------------------------------------------------------------------
+bool MenuItem::setActiveItem(std::string name)
+//------------------------------------------------------------------------------
+{
   if (name == name_) {
     active_ = this;
     return true;
@@ -48,13 +75,31 @@ bool MenuItem::setActiveItem(std::string name) {
   return false;
 }
 
-MenuItem* MenuItem::getActiveItem() { return active_; }
+//------------------------------------------------------------------------------
+MenuItem* MenuItem::getActiveItem()
+//------------------------------------------------------------------------------
+{
+  return active_;
+}
 
-const MenuItem* MenuItem::getActiveItem() const { return active_; }
+//------------------------------------------------------------------------------
+const MenuItem* MenuItem::getActiveItem() const
+//------------------------------------------------------------------------------
+{
+  return active_;
+}
 
-bool MenuItem::isActive() const { return this == active_; }
+//------------------------------------------------------------------------------
+bool MenuItem::isActive() const
+//------------------------------------------------------------------------------
+{
+  return this == active_;
+}
 
-std::string MenuItem::getActivePath() {
+//------------------------------------------------------------------------------
+std::string MenuItem::getActivePath()
+//------------------------------------------------------------------------------
+{
   if (isActive()) {
     return name_;
   } else {
@@ -62,10 +107,35 @@ std::string MenuItem::getActivePath() {
   }
 }
 
-const std::string& MenuItem::getName() const { return name_; }
-const std::vector<MenuItem*>& MenuItem::getItems() const { return items_; }
+//------------------------------------------------------------------------------
+const std::string& MenuItem::getName() const
+//------------------------------------------------------------------------------
+{
+  return name_;
+}
 
-void MenuItem::encoderChanged(int16_t diff) {
+//------------------------------------------------------------------------------
+const std::vector<MenuItem*>& MenuItem::getItems() const
+
+//------------------------------------------------------------------------------
+{
+  return items_;
+}
+
+//------------------------------------------------------------------------------
+const Counter& MenuItem::getCounter() const { return counter_; }
+
+//------------------------------------------------------------------------------
+Counter& MenuItem::getCounter()
+//------------------------------------------------------------------------------
+{
+  return counter_;
+}
+
+//------------------------------------------------------------------------------
+void MenuItem::encoderChanged(int16_t diff)
+//------------------------------------------------------------------------------
+{
   if (isActive()) {
     counter_.add(diff);
   } else {
@@ -73,7 +143,10 @@ void MenuItem::encoderChanged(int16_t diff) {
   }
 }
 
-void MenuItem::buttonPushed() {
+//------------------------------------------------------------------------------
+void MenuItem::buttonPushed()
+//------------------------------------------------------------------------------
+{
   if (isActive()) {
     if (buttonPushCallback_) {
       buttonPushCallback_(*this);
@@ -86,10 +159,13 @@ void MenuItem::buttonPushed() {
   }
 }
 
-void MenuItem::loop() {
+//------------------------------------------------------------------------------
+void MenuItem::loop()
+//------------------------------------------------------------------------------
+{
   if (isActive()) {
     if (requireRepaint_ && renderCallback_) {
-      renderCallback_(*this, counter_);
+      renderCallback_(*this);
       requireRepaint_ = false;
     }
   } else {
@@ -97,8 +173,30 @@ void MenuItem::loop() {
   }
 }
 
-void MenuItem::onRender(RenderCallback_t cb) { renderCallback_ = cb; }
-void MenuItem::onButtonPushed(ButtonPushCallback_t cb) { buttonPushCallback_ = cb; }
-void MenuItem::requireRepaint() { requireRepaint_ = true; }
+//------------------------------------------------------------------------------
+void MenuItem::onRender(RenderCallback_t cb)
+//------------------------------------------------------------------------------
+{
+  renderCallback_ = cb;
+}
 
-void MenuItem::setParent(MenuItem* parent) { parent_ = parent; }
+//------------------------------------------------------------------------------
+void MenuItem::onButtonPushed(ButtonPushCallback_t cb)
+//------------------------------------------------------------------------------
+{
+  buttonPushCallback_ = cb;
+}
+
+//------------------------------------------------------------------------------
+void MenuItem::requireRepaint()
+//------------------------------------------------------------------------------
+{
+  requireRepaint_ = true;
+}
+
+//------------------------------------------------------------------------------
+void MenuItem::setParent(MenuItem* parent)
+//------------------------------------------------------------------------------
+{
+  parent_ = parent;
+}

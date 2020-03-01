@@ -1,5 +1,7 @@
 #include "display.h"
 
+#include <functional>
+
 //------------------------------------------------------------------------------
 Display::Display()
     : LOG("Display"),
@@ -8,16 +10,9 @@ Display::Display()
       menu_("root"),
       menuLeveling_(NULL),
       menuSetBounds_(NULL),
-      // mainState_(MainState::BOOT),
-      // menuState_(MenuState::MENU),
-      // // panoBoundsState_(PanoBoundsState::TOP),
-      // dirty_(true),
-      // mainSelection_(2, 4),
-      // setPanoSelection_(10, 4),
       levelX_(0.5),
       levelY_(0.5),
       view_(1.234, 12.345, 123.456, 0.0)
-      // newViewCallback_()
       //------------------------------------------------------------------------------
       {};
 
@@ -37,6 +32,7 @@ bool Display::begin(uint8_t sclGpio, uint8_t sdaGpio)
   if (u8g2_) {
     return false;
   }
+
   u8g2_ = new U8G2_SSD1306_128X64_NONAME_F_SW_I2C(U8G2_R0, sclGpio, sdaGpio, /* reset=*/U8X8_PIN_NONE);
   if (!u8g2_->begin()) {
     return false;
@@ -47,37 +43,44 @@ bool Display::begin(uint8_t sclGpio, uint8_t sdaGpio)
 
   // Boot
   MenuItem *boot = new MenuItem("boot");
-  boot->onRender(bind(&Display::renderBootScreen, this, _1, _2));
+  boot->onRender(bind(&Display::renderBootScreen, this, _1));
+  menu_.add(boot);
 
   // Main
   MenuItem *main = new MenuItem("main");
-  main->onRender(bind(&Display::renderMainMenu, this, _1, _2));
-  MenuItem *panoConfig = new MenuItem("Pano config");
-  MenuItem *setBounds = new MenuItem("Set bounds");
-  MenuItem *takePano = new MenuItem("Take pano");
-  MenuItem *leveling = new MenuItem("Leveling");
-  leveling->onRender(bind(&Display::renderLeveling, this, _1, _2));
-  leveling->onButtonPushed([](MenuItem &self) { self.goUp(); });
-
-  // Pano Config
-  MenuItem *delayAfterMove = new MenuItem("Delay after move");
-  MenuItem *delayBetweenShots = new MenuItem("Delay between shots");
-  MenuItem *shotCount = new MenuItem("Shot count");
-  MenuItem *shots = new MenuItem("shots");
-
-  menu_.add(boot);
+  main->onRender(bind(&Display::renderMainMenu, this, _1));
   menu_.add(main);
-  main->add(panoConfig);
-  panoConfig->add(delayAfterMove);
-  panoConfig->add(delayBetweenShots);
-  panoConfig->add(shots);
-  panoConfig->add(shotCount);
-  main->add(setBounds);
-  main->add(takePano);
-  main->add(leveling);
 
-  menuLeveling_ = leveling;
+  // -- Pano Config
+  MenuItem *panoConfig = new MenuItem("Pano config");
+  main->add(panoConfig);
+  MenuItem *delayAfterMove = new MenuItem("Delay after move");
+  panoConfig->add(delayAfterMove);
+  MenuItem *delayBetweenShots = new MenuItem("Delay between shots");
+  panoConfig->add(delayBetweenShots);
+  MenuItem *shotCount = new MenuItem("Shot count");
+  panoConfig->add(shotCount);
+  MenuItem *shots = new MenuItem("shots");
+  panoConfig->add(shots);
+
+  // -- Set Bounds
+  MenuItem *setBounds = new MenuItem("Set bounds");
+  setBounds->getCounter().setMax((uint16_t)PanoBoundsState::MAX);
+  setBounds->onRender(bind(&Display::renderSetBounds, this, _1));
+  setBounds->onButtonPushed(bind(&Display::pushButtonSetBounds, this, _1));
+  main->add(setBounds);
   menuSetBounds_ = setBounds;
+
+  // -- Make Pano
+  MenuItem *takePano = new MenuItem("Take pano");
+  main->add(takePano);
+
+  // -- Leveling
+  MenuItem *leveling = new MenuItem("Leveling");
+  leveling->onRender(bind(&Display::renderLeveling, this, _1));
+  leveling->onButtonPushed([](MenuItem &self) { self.goUp(); });
+  main->add(leveling);
+  menuLeveling_ = leveling;
 
   return true;
 }
@@ -87,13 +90,6 @@ void Display::statistics()
 //------------------------------------------------------------------------------
 {
   LOG.d("Selected: %s", menu_.getActivePath().c_str());
-  // LOG.d("Main.State: %s", stateToString(mainState_));
-
-  // LOG.d("Menu.State %s", stateToString(menuState_));
-  // LOG.d("Menu.Selected %d", mainSelection_.getIndex());
-
-  // LOG.d("Bounds.Selected %i", setPanoSelection_.getIndex());
-
   // LOG.d("Level %f, %f", levelX_, levelY_);
   // LOG.d("View x:(%f - %f) y:(%f - %f)", view_.getX1(), view_.getX2(), view_.getY1(), view_.getY2());
 }
@@ -144,9 +140,6 @@ void Display::setLeveling(float x, float y)
   levelX_ = x;
   levelY_ = y;
   menuLeveling_->requireRepaint();
-  // if (menuState_ == MenuState::LEVELING) {
-  //   requireRedraw();
-  // }
 }
 
 //------------------------------------------------------------------------------
@@ -157,7 +150,7 @@ void Display::setPosition(double revX, double revY)
 }
 
 //------------------------------------------------------------------------------
-void Display::renderBootScreen(MenuItem &menu, RangeCounter &counter)
+void Display::renderBootScreen(MenuItem &menu)
 //------------------------------------------------------------------------------
 {
   u8g2_->setContrast(255);  // !!!
@@ -171,14 +164,13 @@ void Display::renderBootScreen(MenuItem &menu, RangeCounter &counter)
 }
 
 //------------------------------------------------------------------------------
-void Display::renderMainMenu(MenuItem &menu, RangeCounter &counter)
+void Display::renderMainMenu(MenuItem &menu)
 //------------------------------------------------------------------------------
 {
   u8g2_->clearBuffer();
   u8g2_->setFont(u8g2_font_ncenB10_tr);
 
-  uint8_t selected = counter.getIndex();
-  LOG.d("renderMainMenu %d", selected);
+  uint8_t selected = menu.getCounter().getIndex();
   const std::vector<MenuItem *> &items = menu.getItems();
   for (std::size_t i = 0; i < items.size(); ++i) {
     const MenuItem &item = *items[i];
@@ -225,231 +217,6 @@ void Display::drawStringAt(uint8_t x, uint8_t y, bool selected, bool invers, con
 }
 
 // //------------------------------------------------------------------------------
-// void Display::loop()
-// //------------------------------------------------------------------------------
-// {
-//   if (isRedrawRequired()) {
-//     resetRedrawRequirement();
-//     switch (mainState_) {
-//       case MainState::OFF:
-//         // nothing to do
-//         break;
-
-//       case MainState::BOOT:
-//         showBootScreen();
-//         break;
-
-//       case MainState::MAIN:
-//         switch (menuState_) {
-//           case MenuState::MENU:
-//             showMainMenu();
-//             break;
-//           case MenuState::SET_BOUNDS:
-//             showSetPanoBounds();
-//             break;
-//           case MenuState::LEVELING:
-//             showLeveling();
-//             break;
-//           case MenuState::TAKE_PANO:
-//             showUnimplementedScreen();
-//             break;
-//         }
-//     }
-//   }
-// }
-
-// //------------------------------------------------------------------------------
-// void Display::bootDone()
-// //------------------------------------------------------------------------------
-// {
-//   setState(MainState::MAIN);
-//   setState(MenuState::MENU);
-// }
-
-// //------------------------------------------------------------------------------
-// void Display::moveSelection(int16_t diff)
-// //------------------------------------------------------------------------------
-// {
-//   switch (mainState_) {
-//     case MainState::MAIN:
-//       switch (menuState_) {
-//         case MenuState::MENU:
-//           if (mainSelection_.add(diff)) {
-//             requireRedraw();
-//           }
-//           break;
-
-//         case MenuState::SET_BOUNDS:
-//           if (setPanoSelection_.add(diff)) {
-//             requireRedraw();
-//           }
-//           break;
-
-//         default:
-//           break;
-//       }
-
-//       break;
-
-//     default:
-//       break;
-//   }
-// }
-
-// //------------------------------------------------------------------------------
-// void Display::onButton()
-// //------------------------------------------------------------------------------
-// {
-//   switch (mainState_) {
-//     case MainState::OFF:
-//     case MainState::BOOT:
-//       break;
-
-//     case MainState::MAIN: {
-//       switch (menuState_) {
-//         case MenuState::MENU:
-//           switch (mainSelection_.getIndex()) {
-//             case 0:
-//               setState(MenuState::SET_BOUNDS);
-//               break;
-//             case 1:
-//               setState(MenuState::TAKE_PANO);
-//               break;
-//             case 2:
-//               setState(MenuState::LEVELING);
-//               break;
-//             default:
-//               break;
-//           }
-
-//         case MenuState::TAKE_PANO:
-//           // TODO
-//           break;
-
-//         case MenuState::LEVELING:
-//           setState(MenuState::MENU);
-//           requireRedraw();
-//           break;
-
-//         case MenuState::SET_BOUNDS:
-//           switch ((PanoBoundsState)setPanoSelection_.getIndex()) {
-//             case PanoBoundsState::PARTIAL:
-//               view_.setPartial(!view_.isPartial());
-//               requireRedraw();
-//               break;
-//             case PanoBoundsState::SAVE:
-//               if (newViewCallback_) {
-//                 newViewCallback_(view_);
-//               }
-//               setState(MenuState::MENU);
-//               break;
-//             case PanoBoundsState::CANCEL:
-//               setState(MenuState::MENU);
-//               break;
-//             default:
-//               break;
-//           }
-//           break;
-//       }
-//       break;
-
-//       default:
-//         break;
-//     }
-//   }
-// }
-
-// //------------------------------------------------------------------------------
-// const char* Display::stateToString(MainState s) const
-// //------------------------------------------------------------------------------
-// {
-//   switch (s) {
-//     case MainState::OFF:
-//       return "OFF";
-//     case MainState::BOOT:
-//       return "BOOT";
-//     case MainState::MAIN:
-//       return "MAIN";
-//     default:
-//       return "?unknown?";
-//   }
-// }
-// //------------------------------------------------------------------------------
-// const char* Display::stateToString(MenuState s) const
-// //------------------------------------------------------------------------------
-// {
-//   switch (s) {
-//     case MenuState::MENU:
-//       return "MENU";
-//     case MenuState::LEVELING:
-//       return "LEVELING";
-//     case MenuState::SET_BOUNDS:
-//       return "SET_BOUNDS";
-//     case MenuState::TAKE_PANO:
-//       return "TAKE_PANO";
-//     default:
-//       return "?unknown?";
-//   }
-// }
-
-// //------------------------------------------------------------------------------
-// const char* Display::stateToString(PanoBoundsState s) const
-// //------------------------------------------------------------------------------
-// {
-//   switch (s) {
-//     case PanoBoundsState::TOP_LEFT:
-//       return "TOP_LEFT";
-//     case PanoBoundsState::TOP:
-//       return "TOP";
-//     case PanoBoundsState::TOP_RIGHT:
-//       return "TOP_RIGHT";
-//     case PanoBoundsState::BOTTOM_LEFT:
-//       return "BOTTOM_LEFT";
-//     case PanoBoundsState::BOTTOM:
-//       return "BOTTOM";
-//     case PanoBoundsState::BOTTOM_RIGHT:
-//       return "BOTTOM_RIGHT";
-//     case PanoBoundsState::LEFT:
-//       return "LEFT";
-//     case PanoBoundsState::RIGHT:
-//       return "RIGHT";
-//     case PanoBoundsState::PARTIAL:
-//       return "PARTIAL";
-//     case PanoBoundsState::CANCEL:
-//       return "CANCEL";
-//     case PanoBoundsState::SAVE:
-//       return "SAVE";
-//     default:
-//       return "?unknown?";
-//   }
-// }
-
-// //------------------------------------------------------------------------------
-// void Display::setState(MainState newState)
-// //------------------------------------------------------------------------------
-// {
-//   LOG.d("Main %s -> %s", stateToString(mainState_), stateToString(newState));
-//   requireRedraw();
-//   mainState_ = newState;
-// }
-// //------------------------------------------------------------------------------
-// void Display::setState(MenuState newState)
-// //------------------------------------------------------------------------------
-// {
-//   LOG.d("Menu %s -> %s", stateToString(menuState_), stateToString(newState));
-//   requireRedraw();
-//   menuState_ = newState;
-// }
-
-// // //------------------------------------------------------------------------------
-// // void Display::setState(PanoBoundsState newState)
-// // //------------------------------------------------------------------------------
-// // {
-// //   LOG.d("SetBounds %s -> %s", stateToString(menuState_), stateToString(newState));
-// //   requireRedraw();
-// // }
-
-// //------------------------------------------------------------------------------
 // void Display::showUnimplementedScreen()
 // //------------------------------------------------------------------------------
 // {
@@ -465,7 +232,7 @@ void Display::drawStringAt(uint8_t x, uint8_t y, bool selected, bool invers, con
 // }
 
 //------------------------------------------------------------------------------
-void Display::renderLeveling(MenuItem &menu, RangeCounter &counter)
+void Display::renderLeveling(MenuItem &menu)
 //------------------------------------------------------------------------------
 {
   u8g2_->clearBuffer();
@@ -483,52 +250,52 @@ void Display::renderLeveling(MenuItem &menu, RangeCounter &counter)
   u8g2_->sendBuffer();
 }
 
-// //------------------------------------------------------------------------------
-// void Display::showSetPanoBounds()
-// //------------------------------------------------------------------------------
-// {
-//   u8g2_->clearBuffer();
+//------------------------------------------------------------------------------
+void Display::renderSetBounds(MenuItem &menu)
+//------------------------------------------------------------------------------
+{
+  u8g2_->clearBuffer();
 
-//   PanoBoundsState i = (PanoBoundsState)setPanoSelection_.getIndex();
-//   bool isTop = i == PanoBoundsState::TOP || i == PanoBoundsState::TOP_LEFT || i == PanoBoundsState::TOP_RIGHT;
-//   bool isBottom = i == PanoBoundsState::BOTTOM || i == PanoBoundsState::BOTTOM_LEFT || i == PanoBoundsState::BOTTOM_RIGHT;
-//   bool isLeft = i == PanoBoundsState::LEFT || i == PanoBoundsState::TOP_LEFT || i == PanoBoundsState::BOTTOM_LEFT;
-//   bool isRight = i == PanoBoundsState::RIGHT || i == PanoBoundsState::TOP_RIGHT || i == PanoBoundsState::BOTTOM_RIGHT;
-//   bool isPartial = i == PanoBoundsState::PARTIAL;
-//   bool isSave = i == PanoBoundsState::SAVE;
-//   bool isCancel = i == PanoBoundsState::CANCEL;
+  PanoBoundsState i = (PanoBoundsState)menu.getCounter().getIndex();
+  bool isTop = i == PanoBoundsState::TOP || i == PanoBoundsState::TOP_LEFT || i == PanoBoundsState::TOP_RIGHT;
+  bool isBottom = i == PanoBoundsState::BOTTOM || i == PanoBoundsState::BOTTOM_LEFT || i == PanoBoundsState::BOTTOM_RIGHT;
+  bool isLeft = i == PanoBoundsState::LEFT || i == PanoBoundsState::TOP_LEFT || i == PanoBoundsState::BOTTOM_LEFT;
+  bool isRight = i == PanoBoundsState::RIGHT || i == PanoBoundsState::TOP_RIGHT || i == PanoBoundsState::BOTTOM_RIGHT;
+  bool isPartial = i == PanoBoundsState::PARTIAL;
+  bool isSave = i == PanoBoundsState::SAVE;
+  bool isCancel = i == PanoBoundsState::CANCEL;
 
-//   u8g2_->setFont(u8g2_font_ncenB10_tr);
+  u8g2_->setFont(u8g2_font_ncenB10_tr);
 
-//   drawAngleAt(50, 0, isTop, false, view_.getX1());
-//   drawAngleAt(50, 48, isBottom, false, view_.getX2());
-//   drawAngleAt(0, 24, isLeft, false, view_.getY1());
-//   drawAngleAt(83, 24, isRight, false, view_.getY2());
+  drawAngleAt(50, 0, isTop, false, view_.getX1());
+  drawAngleAt(50, 48, isBottom, false, view_.getX2());
+  drawAngleAt(0, 24, isLeft, false, view_.getY1());
+  drawAngleAt(83, 24, isRight, false, view_.getY2());
 
-//   drawStringAt(52, 16, isPartial, view_.isPartial(), "Prt");
-//   drawStringAt(50, 32, isSave, false, "O");
-//   drawStringAt(67, 32, isCancel, false, "X");
+  drawStringAt(52, 16, isPartial, view_.isPartial(), "Prt");
+  drawStringAt(50, 32, isSave, false, "O");
+  drawStringAt(67, 32, isCancel, false, "X");
 
-//   u8g2_->sendBuffer();
-// }
+  u8g2_->sendBuffer();
+}
 
-// //------------------------------------------------------------------------------
-// bool Display::isRedrawRequired()
-// //------------------------------------------------------------------------------
-// {
-//   return dirty_;
-// }
-
-// //------------------------------------------------------------------------------
-// void Display::requireRedraw()
-// //------------------------------------------------------------------------------
-// {
-//   dirty_ = true;
-// }
-
-// //------------------------------------------------------------------------------
-// void Display::resetRedrawRequirement()
-// //------------------------------------------------------------------------------
-// {
-//   dirty_ = false;
-// }
+//------------------------------------------------------------------------------
+void Display::pushButtonSetBounds(MenuItem &menu)
+//------------------------------------------------------------------------------
+{
+  switch ((PanoBoundsState)menu.getCounter().getIndex()) {
+    case PanoBoundsState::PARTIAL:
+      view_.setPartial(!view_.isPartial());
+      menu.requireRepaint();
+      break;
+    case PanoBoundsState::SAVE:
+      // TODO save
+      menu.goUp();
+      break;
+    case PanoBoundsState::CANCEL:
+      menu.goUp();
+      break;
+    default:
+      break;
+  }
+}

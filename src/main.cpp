@@ -1,10 +1,7 @@
 #include <Arduino.h>
-// #include <WiFi.h>
 #include <Wire.h>
 #include <driver/ledc.h>
 
-// #include "net/ota.h"
-// #include "net/wifiutils.h"
 #include "ui/display.h"
 #include "ui/joystick.h"
 #include "ui/position_sensor.h"
@@ -33,11 +30,6 @@ PanoAutomat panoAutomat;
 Camera camera;
 ADC adc;
 PositionSensor position;
-// OTA ota;
-
-// test
-// SingleTimer timer("TEST");
-// double posX = 0;
 
 // ESP -> TMC (PIN)
 // GPIO 16 (CS) -> 9(CS)
@@ -318,5 +310,4 @@ void loop()
     position.loop();
     display.loop();
   }
-  // timer.loop();
 }
