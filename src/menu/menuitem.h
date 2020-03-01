@@ -5,88 +5,77 @@
 #include <string>
 #include <vector>
 
+#include "counter.h"
+
+// =====================================================================
+class MenuItem;
 class MenuItem {
  public:
-  MenuItem(std::string name) : name_(name), items_(), active_(this) {}
-  MenuItem& add(MenuItem* newItem) { items_.push_back(newItem); }
+  typedef std::function<void(MenuItem& self, RangeCounter&counter)> RenderCallback_t;
 
-  void setActiveItem(int8_t index) {
-    if (index == -1) {
-      active_ = this;
-    } else {
-      active_ = items_[index];
-    }
-  }
+  MenuItem(std::string name);
+  virtual void add(MenuItem* newItem);
+  bool isLeaf() const;
 
-  MenuItem* getActiveItem() { return active_; }
-  bool isActive() { return this == active_; }
+  void setActiveItem(int16_t index);
+  bool setActiveItem(std::string name);
+  MenuItem* getActiveItem();
+  const MenuItem* getActiveItem() const;
+  bool isActive() const;
+  std::string getActivePath();
 
-  void pushEncoder(int16_t diff) {
-    if (isActive()) {
-      onEncoder(diff);
-    } else {
-      active_->pushEncoder(diff);
-    }
-  }
+  const std::string& getName() const;
+  const std::vector<MenuItem*>& getItems() const;
 
-  void pushButton() {
-    if (isActive()) {
-      onButton();
-    } else {
-      active_->pushButton();
-    }
-  }
+  void encoderChanged(int16_t diff);
+  void buttonPushed();
 
-  void pushLoop() {
-    if (isActive()) {
-      onLoop();
-    } else {
-      active_->pushLoop();
-    }
-  }
-
- protected:
-  virtual void onEncoder(int16_t diff) = 0;
-  virtual void onButton() = 0;
-  virtual void onLoop() = 0;
+  void loop();
+  void onRender(RenderCallback_t cb);
+  void requireRepaint();
 
  private:
+  void setParent(MenuItem* parent);
+
   std::string name_;
+  MenuItem* parent_;
   std::vector<MenuItem*> items_;
   MenuItem* active_;
+  bool requireRepaint_;
+  RenderCallback_t renderCallback_;
+  RangeCounter counter_;
 };
 
+// class LambdaMenuitem : public MenuItem {
+//  public:
+//   typedef std::function<void()> LoopCallback_t;
+//   typedef std::function<void()> ButtonCallback_t;
+//   typedef std::function<void(int16_t diff)> EncoderCallback_t;
 
-class LambdaMenuitem : public MenuItem {
- public:
-  typedef std::function<void()> LoopCallback_t;
-  typedef std::function<void()> ButtonCallback_t;
-  typedef std::function<void(int16_t diff)> EncoderCallback_t;
+//   LambdaMenuitem(std::string name) : MenuItem(name) {}
+//   virtual void onLoop(LoopCallback_t cb) { loopCallback_ = cb; }
+//   virtual void onButton(ButtonCallback_t cb) { buttonCallback_ = cb; }
+//   virtual void onEncoder(EncoderCallback_t cb) { encoderCallback_ = cb; }
 
-  LambdaMenuitem(std::string name) : MenuItem(name) {}
-  virtual void onLoop(LoopCallback_t cb) { loopCallback_ = cb; }
-  virtual void onButton(ButtonCallback_t cb) { buttonCallback_ = cb; }
-  virtual void onEncoder(EncoderCallback_t cb) { encoderCallback_ = cb; }
+//  protected:
+//   virtual void onEncoder(int16_t diff) {
+//     if (encoderCallback_) {
+//       encoderCallback_(diff);
+//     }
+//   }
+//   virtual void onButton() {
+//     if (buttonCallback_) {
+//       buttonCallback_();
+//     }
+//   }
+//   virtual void onLoop() {
+//     if (loopCallback_) {
+//       loopCallback_();
+//     }
+//   }
 
- protected:
-  virtual void onEncoder(int16_t diff) {
-    if (encoderCallback_) {
-      encoderCallback_(diff);
-    }
-  }
-  virtual void onButton() {
-    if (buttonCallback_) {
-      buttonCallback_();
-    }
-  }
-  virtual void onLoop() {
-    if (loopCallback_) {
-      loopCallback_();
-    }
-  }
-
- private:
-  LoopCallback_t loopCallback_;
-  ButtonCallback_t buttonCallback_;
-  EncoderCallback_t encoderCallback_;
-};
+//  private:
+//   LoopCallback_t loopCallback_;
+//   ButtonCallback_t buttonCallback_;
+//   EncoderCallback_t encoderCallback_;
+// };

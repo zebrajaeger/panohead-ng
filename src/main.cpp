@@ -16,6 +16,7 @@
 #include "hal/adc.h"
 #include "hal/camera.h"
 #include "hal/motor_driver.h"
+#include "menu/menuitem.h"
 #include "pano/pano_automat.h"
 #include "pano/pano_calculator.h"
 #include "pano/panoutils.h"
@@ -65,34 +66,51 @@ PositionSensor position;
 // GPIO 22 -> Focus
 // GPIO 23 -> Trigger
 
-// // --------------------------------------------------------------------------------
-// void setupWiFi()
-// // --------------------------------------------------------------------------------
-// {
-//   // WiFI
-//   WiFi.begin("zebrafarm", "Schnee25");
+#if __has_include("mywifi.h")
+#include <WiFi.h>
+#include "net/ota.h"
+#include "net/wifiutils.h"
+OTA ota;
+// --------------------------------------------------------------------------------
+void beginWiFi()
+// --------------------------------------------------------------------------------
+{
+// WiFI
+// WiFi.begin("SSID", "PW");
+#include "mywifi.h"
 
-//   WiFi.onEvent([](WiFiEvent_t event, WiFiEventInfo_t info) {
-//     LOG.i("WiFi event: %u -> %s\n", event, getWifiEventName(event));
-//     switch (event) {
-//       case SYSTEM_EVENT_STA_GOT_IP:
-//         LOG.i("WiFi connected");
-//         LOG.i("IP is: %s", WiFi.localIP().toString().c_str());
-//         break;
-//       case SYSTEM_EVENT_STA_DISCONNECTED:
-//         LOG.i("WiFi disconnected, Reason: %u -> %s\n", info.disconnected.reason, getWifiFailReason(info.disconnected.reason));
-//         if (info.disconnected.reason == 202) {
-//           LOG.i("WiFi Bug, REBOOT/SLEEP!");
-//           esp_sleep_enable_timer_wakeup(10);
-//           esp_deep_sleep_start();
-//           delay(100);
-//         }
-//         break;
-//       default:
-//         break;
-//     }
-//   });
-// }
+  WiFi.onEvent([](WiFiEvent_t event, WiFiEventInfo_t info) {
+    LOG.i("WiFi event: %u -> %s\n", event, getWifiEventName(event));
+    switch (event) {
+      case SYSTEM_EVENT_STA_GOT_IP:
+        LOG.i("WiFi connected");
+        LOG.i("IP is: %s", WiFi.localIP().toString().c_str());
+        break;
+      case SYSTEM_EVENT_STA_DISCONNECTED:
+        LOG.i("WiFi disconnected, Reason: %u -> %s\n", info.disconnected.reason, getWifiFailReason(info.disconnected.reason));
+        if (info.disconnected.reason == 202) {
+          LOG.i("WiFi Bug, REBOOT/SLEEP!");
+          esp_sleep_enable_timer_wakeup(10);
+          esp_deep_sleep_start();
+          delay(100);
+        }
+        break;
+      default:
+        break;
+    }
+  });
+
+  ota.begin();
+}
+
+bool loopWiFi() {
+  ota.loop();
+  return !ota.isUpdating();
+}
+#else
+void beginWiFi() {}
+bool loopWiFi() { return true; }
+#endif
 
 // --------------------------------------------------------------------------------
 void setup()
@@ -106,9 +124,12 @@ void setup()
   LOG.i("Booting...");
   LOG.i("========================================");
 
+  beginWiFi();
+
   // Display
   if (display.begin(17, 5)) {
     LOG.i("Display started");
+    display.bootStart();
     display.loop();  // show first screen. Otherwise we have to wait until control reaches main loop code
   } else {
     LOG.i("Display failed");
@@ -116,10 +137,10 @@ void setup()
 
   // Encoder
   encoder.begin(36, 39, 34);
-  encoder.onValueChanged([](int16_t oldValue, int16_t newValue) { display.moveSelection(newValue - oldValue); });
+  encoder.onValueChanged([](int16_t oldValue, int16_t newValue) { display.encoderChanged(newValue - oldValue); });
   encoder.onButtonChanged([](Encoder::ButtonState buttonState) {
     if (buttonState == Encoder::ButtonState::PUSHED) {
-      display.onButton();
+      display.buttonPushed();
     }
   });
 
@@ -262,9 +283,6 @@ void setup()
   } else {
     LOG.e("Position sensor failed");
   }
-  // Net
-  // setupWiFi();
-  // ota.begin();
 
   // Statistics
   if (statistic.begin()) {
@@ -280,23 +298,25 @@ void setup()
     LOG.e("Statistic failed");
   }
 
-   display.bootDone();
+  LOG.i("========================================");
+  LOG.i("Run App...");
+  LOG.i("========================================");
+  display.bootFinished();
 }
 
 // --------------------------------------------------------------------------------
 void loop()
 // --------------------------------------------------------------------------------
 {
-  // ota.loop();
-  // if(!ota.isUpdating()){
-  adc.loop();
-  statistic.loop();
-  motorDriver.loop();
-  panoAutomat.loop();
-  encoder.loop();
-  joystickTimer.loop();
-  position.loop();
-  display.loop();
+  if (loopWiFi()) {
+    adc.loop();
+    statistic.loop();
+    motorDriver.loop();
+    panoAutomat.loop();
+    encoder.loop();
+    joystickTimer.loop();
+    position.loop();
+    display.loop();
+  }
   // timer.loop();
-  // }
 }
