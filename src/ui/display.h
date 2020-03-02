@@ -45,8 +45,9 @@ class Display {
   void renderBootScreen(MenuItem& menu);
   void renderMainMenu(MenuItem& menu);
   void renderLeveling(MenuItem& menu);
-  void renderSetBounds(MenuItem& menu);
-  void pushButtonSetBounds(MenuItem& menu);
+  void renderSetPanoBounds(MenuItem& menu);
+  void renderSetPanoBounds_(bool togglePartial, bool top, bool right, bool bottom, bool left, bool ok, bool cancel);
+  bool pushButtonSetBounds(MenuItem& menu);
 
   void drawAngleAt(uint8_t x, uint8_t y, bool selected, bool invers, float angle);
   void drawStringAt(uint8_t x, uint8_t y, bool selected, bool invers, const char* text);
@@ -59,5 +60,7 @@ class Display {
   MenuItem* menuSetBounds_;
   float levelX_;
   float levelY_;
+  float posRevX_;
+  float posRevY_;
   View view_;
 };

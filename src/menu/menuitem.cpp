@@ -3,6 +3,7 @@
 //------------------------------------------------------------------------------
 MenuItem::MenuItem(std::string name)
     : name_(name),
+      subMenuOnly_(false),
       enabled_(true),
       parent_(NULL),
       items_(),
@@ -17,12 +18,21 @@ MenuItem::MenuItem(std::string name)
 }
 
 //------------------------------------------------------------------------------
-void MenuItem::add(MenuItem* newItem)
+MenuItem* MenuItem::add(MenuItem* newItem)
 //------------------------------------------------------------------------------
 {
   newItem->setParent(this);
   items_.push_back(newItem);
   counter_.setMax(items_.size() - 1);
+  return newItem;
+}
+
+//------------------------------------------------------------------------------
+MenuItem* MenuItem::addAsActive(MenuItem* newItem)
+//------------------------------------------------------------------------------
+{
+  active_ = newItem;
+  return add(newItem);
 }
 
 //------------------------------------------------------------------------------
@@ -36,9 +46,13 @@ bool MenuItem::isLeaf() const
 void MenuItem::goUp()
 //------------------------------------------------------------------------------
 {
-  if (parent_) {
-    parent_->setActiveItem(-1);
-    requireRepaint();
+  MenuItem* current = getParent();
+  while (current) {
+    if (current->isSubMenuOnly()) {
+      current = current->getParent();
+    } else {
+      parent_->setActiveItem(-1);
+    }
   }
 }
 
@@ -150,10 +164,11 @@ void MenuItem::buttonPushed()
 //------------------------------------------------------------------------------
 {
   if (isActive()) {
+    bool changeActive = true;
     if (buttonPushCallback_) {
-      buttonPushCallback_(*this);
+      changeActive = buttonPushCallback_(*this);
     }
-    if (setActiveItem(counter_.getIndex())) {
+    if (changeActive && setActiveItem(counter_.getIndex())) {
       requireRepaint();
     }
   } else {
@@ -176,17 +191,19 @@ void MenuItem::loop()
 }
 
 //------------------------------------------------------------------------------
-void MenuItem::onRender(RenderCallback_t cb)
+MenuItem* MenuItem::onRender(RenderCallback_t cb)
 //------------------------------------------------------------------------------
 {
   renderCallback_ = cb;
+  return this;
 }
 
 //------------------------------------------------------------------------------
-void MenuItem::onButtonPushed(ButtonPushCallback_t cb)
+MenuItem* MenuItem::onButtonPushed(ButtonPushCallback_t cb)
 //------------------------------------------------------------------------------
 {
   buttonPushCallback_ = cb;
+  return this;
 }
 
 //------------------------------------------------------------------------------
@@ -211,22 +228,61 @@ bool MenuItem::isEnabled() const
 }
 
 //------------------------------------------------------------------------------
-void MenuItem::setEnabled(bool enabled)
+MenuItem* MenuItem::setEnabled(bool enabled)
 //------------------------------------------------------------------------------
 {
   requireRepaint();
   enabled_ = enabled;
+  return this;
 }
 
 //------------------------------------------------------------------------------
-void MenuItem::enable()
+MenuItem* MenuItem::enable()
 //------------------------------------------------------------------------------
 {
   setEnabled(true);
+  return this;
 }
 //------------------------------------------------------------------------------
-void MenuItem::disable()
+MenuItem* MenuItem::disable()
 //------------------------------------------------------------------------------
 {
   setEnabled(false);
+  return this;
+}
+
+//------------------------------------------------------------------------------
+bool MenuItem::isSubMenuOnly()
+//------------------------------------------------------------------------------
+{
+  return subMenuOnly_;
+}
+
+//------------------------------------------------------------------------------
+MenuItem* MenuItem::setSubMenuOnly(bool subMenuOnly)
+//------------------------------------------------------------------------------
+{
+  subMenuOnly_ = subMenuOnly;
+  return this;
+}
+
+//------------------------------------------------------------------------------
+MenuItem* MenuItem::subMenuOnly()
+//------------------------------------------------------------------------------
+{
+  return setSubMenuOnly(true);
+}
+
+//------------------------------------------------------------------------------
+MenuItem* MenuItem::getParent()
+//------------------------------------------------------------------------------
+{
+  return parent_;
+}
+
+//------------------------------------------------------------------------------
+const MenuItem* MenuItem::getParent() const
+//------------------------------------------------------------------------------
+{
+  return parent_;
 }

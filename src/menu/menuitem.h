@@ -12,10 +12,15 @@ class MenuItem;
 class MenuItem {
  public:
   typedef std::function<void(MenuItem& self)> RenderCallback_t;
-  typedef std::function<void(MenuItem& self)> ButtonPushCallback_t;
+  /**
+   * @return false to prevent the change of active item
+   */
+  typedef std::function<bool(MenuItem& self)> ButtonPushCallback_t;
 
   MenuItem(std::string name);
-  virtual void add(MenuItem* newItem);
+
+  MenuItem* add(MenuItem* newItem);
+  MenuItem* addAsActive(MenuItem* newItem);
   bool isLeaf() const;
 
   void goUp();
@@ -35,19 +40,26 @@ class MenuItem {
   void buttonPushed();
 
   void loop();
-  void onRender(RenderCallback_t cb);
-  void onButtonPushed(ButtonPushCallback_t cb);
+  MenuItem* onRender(RenderCallback_t cb);
+  MenuItem* onButtonPushed(ButtonPushCallback_t cb);
   void requireRepaint();
 
   bool isEnabled() const;
-  void setEnabled(bool enabled);
-  void enable();
-  void disable();
+  MenuItem* setEnabled(bool enabled);
+  MenuItem* enable();
+  MenuItem* disable();
 
+  bool isSubMenuOnly();
+  MenuItem * subMenuOnly();
+  MenuItem* setSubMenuOnly(bool subMenuOnly);
+
+  MenuItem * getParent();
+  const MenuItem * getParent() const;
  private:
   void setParent(MenuItem* parent);
 
   std::string name_;
+  bool subMenuOnly_;
   bool enabled_;
   MenuItem* parent_;
   std::vector<MenuItem*> items_;

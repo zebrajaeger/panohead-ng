@@ -2,6 +2,8 @@
 
 #include <functional>
 
+#include "pano/panoutils.h"
+
 //------------------------------------------------------------------------------
 Display::Display()
     : LOG("Display"),
@@ -12,6 +14,8 @@ Display::Display()
       menuSetBounds_(NULL),
       levelX_(0.5),
       levelY_(0.5),
+      posRevX_(0.0),
+      posRevY_(0.0),
       view_(1.234, 12.345, 123.456, 0.0)
       //------------------------------------------------------------------------------
       {};
@@ -42,46 +46,48 @@ bool Display::begin(uint8_t sclGpio, uint8_t sdaGpio)
   using namespace std::placeholders;
 
   // Boot
-  MenuItem *boot = new MenuItem("boot");
+  MenuItem *boot = menu_.add(new MenuItem("boot"));
   boot->onRender(bind(&Display::renderBootScreen, this, _1));
-  menu_.add(boot);
 
   // Main
-  MenuItem *main = new MenuItem("main");
+  MenuItem *main = menu_.add(new MenuItem("main"));
   main->onRender(bind(&Display::renderMainMenu, this, _1));
-  menu_.add(main);
 
   // -- Pano Config
-  MenuItem *panoConfig = new MenuItem("Pano config");
-  main->add(panoConfig);
-  MenuItem *delayAfterMove = new MenuItem("Delay after move");
-  panoConfig->add(delayAfterMove);
-  MenuItem *delayBetweenShots = new MenuItem("Delay between shots");
-  panoConfig->add(delayBetweenShots);
-  MenuItem *shotCount = new MenuItem("Shot count");
-  panoConfig->add(shotCount);
-  MenuItem *shots = new MenuItem("shots");
-  panoConfig->add(shots);
+  MenuItem *panoConfig = main->add(new MenuItem("Pano config"));
+  panoConfig->add(new MenuItem("Delay after move"));
+  panoConfig->add(new MenuItem("Delay between shots"));
+  panoConfig->add(new MenuItem("Shot count"));
+  panoConfig->add(new MenuItem("shots"));
 
   // -- Set Bounds
-  MenuItem *setBounds = new MenuItem("Set bounds");
-  setBounds->getCounter().setMax((uint16_t)PanoBoundsState::MAX);
-  setBounds->onRender(bind(&Display::renderSetBounds, this, _1));
-  setBounds->onButtonPushed(bind(&Display::pushButtonSetBounds, this, _1));
-  main->add(setBounds);
-  menuSetBounds_ = setBounds;
+  menuSetBounds_ = main->add(new MenuItem("Set bounds"))
+                       ->onButtonPushed(bind(&Display::pushButtonSetBounds, this, _1))
+                       ->onRender(bind(&Display::renderSetPanoBounds, this, _1));
+  menuSetBounds_->add(new MenuItem("TogglePartial"));
+  menuSetBounds_->add(new MenuItem("Top"));
+  menuSetBounds_->add(new MenuItem("Top Right"));
+  menuSetBounds_->add(new MenuItem("Right"));
+  menuSetBounds_->add(new MenuItem("Bottom Right"));
+  menuSetBounds_->add(new MenuItem("Bottom"));
+  menuSetBounds_->add(new MenuItem("Bottom Left"));
+  menuSetBounds_->add(new MenuItem("Left"));
+  menuSetBounds_->add(new MenuItem("Top Left"));
+  menuSetBounds_->add(new MenuItem("Ok"));
+  menuSetBounds_->add(new MenuItem("Cancel"));
 
   // -- Make Pano
-  MenuItem *takePano = new MenuItem("Take pano");
+  MenuItem *takePano = main->add(new MenuItem("Take pano"));
   takePano->disable();
-  main->add(takePano);
 
   // -- Leveling
-  MenuItem *leveling = new MenuItem("Leveling");
-  leveling->onRender(bind(&Display::renderLeveling, this, _1));
-  leveling->onButtonPushed([](MenuItem &self) { self.goUp(); });
-  main->add(leveling);
+  MenuItem *leveling = main->add(new MenuItem("Leveling"));
   menuLeveling_ = leveling;
+  leveling->onRender(bind(&Display::renderLeveling, this, _1));
+  leveling->onButtonPushed([](MenuItem &self) {
+    self.goUp();
+    return false;
+  });
 
   return true;
 }
@@ -147,6 +153,8 @@ void Display::setLeveling(float x, float y)
 void Display::setPosition(double revX, double revY)
 //------------------------------------------------------------------------------
 {
+  posRevX_ = revX;
+  posRevY_ = revY;
   menuSetBounds_->requireRepaint();
 }
 
@@ -169,14 +177,21 @@ void Display::renderMainMenu(MenuItem &menu)
 //------------------------------------------------------------------------------
 {
   u8g2_->clearBuffer();
-  u8g2_->setFont(u8g2_font_timR10_tf);
 
   uint8_t h = u8g2_->getMaxCharHeight() - 2;
   uint8_t selected = menu.getCounter().getIndex();
   const std::vector<MenuItem *> &items = menu.getItems();
   for (std::size_t i = 0; i < items.size(); ++i) {
     const MenuItem &item = *items[i];
-    drawStringAt(0, i * h, (i == selected), false, item.getName().c_str());
+    if (item.isEnabled()) {
+      u8g2_->setFont(u8g2_font_timR10_tf);
+      drawStringAt(0, i * h, (i == selected), false, item.getName().c_str());
+    } else {
+      u8g2_->setFont(u8g2_font_timR08_tf);
+      std::string sep1 = "  ";
+      std::string sep2 = "  ";
+      drawStringAt(0, i * h + 2, (i == selected), false, (sep1 + item.getName() + sep2).c_str());
+    }
   }
 
   u8g2_->sendBuffer();
@@ -187,7 +202,7 @@ void Display::drawAngleAt(uint8_t x, uint8_t y, bool selected, bool invers, floa
 //------------------------------------------------------------------------------
 {
   char buf[20];
-  sprintf(buf, "%06.2f", angle);
+  sprintf(buf, "%6.2f", angle);
   drawStringAt(x, y, selected, invers, (char *)&buf);
 }
 
@@ -211,27 +226,9 @@ void Display::drawStringAt(uint8_t x, uint8_t y, bool selected, bool invers, con
 
   if (selected) {
     u8g2_->setDrawColor(1);
-    u8g2_->drawHLine(x, y, stringWidth + 4);
-    u8g2_->drawHLine(x, y + height + 1, stringWidth + 4);
-    u8g2_->drawVLine(x, y, height + 1);
-    u8g2_->drawVLine(x + stringWidth + 4, y, height + 1);
+    u8g2_->drawFrame(x, y, stringWidth + 4, height + 1);
   }
 }
-
-// //------------------------------------------------------------------------------
-// void Display::showUnimplementedScreen()
-// //------------------------------------------------------------------------------
-// {
-//   u8g2_->clearBuffer();
-//   u8g2_->setFont(u8g2_font_ncenB10_tr);
-
-//   drawStringAt(50, 0, false, false, "!!!!");
-//   drawStringAt(0, 16, false, false, "Please");
-//   drawStringAt(0, 32, false, false, "implement me");
-//   drawStringAt(50, 48, false, false, "!!!!");
-
-//   u8g2_->sendBuffer();
-// }
 
 //------------------------------------------------------------------------------
 void Display::renderLeveling(MenuItem &menu)
@@ -253,36 +250,112 @@ void Display::renderLeveling(MenuItem &menu)
 }
 
 //------------------------------------------------------------------------------
-void Display::renderSetBounds(MenuItem &menu)
+void Display::renderSetPanoBounds(MenuItem &menu)
 //------------------------------------------------------------------------------
 {
+  switch (menu.getCounter().getIndex()) {
+    case 0:
+      renderSetPanoBounds_(true, false, false, false, false, false, false);
+      break;
+    case 1:
+      renderSetPanoBounds_(false, true, false, false, false, false, false);
+      break;
+    case 2:
+      renderSetPanoBounds_(false, true, true, false, false, false, false);
+      break;
+    case 3:
+      renderSetPanoBounds_(false, false, true, false, false, false, false);
+      break;
+    case 4:
+      renderSetPanoBounds_(false, false, true, true, false, false, false);
+      break;
+    case 5:
+      renderSetPanoBounds_(false, false, false, true, false, false, false);
+      break;
+    case 6:
+      renderSetPanoBounds_(false, false, false, true, true, false, false);
+      break;
+    case 7:
+      renderSetPanoBounds_(false, false, false, false, true, false, false);
+      break;
+    case 8:
+      renderSetPanoBounds_(false, true, false, false, true, false, false);
+      break;
+    case 9:
+      renderSetPanoBounds_(false, false, false, false, false, true, false);
+      break;
+    case 10:
+      renderSetPanoBounds_(false, false, false, false, false, false, true);
+      break;
+  }
+}
+
+//------------------------------------------------------------------------------
+void Display::renderSetPanoBounds_(bool togglePartial, bool top, bool right, bool bottom, bool left, bool ok, bool cancel)
+//------------------------------------------------------------------------------
+{
+  LOG.d("renderSetPanoBounds(%d, %d, %d, %d, %d, %d, %d)", togglePartial, top, right, bottom, left, ok, cancel);
   u8g2_->clearBuffer();
 
-  PanoBoundsState i = (PanoBoundsState)menu.getCounter().getIndex();
-  bool isTop = i == PanoBoundsState::TOP || i == PanoBoundsState::TOP_LEFT || i == PanoBoundsState::TOP_RIGHT;
-  bool isBottom = i == PanoBoundsState::BOTTOM || i == PanoBoundsState::BOTTOM_LEFT || i == PanoBoundsState::BOTTOM_RIGHT;
-  bool isLeft = i == PanoBoundsState::LEFT || i == PanoBoundsState::TOP_LEFT || i == PanoBoundsState::BOTTOM_LEFT;
-  bool isRight = i == PanoBoundsState::RIGHT || i == PanoBoundsState::TOP_RIGHT || i == PanoBoundsState::BOTTOM_RIGHT;
-  bool isPartial = i == PanoBoundsState::PARTIAL;
-  bool isSave = i == PanoBoundsState::SAVE;
-  bool isCancel = i == PanoBoundsState::CANCEL;
+  // partial / full pano
+  u8g2_->setFont(u8g2_font_open_iconic_all_2x_t);
+  if (view_.isPartial()) {
+    u8g2_->drawStr(24, 24 + 16, "\x8c");
+  } else {
+    u8g2_->drawStr(24, 24 + 16, "\xf6");
+  }
+  if (togglePartial) {
+    u8g2_->drawFrame(22, 22, 20, 20);
+  }
 
+  // top
+  if (top) {
+    u8g2_->drawBox(10, 0, 44, 10);
+  } else {
+    u8g2_->drawFrame(10, 0, 44, 10);
+  }
+
+  // right
+  if (right) {
+    u8g2_->drawBox(54, 10, 10, 44);
+  } else {
+    u8g2_->drawFrame(54, 10, 10, 44);
+  }
+
+  // bottom
+  if (bottom) {
+    u8g2_->drawBox(10, 53, 44, 10);
+  } else {
+    u8g2_->drawFrame(10, 53, 44, 10);
+  }
+
+  // left
+  if (left) {
+    u8g2_->drawBox(0, 10, 10, 44);
+  } else {
+    u8g2_->drawFrame(0, 10, 10, 44);
+  }
+
+  // pos:
   u8g2_->setFont(u8g2_font_timR10_tf);
+  u8g2_->drawStr(66, 8, "x:");
+  drawAngleAt(90, -2, false, false, PanoUtils::revToDeg(posRevX_));
+  u8g2_->drawStr(66, 22, "y:");
+  drawAngleAt(90, 12, false, false, PanoUtils::revToDeg(posRevY_));
 
-  drawAngleAt(50, 0, isTop, false, view_.getX1());
-  drawAngleAt(50, 48, isBottom, false, view_.getX2());
-  drawAngleAt(0, 24, isLeft, false, view_.getY1());
-  drawAngleAt(83, 24, isRight, false, view_.getY2());
+  // ok
+  u8g2_->setFont(u8g2_font_open_iconic_check_4x_t);
+  drawStringAt(64, 32, ok, false, "\u0040");
 
-  drawStringAt(52, 16, isPartial, view_.isPartial(), "Prt");
-  drawStringAt(50, 32, isSave, false, "O");
-  drawStringAt(67, 32, isCancel, false, "X");
+  // cancel
+  u8g2_->setFont(u8g2_font_open_iconic_check_4x_t);
+  drawStringAt(64 + 32, 32, cancel, false, "\u0044");
 
   u8g2_->sendBuffer();
 }
 
 //------------------------------------------------------------------------------
-void Display::pushButtonSetBounds(MenuItem &menu)
+bool Display::pushButtonSetBounds(MenuItem &menu)
 //------------------------------------------------------------------------------
 {
   switch ((PanoBoundsState)menu.getCounter().getIndex()) {
@@ -300,4 +373,5 @@ void Display::pushButtonSetBounds(MenuItem &menu)
     default:
       break;
   }
+  return false;
 }

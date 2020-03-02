@@ -10,7 +10,7 @@ class Counter {
 
   Counter(uint16_t sensitivity, int16_t initialIndex, int16_t minIndex, int16_t maxIndex, bool circular);
 
-  bool addToPos(int16_t diff);
+  void addToPos(int16_t diff);
   uint16_t getPos();
   bool incPos();
   bool decPos();

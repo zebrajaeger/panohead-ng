@@ -9,9 +9,7 @@ Counter::Counter(uint16_t sensitivity, int16_t initialIndex, int16_t minIndex, i
       max_(maxIndex),
       isCircular_(circular) {}
 
-bool Counter::addToPos(int16_t diff) {
-  int16_t oldPos = pos_;
-
+void Counter::addToPos(int16_t diff) {
   if (diff > 0) {
     for (int16_t i = 0; i < diff; ++i) {
       int16_t oldIndex = getIndex();
@@ -22,10 +20,10 @@ bool Counter::addToPos(int16_t diff) {
             indexChangeCallback_(oldIndex, newIndex);
           }
           oldIndex = newIndex;
-          return true;
         }
-      }
+      } 
     }
+
   } else if (diff < 0) {
     for (int16_t i = 0; i > diff; --i) {
       int16_t oldIndex = getIndex();
@@ -36,14 +34,10 @@ bool Counter::addToPos(int16_t diff) {
             indexChangeCallback_(oldIndex, newIndex);
           }
           oldIndex = newIndex;
-          return true;
         }
       }
     }
   }
-
-  pos_ = oldPos;
-  return false;
 }
 
 uint16_t Counter::getPos() { return pos_; }
@@ -55,6 +49,16 @@ bool Counter::incPos() {
   int16_t oldIndex = getIndex();
   pos_++;
   int16_t newIndex = getIndex();
+
+  if (newIndex > max_) {
+    if (isCircular_) {
+      setIndexToMin();
+    } else {
+      setIndexToMax();
+    }
+    newIndex = getIndex();
+  }
+
   return oldIndex != newIndex;
 }
 
@@ -65,6 +69,16 @@ bool Counter::decPos() {
   int16_t oldIndex = getIndex();
   pos_--;
   int16_t newIndex = getIndex();
+
+  if (newIndex < min_) {
+    if (isCircular_) {
+      setIndexToMax();
+    } else {
+      setIndexToMin();
+    }
+    newIndex = getIndex();
+  }
+
   return oldIndex != newIndex;
 }
 
@@ -148,9 +162,9 @@ bool Counter::goToNextEnabledIndex() {
     if (isEnabled()) {
       return true;
     }
-    pos_ = oldPos;
-    return false;
   }
+  pos_ = oldPos;
+  return false;
 }
 
 /**
@@ -160,6 +174,7 @@ bool Counter::goToPreviousEnabledIndex() {
   if (isEnabled()) {
     return true;
   }
+
   int16_t oldPos = pos_;
   for (int16_t i = 0; i < max_ && goToPreviousIndex(); ++i) {
     if (isEnabled()) {
