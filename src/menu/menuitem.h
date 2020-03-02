@@ -39,10 +39,16 @@ class MenuItem {
   void onButtonPushed(ButtonPushCallback_t cb);
   void requireRepaint();
 
+  bool isEnabled() const;
+  void setEnabled(bool enabled);
+  void enable();
+  void disable();
+
  private:
   void setParent(MenuItem* parent);
 
   std::string name_;
+  bool enabled_;
   MenuItem* parent_;
   std::vector<MenuItem*> items_;
   MenuItem* active_;

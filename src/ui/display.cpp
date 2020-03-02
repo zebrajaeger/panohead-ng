@@ -73,6 +73,7 @@ bool Display::begin(uint8_t sclGpio, uint8_t sdaGpio)
 
   // -- Make Pano
   MenuItem *takePano = new MenuItem("Take pano");
+  takePano->disable();
   main->add(takePano);
 
   // -- Leveling
