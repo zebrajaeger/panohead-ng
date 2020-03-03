@@ -16,7 +16,10 @@ Display::Display()
       levelY_(0.5),
       posRevX_(0.0),
       posRevY_(0.0),
-      view_(1.234, 12.345, 123.456, 0.0)
+      view_(1.234, 12.345, 123.456, 0.0),
+      delayAfterMoveTimeMs_(0),
+      focusTimeMs_(0),
+      triggerTimeMs_(0)
       //------------------------------------------------------------------------------
       {};
 
@@ -58,15 +61,22 @@ bool Display::begin(uint8_t sclGpio, uint8_t sdaGpio)
                              ->onRender(bind(&Display::renderMainMenu, this, _1))
                              ->onButtonPushed(bind(&Display::pushButtonPanoConfig, this, _1));
   panoConfig->add(new MenuItem(".."));
-  panoConfig->add(new MenuItem("Delay after move"));
+  MenuItem *delayAfterMove =  panoConfig->add(new MenuItem("Delay after move"))->onRender(bind(&Display::renderSetDelayAfterMove, this, _1));
+  delayAfterMove->add(new MenuItem("s"));
+  delayAfterMove->add(new MenuItem("ms"));
+  delayAfterMove->add(new MenuItem("ok"));
+  delayAfterMove->add(new MenuItem("cancel"));
+  panoConfig->add(new MenuItem("Focus time"));
+  panoConfig->add(new MenuItem("Trigger time"));
   // panoConfig->add(new MenuItem("Delay between shots"));
-  panoConfig->add(new MenuItem("Shot count"));
-  panoConfig->add(new MenuItem("shots"));
+  // panoConfig->add(new MenuItem("Shot count"));
+  // panoConfig->add(new MenuItem("shots"));
 
   // -- Set Bounds
   menuSetBounds_ = main->add(new MenuItem("Set bounds"))
                        ->onButtonPushed(bind(&Display::pushButtonSetBounds, this, _1))
                        ->onRender(bind(&Display::renderSetPanoBounds, this, _1));
+                       // -> onEncoder()... TODO implement me
   menuSetBounds_->add(new MenuItem("TogglePartial"));
   menuSetBounds_->add(new MenuItem("Top"));
   menuSetBounds_->add(new MenuItem("Top Right"));
@@ -404,4 +414,60 @@ bool Display::pushButtonPanoConfig(MenuItem &menu)
     default:
       return true;
   }
+}
+
+//------------------------------------------------------------------------------
+void Display::renderSetDelayAfterMove(MenuItem &menu)
+//------------------------------------------------------------------------------
+{
+  LOG.d("FOO %d\n", menu.getCounter().getIndex());
+
+  switch (menu.getCounter().getIndex()) {
+    case 0:
+      renderSetTime("Delay after move", delayAfterMoveTimeMs_, true, false, false, false);
+      break;
+    case 1:
+      renderSetTime("Delay after move", delayAfterMoveTimeMs_, false, true, false, false);
+      break;
+    case 2:
+      renderSetTime("Delay after move", delayAfterMoveTimeMs_, false, false, true, false);
+      break;
+    case 3:
+      renderSetTime("Delay after move", delayAfterMoveTimeMs_, false, false, false, true);
+      break;
+    default:
+      break;
+  }
+}
+
+//------------------------------------------------------------------------------
+void Display::renderSetTime(const char *title, int16_t timeMs, bool selSecs, bool selOneTenthSecs, bool selOk, bool selCancel)
+//------------------------------------------------------------------------------
+{
+  u8g2_->clearBuffer();
+
+  // headline
+  u8g2_->setFont(u8g2_font_timR10_tf);
+  drawStringAt(0, 0, false, false, title);
+
+  int16_t sec = timeMs / 1000;
+  int16_t mSec = (timeMs - (sec * 1000)) / 100;
+
+  char buf[20];
+  sprintf(buf, " %5d", sec);
+  drawStringAt(35, 24, selSecs, false, (char *)&buf);
+
+  drawStringAt(60, 24, false, false, ".");
+
+  sprintf(buf, "%1d", mSec);
+  drawStringAt(65, 24, selOneTenthSecs, false, (char *)&buf);
+
+  // ok
+  drawSymbolAt(64 + 8, 60, selOk, 0x73);
+
+  // cancel
+  u8g2_->setFont(u8g2_font_open_iconic_check_2x_t);
+  drawSymbolAt(64 + 8 + 24, 60, selCancel, 0x11b);
+
+  u8g2_->sendBuffer();
 }

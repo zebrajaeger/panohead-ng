@@ -35,6 +35,8 @@ class Display {
   void renderSetPanoBounds_(bool togglePartial, bool top, bool right, bool bottom, bool left, bool ok, bool cancel);
   bool pushButtonSetBounds(MenuItem& menu);
   bool pushButtonPanoConfig(MenuItem& menu);
+  void renderSetDelayAfterMove(MenuItem& menu);
+  void renderSetTime(const char* title, int16_t timeMs, bool selSecs, bool selOneTenthSecs, bool selOk, bool selCancel);
 
   void drawSymbolAt(uint8_t x, uint8_t y, bool selected, uint16_t symbol);
   void drawAngleAt(uint8_t x, uint8_t y, bool selected, bool invers, float angle);
@@ -51,4 +53,7 @@ class Display {
   float posRevX_;
   float posRevY_;
   View view_;
+  int32_t delayAfterMoveTimeMs_;
+  int32_t focusTimeMs_;
+  int32_t triggerTimeMs_;
 };
