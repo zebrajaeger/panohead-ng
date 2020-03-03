@@ -52,6 +52,7 @@ void MenuItem::goUp()
       current = current->getParent();
     } else {
       parent_->setActiveItem(-1);
+      break;
     }
   }
 }

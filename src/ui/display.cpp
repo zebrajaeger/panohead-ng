@@ -351,9 +351,9 @@ void Display::renderSetPanoBounds_(bool togglePartial, bool top, bool right, boo
   // pos:
   u8g2_->setFont(u8g2_font_timR10_tf);
   u8g2_->drawStr(71, 8, "x:");
-  drawAngleAt(90, -2, false, false, PanoUtils::revToDeg(posRevX_));
+  drawAngleAt(87, -2, false, false, PanoUtils::revToDeg(posRevX_));
   u8g2_->drawStr(71, 22, "y:");
-  drawAngleAt(90, 12, false, false, PanoUtils::revToDeg(posRevY_));
+  drawAngleAt(87, 12, false, false, PanoUtils::revToDeg(posRevY_));
 
   // ok
   drawSymbolAt(64 + 8, 60, ok, 0x73);
