@@ -55,6 +55,10 @@ class MenuItem {
 
   MenuItem * getParent();
   const MenuItem * getParent() const;
+
+  MenuItem* operator[](int16_t index);
+  MenuItem* operator[](std::string name);
+
  private:
   void setParent(MenuItem* parent);
 

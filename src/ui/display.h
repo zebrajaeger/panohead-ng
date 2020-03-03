@@ -34,6 +34,7 @@ class Display {
   void renderSetPanoBounds(MenuItem& menu);
   void renderSetPanoBounds_(bool togglePartial, bool top, bool right, bool bottom, bool left, bool ok, bool cancel);
   bool pushButtonSetBounds(MenuItem& menu);
+  bool pushButtonPanoConfig(MenuItem& menu);
 
   void drawSymbolAt(uint8_t x, uint8_t y, bool selected, uint16_t symbol);
   void drawAngleAt(uint8_t x, uint8_t y, bool selected, bool invers, float angle);

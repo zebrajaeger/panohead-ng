@@ -63,10 +63,12 @@ bool MenuItem::setActiveItem(int16_t index)
 {
   if (index == -1) {
     active_ = this;
+    active_->requireRepaint();
     return true;
   } else {
     if (items_.size() > index) {
       active_ = items_[index];
+      active_->requireRepaint();
       return true;
     }
   }
@@ -286,4 +288,32 @@ const MenuItem* MenuItem::getParent() const
 //------------------------------------------------------------------------------
 {
   return parent_;
+}
+
+//------------------------------------------------------------------------------
+MenuItem* MenuItem::operator[](int16_t index)
+//------------------------------------------------------------------------------
+{
+  if (index == -1) {
+    return this;
+  }
+
+  if (index < items_.size()) {
+    return items_[index];
+  }
+  
+  return NULL;
+}
+
+//------------------------------------------------------------------------------
+MenuItem* MenuItem::operator[](std::string name)
+//------------------------------------------------------------------------------
+{
+  for (uint8_t i = 0; i < items_.size(); ++i) {
+    MenuItem* item = items_[i];
+    if (name == item->getName()) {
+      return item;
+    }
+  }
+  return NULL;
 }

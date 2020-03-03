@@ -54,9 +54,12 @@ bool Display::begin(uint8_t sclGpio, uint8_t sdaGpio)
   main->onRender(bind(&Display::renderMainMenu, this, _1));
 
   // -- Pano Config
-  MenuItem *panoConfig = main->add(new MenuItem("Pano config"));
+  MenuItem *panoConfig = main->add(new MenuItem("Pano config"))
+                             ->onRender(bind(&Display::renderMainMenu, this, _1))
+                             ->onButtonPushed(bind(&Display::pushButtonPanoConfig, this, _1));
+  panoConfig->add(new MenuItem(".."));
   panoConfig->add(new MenuItem("Delay after move"));
-  panoConfig->add(new MenuItem("Delay between shots"));
+  // panoConfig->add(new MenuItem("Delay between shots"));
   panoConfig->add(new MenuItem("Shot count"));
   panoConfig->add(new MenuItem("shots"));
 
@@ -157,7 +160,7 @@ void Display::setPositionX(double revX)
   menuSetBounds_->requireRepaint();
 }
 //------------------------------------------------------------------------------
-void Display::setPositionY( double revY)
+void Display::setPositionY(double revY)
 //------------------------------------------------------------------------------
 {
   posRevY_ = revY;
@@ -388,4 +391,17 @@ bool Display::pushButtonSetBounds(MenuItem &menu)
       break;
   }
   return false;
+}
+
+//------------------------------------------------------------------------------
+bool Display::pushButtonPanoConfig(MenuItem &menu)
+//------------------------------------------------------------------------------
+{
+  switch (menu.getCounter().getIndex()) {
+    case 0:
+      menu.goUp();
+      return false;
+    default:
+      return true;
+  }
 }
