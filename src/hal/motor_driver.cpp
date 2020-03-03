@@ -8,7 +8,9 @@ MotorDriver::MotorDriver()
       translators_({NULL, NULL, NULL}),
       axisOffset_({0, 0, 0}),
       timer_("MotorDriver"),
-      axisMoving_({false, false, false})
+      axisMoving_({false, false, false}),
+      movementStatusChangeCallback_(),
+      posChangeCallback_()
 //------------------------------------------------------------------------------
 {}
 
@@ -142,6 +144,17 @@ void MotorDriver::updateState()
   updateAxis(0, !s.at_target_position_0);
   updateAxis(1, !s.at_target_position_1);
   updateAxis(2, !s.at_target_position_2);
+
+  if (posChangeCallback_) {
+    uint64_t temp;
+    for (uint8_t i = 0; i < 3; ++i) {
+      temp = readPos(i);
+      if (lastPos_[i] != temp) {
+        posChangeCallback_(i, translators_[i]->stepsToRevolution(temp));
+        lastPos_[i] = temp;
+      }
+    }
+  }
 }
 
 //------------------------------------------------------------------------------
@@ -196,8 +209,24 @@ void MotorDriver::updateAxis(uint8_t axisIndex, bool isMoving)
 }
 
 //------------------------------------------------------------------------------
-void MotorDriver::onStatusChange(movementStatusChangeCallback_t cb)
+int64_t MotorDriver::readPos(uint8_t axisIndex)
+//------------------------------------------------------------------------------
+{
+  return axisOffset_[axisIndex] + tmc429_.getActualPosition(axisIndex);
+}
+
+//------------------------------------------------------------------------------
+MotorDriver& MotorDriver::onStatusChange(MovementStatusChangeCallback_t cb)
 //------------------------------------------------------------------------------
 {
   movementStatusChangeCallback_ = cb;
+  return *this;
+}
+
+//------------------------------------------------------------------------------
+MotorDriver& MotorDriver::onPosChange(PosChangeCallback_t cb)
+//------------------------------------------------------------------------------
+{
+  posChangeCallback_ = cb;
+  return *this;
 }

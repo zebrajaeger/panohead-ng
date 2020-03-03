@@ -150,10 +150,16 @@ void Display::setLeveling(float x, float y)
 }
 
 //------------------------------------------------------------------------------
-void Display::setPosition(double revX, double revY)
+void Display::setPositionX(double revX)
 //------------------------------------------------------------------------------
 {
   posRevX_ = revX;
+  menuSetBounds_->requireRepaint();
+}
+//------------------------------------------------------------------------------
+void Display::setPositionY( double revY)
+//------------------------------------------------------------------------------
+{
   posRevY_ = revY;
   menuSetBounds_->requireRepaint();
 }
@@ -195,6 +201,20 @@ void Display::renderMainMenu(MenuItem &menu)
   }
 
   u8g2_->sendBuffer();
+}
+
+//------------------------------------------------------------------------------
+void Display::drawSymbolAt(uint8_t x, uint8_t y, bool selected, uint16_t symbol)
+//------------------------------------------------------------------------------
+{
+  u8g2_->setFont(u8g2_font_open_iconic_all_2x_t);
+  u8g2_->setFontMode(0);
+  u8g2_->setDrawColor(1);
+  u8g2_->drawGlyph(x + 2, y - 2, symbol);
+
+  if (selected) {
+    u8g2_->drawFrame(x, y - 20, 16 + 4, 16 + 4);
+  }
 }
 
 //------------------------------------------------------------------------------
@@ -294,19 +314,11 @@ void Display::renderSetPanoBounds(MenuItem &menu)
 void Display::renderSetPanoBounds_(bool togglePartial, bool top, bool right, bool bottom, bool left, bool ok, bool cancel)
 //------------------------------------------------------------------------------
 {
-  LOG.d("renderSetPanoBounds(%d, %d, %d, %d, %d, %d, %d)", togglePartial, top, right, bottom, left, ok, cancel);
+  // LOG.d("renderSetPanoBounds(%d, %d, %d, %d, %d, %d, %d)", togglePartial, top, right, bottom, left, ok, cancel);
   u8g2_->clearBuffer();
 
   // partial / full pano
-  u8g2_->setFont(u8g2_font_open_iconic_all_2x_t);
-  if (view_.isPartial()) {
-    u8g2_->drawStr(24, 24 + 16, "\x8c");
-  } else {
-    u8g2_->drawStr(24, 24 + 16, "\xf6");
-  }
-  if (togglePartial) {
-    u8g2_->drawFrame(22, 22, 20, 20);
-  }
+  drawSymbolAt(22, 22 + 16, togglePartial, view_.isPartial() ? 0x8c : 0xf6);
 
   // top
   if (top) {
@@ -338,18 +350,17 @@ void Display::renderSetPanoBounds_(bool togglePartial, bool top, bool right, boo
 
   // pos:
   u8g2_->setFont(u8g2_font_timR10_tf);
-  u8g2_->drawStr(66, 8, "x:");
+  u8g2_->drawStr(71, 8, "x:");
   drawAngleAt(90, -2, false, false, PanoUtils::revToDeg(posRevX_));
-  u8g2_->drawStr(66, 22, "y:");
+  u8g2_->drawStr(71, 22, "y:");
   drawAngleAt(90, 12, false, false, PanoUtils::revToDeg(posRevY_));
 
   // ok
-  u8g2_->setFont(u8g2_font_open_iconic_check_4x_t);
-  drawStringAt(64, 32, ok, false, "\u0040");
+  drawSymbolAt(64 + 8, 60, ok, 0x73);
 
   // cancel
-  u8g2_->setFont(u8g2_font_open_iconic_check_4x_t);
-  drawStringAt(64 + 32, 32, cancel, false, "\u0044");
+  u8g2_->setFont(u8g2_font_open_iconic_check_2x_t);
+  drawSymbolAt(64 + 8 + 24, 60, cancel, 0x11b);
 
   u8g2_->sendBuffer();
 }
@@ -358,16 +369,19 @@ void Display::renderSetPanoBounds_(bool togglePartial, bool top, bool right, boo
 bool Display::pushButtonSetBounds(MenuItem &menu)
 //------------------------------------------------------------------------------
 {
-  switch ((PanoBoundsState)menu.getCounter().getIndex()) {
-    case PanoBoundsState::PARTIAL:
+  switch (menu.getCounter().getIndex()) {
+    case 0:
+      LOG.d("PARTIAL");
       view_.setPartial(!view_.isPartial());
       menu.requireRepaint();
       break;
-    case PanoBoundsState::SAVE:
+    case 9:
       // TODO save
+      LOG.d("SAVE");
       menu.goUp();
       break;
-    case PanoBoundsState::CANCEL:
+    case 10:
+      LOG.d("CANCEL");
       menu.goUp();
       break;
     default:

@@ -10,21 +10,6 @@
 
 class Display {
  public:
-  enum class PanoBoundsState : uint8_t {
-    TOP,
-    TOP_RIGHT,
-    RIGHT,
-    BOTTOM_RIGHT,
-    BOTTOM,
-    BOTTOM_LEFT,
-    LEFT,
-    TOP_LEFT,
-    PARTIAL,
-    SAVE,
-    CANCEL,
-    MAX = CANCEL
-  };
-
   Display();
   ~Display();
 
@@ -36,7 +21,8 @@ class Display {
   void bootFinished();
 
   void setLeveling(float x, float y);
-  void setPosition(double revX, double revY);
+  void setPositionX(double revX);
+  void setPositionY(double revY);
 
   void encoderChanged(int16_t diff);
   void buttonPushed();
@@ -49,6 +35,7 @@ class Display {
   void renderSetPanoBounds_(bool togglePartial, bool top, bool right, bool bottom, bool left, bool ok, bool cancel);
   bool pushButtonSetBounds(MenuItem& menu);
 
+  void drawSymbolAt(uint8_t x, uint8_t y, bool selected, uint16_t symbol);
   void drawAngleAt(uint8_t x, uint8_t y, bool selected, bool invers, float angle);
   void drawStringAt(uint8_t x, uint8_t y, bool selected, bool invers, const char* text);
 

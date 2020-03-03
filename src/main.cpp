@@ -31,6 +31,12 @@ Camera camera;
 ADC adc;
 PositionSensor position;
 
+// 200 st/rev
+// 16µSteps
+// gear1: 1:5
+// gear2: 26+(103/121) ->  https://www.omc-stepperonline.com/download/11HS12-0674D1-PG27.pdf
+#define MICROSTEPS_PER_REVOLUITION (200.0 * 16.0 * 5.0 * (26.0 + (103.0 / 121.0)));
+
 // ESP -> TMC (PIN)
 // GPIO 16 (CS) -> 9(CS)
 // GPIO 14 (SCK) -> 10(SCK)
@@ -153,22 +159,23 @@ void setup()
 
   // limits: min: 10Steps/s; max: 7 revs/s
   MotorDriver::Limit_t limit = {16 * 10, 200 * 16 * 7, 75000};
-  LambdaTranslator *translator = new LambdaTranslator([](double pos) {
-    // 200 st/rev
-    // 16µSteps
-    // gear1: 1:5
-    // gear2: 26+(103/121) ->  https://www.omc-stepperonline.com/download/11HS12-0674D1-PG27.pdf
-    return pos * 200.0 * 16.0 * 5.0 * (26.0 + (103.0 / 121.0));
-  });
+  LambdaTranslator::RevolutionToSteps_t rts = [](double rev) { return rev * MICROSTEPS_PER_REVOLUITION; };
+  LambdaTranslator::StepsToRevolution_t str = [](int64_t steps) { return (double)steps / MICROSTEPS_PER_REVOLUITION; };
+
+  LambdaTranslator *translator = new LambdaTranslator(str, rts);
   if (motorDriver.begin(16, 21, 20, {&limit, &limit, &limit},
                         {(Translator *)translator, (Translator *)translator, (Translator *)translator})) {
     LOG.i("MotorDriver initialized");
     motorDriver.onStatusChange([](uint8_t axisIndex, const std::array<bool, 3> &axisMoving) {
-      // LOG.d("onStatusChange: %d (%d, %d, %d)", axisIndex, axisMoving[0], axisMoving[1], axisMoving[2]);
-
       if (!axisMoving[0] && !axisMoving[1] && !axisMoving[2]) {
-        // LOG.i("MOVE DONE");
         panoAutomat.moveDone();
+      }
+    });
+    motorDriver.onPosChange([](uint8_t axisIndex, double pos) {
+      switch(axisIndex){
+        case 0: display.setPositionX(pos); break;
+        case 1: display.setPositionY(pos); break;
+        default: break;
       }
     });
   } else {
@@ -226,7 +233,7 @@ void setup()
             joystick.setRawX(value);
           } else {
             joystick.setRawCenterX(value);
-            LOG.d("joy.x calibrated");
+            LOG.d("joy.x calibrated @ %u", value);
           }
         } break;
         case 1: {
@@ -234,7 +241,7 @@ void setup()
             joystick.setRawY(value);
           } else {
             joystick.setRawCenterY(value);
-            LOG.d("joy.y calibrated");
+            LOG.d("joy.y calibrated @ %u", value);
           }
         } break;
         case 2:
@@ -253,15 +260,17 @@ void setup()
     joystickTimer.startMs(50, false, true, [] {
       if (joystick.getXAxis().hasValue()) {
         float v = joystick.getXAxis().getValue();
+        LOG.d("jogX: %f", v);
         motorDriver.jogV(0, 0.05 * v * v * v);  // v³ for better handling on slowmo
       } else {
         motorDriver.jogV(0, 0.0);
       }
       if (joystick.getYAxis().hasValue()) {
         float v = joystick.getYAxis().getValue();
+        LOG.d("jogY: %f", v);
         motorDriver.jogV(1, 0.05 * v * v * v);  // v³ for better handling on slowmo
       } else {
-        motorDriver.jogV(0, 0.0);
+        motorDriver.jogV(1, 0.0);
       }
     });
   } else {
