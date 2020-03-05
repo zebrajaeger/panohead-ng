@@ -56,7 +56,7 @@ PositionSensor position;
 // ESP -> I²C (ADC,FRAM,)
 // GPIO 18 -> SCL
 // GPIO 19 -> SDA
-#define I2C_SPEED 400000
+#define I2C_SPEED 2000000
 #define I2C_SCL 18
 #define I2C_SDA 19
 
@@ -124,6 +124,19 @@ void setup()
 
   beginWiFi();
 
+  // I²C
+  if (Wire.begin(I2C_SDA, I2C_SCL, I2C_SPEED)) {
+    LOG.i("I²C initialized");
+    for (byte i = 8; i < 120; i++) {
+      Wire.beginTransmission(i);
+      if (Wire.endTransmission() == 0) {
+        LOG.i("I²C device found @ 0x%02x", i);
+      }
+    }
+  } else {
+    LOG.e("I²C failed");
+  }
+
   // Display
   if (display.begin(17, 5)) {
     LOG.i("Display started");
@@ -142,19 +155,6 @@ void setup()
     }
   });
 
-  // I²C
-  if (Wire.begin(I2C_SDA, I2C_SCL, I2C_SPEED)) {
-    LOG.i("I²C initialized");
-    for (byte i = 8; i < 120; i++) {
-      Wire.beginTransmission(i);
-      if (Wire.endTransmission() == 0) {
-        LOG.i("I²C device found @ 0x%02x", i);
-      }
-    }
-  } else {
-    LOG.e("I²C failed");
-  }
-
   // MotorDriver
 
   // limits: min: 10Steps/s; max: 7 revs/s
@@ -172,10 +172,15 @@ void setup()
       }
     });
     motorDriver.onPosChange([](uint8_t axisIndex, double pos) {
-      switch(axisIndex){
-        case 0: display.setPositionX(pos); break;
-        case 1: display.setPositionY(pos); break;
-        default: break;
+      switch (axisIndex) {
+        case 0:
+          display.setPositionX(pos);
+          break;
+        case 1:
+          display.setPositionY(pos);
+          break;
+        default:
+          break;
       }
     });
   } else {

@@ -43,7 +43,7 @@ class Display {
   void drawStringAt(uint8_t x, uint8_t y, bool selected, bool invers, const char* text);
 
   Logger LOG;
-  U8G2_SSD1306_128X64_NONAME_F_SW_I2C* u8g2_;
+  U8G2_SSD1306_128X64_NONAME_F_HW_I2C* u8g2_;
   bool isBooting_;
   MenuItem menu_;
   MenuItem* menuLeveling_;

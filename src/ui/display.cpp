@@ -40,10 +40,15 @@ bool Display::begin(uint8_t sclGpio, uint8_t sdaGpio)
     return false;
   }
 
-  u8g2_ = new U8G2_SSD1306_128X64_NONAME_F_SW_I2C(U8G2_R0, sclGpio, sdaGpio, /* reset=*/U8X8_PIN_NONE);
+  // u8g2_ = new U8G2_SSD1306_128X64_NONAME_F_SW_I2C(U8G2_R0, sclGpio, sdaGpio, /* reset=*/U8X8_PIN_NONE);
+   u8g2_ = new U8G2_SSD1306_128X64_NONAME_F_HW_I2C(U8G2_R0);
+  u8g2_->setI2CAddress(0x3c*2);
+
   if (!u8g2_->begin()) {
     return false;
   }
+
+  LOG.d("OLED I²C adr is %d",u8g2_GetI2CAddress(u8g2_->getU8g2()));
 
   using namespace std;
   using namespace std::placeholders;
