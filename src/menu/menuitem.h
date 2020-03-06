@@ -5,7 +5,8 @@
 #include <string>
 #include <vector>
 
-#include "counter.h"
+#include "selector.h"
+#include "incrementor.h"
 
 // =====================================================================
 class MenuItem;
@@ -16,6 +17,12 @@ class MenuItem {
    * @return false to prevent the change of active item
    */
   typedef std::function<bool(MenuItem& self)> ButtonPushCallback_t;
+  /**
+   * @return false to prevent the change of active item
+   */
+  typedef std::function<bool(MenuItem& self, int16_t diff)> EncoderPushCallback_t;
+  typedef std::function<void(MenuItem& self, int8_t upDown)> IndexChangedCallback_t;
+  typedef std::function<bool(MenuItem& self, int16_t from, int16_t to)> SelectionChangedCallback_t;
 
   MenuItem(std::string name);
 
@@ -33,8 +40,8 @@ class MenuItem {
 
   const std::string& getName() const;
   const std::vector<MenuItem*>& getItems() const;
-  const Counter& getCounter() const;
-  Counter& getCounter();
+  const Selector& getSelector() const;
+  Selector& getSelector();
 
   void encoderChanged(int16_t diff);
   void buttonPushed();
@@ -42,6 +49,9 @@ class MenuItem {
   void loop();
   MenuItem* onRender(RenderCallback_t cb);
   MenuItem* onButtonPushed(ButtonPushCallback_t cb);
+  // MenuItem* onEncoderPushed(EncoderPushCallback_t cb);
+  MenuItem* onIndexChanged(IndexChangedCallback_t cb);
+  MenuItem* onSelectionChanged(SelectionChangedCallback_t cb);
   void requireRepaint();
 
   bool isEnabled() const;
@@ -50,11 +60,11 @@ class MenuItem {
   MenuItem* disable();
 
   bool isSubMenuOnly();
-  MenuItem * subMenuOnly();
+  MenuItem* subMenuOnly();
   MenuItem* setSubMenuOnly(bool subMenuOnly);
 
-  MenuItem * getParent();
-  const MenuItem * getParent() const;
+  MenuItem* getParent();
+  const MenuItem* getParent() const;
 
   MenuItem* operator[](int16_t index);
   MenuItem* operator[](std::string name);
@@ -71,5 +81,9 @@ class MenuItem {
   bool requireRepaint_;
   RenderCallback_t renderCallback_;
   ButtonPushCallback_t buttonPushCallback_;
-  Counter counter_;
+  // EncoderPushCallback_t encoderPushCallback_;
+  IndexChangedCallback_t indexChangedCallback_; 
+  Incrementor incrementor_;
+  SelectionChangedCallback_t selectionChangedCallback_;
+  Selector selector_;
 };

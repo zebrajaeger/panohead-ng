@@ -40,15 +40,14 @@ bool Display::begin(uint8_t sclGpio, uint8_t sdaGpio)
     return false;
   }
 
-  // u8g2_ = new U8G2_SSD1306_128X64_NONAME_F_SW_I2C(U8G2_R0, sclGpio, sdaGpio, /* reset=*/U8X8_PIN_NONE);
-   u8g2_ = new U8G2_SSD1306_128X64_NONAME_F_HW_I2C(U8G2_R0);
-  u8g2_->setI2CAddress(0x3c*2);
+  u8g2_ = new U8G2_SSD1306_128X64_NONAME_F_HW_I2C(U8G2_R0);
+  u8g2_->setI2CAddress(0x3c * 2);
 
   if (!u8g2_->begin()) {
     return false;
   }
 
-  LOG.d("OLED I²C adr is %d",u8g2_GetI2CAddress(u8g2_->getU8g2()));
+  LOG.d("OLED I²C adr is %d", u8g2_GetI2CAddress(u8g2_->getU8g2()));
 
   using namespace std;
   using namespace std::placeholders;
@@ -66,9 +65,33 @@ bool Display::begin(uint8_t sclGpio, uint8_t sdaGpio)
                              ->onRender(bind(&Display::renderMainMenu, this, _1))
                              ->onButtonPushed(bind(&Display::pushButtonPanoConfig, this, _1));
   panoConfig->add(new MenuItem(".."));
-  MenuItem *delayAfterMove =  panoConfig->add(new MenuItem("Delay after move"))->onRender(bind(&Display::renderSetDelayAfterMove, this, _1));
-  delayAfterMove->add(new MenuItem("s"));
-  delayAfterMove->add(new MenuItem("ms"));
+  MenuItem *delayAfterMove = panoConfig->add(new MenuItem("Delay after move"))
+                                 ->onRender(bind(&Display::renderSetDelayAfterMove, this, _1))
+                                 ->onButtonPushed([](MenuItem &delayAfterMove) {
+                                   int16_t sel = delayAfterMove.getSelector().getIndex();
+                                   if (sel == 2) {
+                                     // TODO SAVE
+                                     delayAfterMove.goUp();
+                                   } else if (sel == 3) {
+                                     delayAfterMove.goUp();
+                                   }
+                                   return false;
+                                 });
+  ;
+  delayAfterMove->add(new MenuItem("s"))
+      ->onRender(bind(&Display::renderSetDelayAfterMove, this, _1))
+      ->onIndexChanged(bind(&Display::encoderSetDelayAfterMoveS, this, _1, _2))
+      ->onButtonPushed([](MenuItem &self) {
+        self.goUp();
+        return false;
+      });
+  delayAfterMove->add(new MenuItem("ms"))
+      ->onRender(bind(&Display::renderSetDelayAfterMoveMs, this, _1))
+      ->onIndexChanged(bind(&Display::encoderSetDelayAfterMoveMs, this, _1, _2))
+      ->onButtonPushed([](MenuItem &self) {
+        self.goUp();
+        return false;
+      });
   delayAfterMove->add(new MenuItem("ok"));
   delayAfterMove->add(new MenuItem("cancel"));
   panoConfig->add(new MenuItem("Focus time"));
@@ -79,9 +102,9 @@ bool Display::begin(uint8_t sclGpio, uint8_t sdaGpio)
 
   // -- Set Bounds
   menuSetBounds_ = main->add(new MenuItem("Set bounds"))
-                       ->onButtonPushed(bind(&Display::pushButtonSetBounds, this, _1))
-                       ->onRender(bind(&Display::renderSetPanoBounds, this, _1));
-                       // -> onEncoder()... TODO implement me
+                       ->onRender(bind(&Display::renderSetPanoBounds, this, _1))
+                       ->onButtonPushed(bind(&Display::pushButtonSetBounds, this, _1));
+
   menuSetBounds_->add(new MenuItem("TogglePartial"));
   menuSetBounds_->add(new MenuItem("Top"));
   menuSetBounds_->add(new MenuItem("Top Right"));
@@ -203,7 +226,7 @@ void Display::renderMainMenu(MenuItem &menu)
   u8g2_->clearBuffer();
 
   uint8_t h = u8g2_->getMaxCharHeight() - 2;
-  uint8_t selected = menu.getCounter().getIndex();
+  uint8_t selected = menu.getSelector().getIndex();
   const std::vector<MenuItem *> &items = menu.getItems();
   for (std::size_t i = 0; i < items.size(); ++i) {
     const MenuItem &item = *items[i];
@@ -291,7 +314,7 @@ void Display::renderLeveling(MenuItem &menu)
 void Display::renderSetPanoBounds(MenuItem &menu)
 //------------------------------------------------------------------------------
 {
-  switch (menu.getCounter().getIndex()) {
+  switch (menu.getSelector().getIndex()) {
     case 0:
       renderSetPanoBounds_(true, false, false, false, false, false, false);
       break;
@@ -387,7 +410,7 @@ void Display::renderSetPanoBounds_(bool togglePartial, bool top, bool right, boo
 bool Display::pushButtonSetBounds(MenuItem &menu)
 //------------------------------------------------------------------------------
 {
-  switch (menu.getCounter().getIndex()) {
+  switch (menu.getSelector().getIndex()) {
     case 0:
       LOG.d("PARTIAL");
       view_.setPartial(!view_.isPartial());
@@ -412,22 +435,18 @@ bool Display::pushButtonSetBounds(MenuItem &menu)
 bool Display::pushButtonPanoConfig(MenuItem &menu)
 //------------------------------------------------------------------------------
 {
-  switch (menu.getCounter().getIndex()) {
-    case 0:
-      menu.goUp();
-      return false;
-    default:
-      return true;
+  if (menu.getSelector().getIndex() == 0) {
+    menu.goUp();
+    return false;
   }
+  return true;
 }
 
 //------------------------------------------------------------------------------
 void Display::renderSetDelayAfterMove(MenuItem &menu)
 //------------------------------------------------------------------------------
 {
-  LOG.d("FOO %d\n", menu.getCounter().getIndex());
-
-  switch (menu.getCounter().getIndex()) {
+  switch (menu.getSelector().getIndex()) {
     case 0:
       renderSetTime("Delay after move", delayAfterMoveTimeMs_, true, false, false, false);
       break;
@@ -443,6 +462,56 @@ void Display::renderSetDelayAfterMove(MenuItem &menu)
     default:
       break;
   }
+}
+
+//------------------------------------------------------------------------------
+void Display::renderSetDelayAfterMoveS(MenuItem &menu)
+//------------------------------------------------------------------------------
+{
+  renderSetTime("Delay after move", delayAfterMoveTimeMs_, true, false, false, false);
+}
+
+//------------------------------------------------------------------------------
+void Display::renderSetDelayAfterMoveMs(MenuItem &menu)
+//------------------------------------------------------------------------------
+{
+  renderSetTime("Delay after move", delayAfterMoveTimeMs_, false, true, false, false);
+}
+
+//------------------------------------------------------------------------------
+bool Display::addToDelayAfterMoveTimeMs(int16_t diff)
+//------------------------------------------------------------------------------
+{
+  if (diff > 0) {
+    int32_t newVal = delayAfterMoveTimeMs_ + diff;
+    if (newVal <= 10000) {
+      delayAfterMoveTimeMs_ = newVal;
+      return true;
+    }
+  } else if (diff < 0) {
+    int32_t newVal = delayAfterMoveTimeMs_ + diff;
+    if (newVal >= 0) {
+      delayAfterMoveTimeMs_ = newVal;
+      return true;
+    }
+  }
+  return false;
+}
+
+//------------------------------------------------------------------------------
+void Display::encoderSetDelayAfterMoveS(MenuItem &self, int8_t upDown)
+//------------------------------------------------------------------------------
+{
+  addToDelayAfterMoveTimeMs(1000 * upDown);
+  self.requireRepaint();
+}
+
+//------------------------------------------------------------------------------
+void Display::encoderSetDelayAfterMoveMs(MenuItem &self, int8_t upDown)
+//------------------------------------------------------------------------------
+{
+  addToDelayAfterMoveTimeMs(100 * upDown);
+  self.requireRepaint();
 }
 
 //------------------------------------------------------------------------------

@@ -2,6 +2,8 @@
 #include <Wire.h>
 #include <driver/ledc.h>
 
+#include <Adafruit_INA219.h>
+
 #include "ui/display.h"
 #include "ui/joystick.h"
 #include "ui/position_sensor.h"
@@ -30,6 +32,7 @@ PanoAutomat panoAutomat;
 Camera camera;
 ADC adc;
 PositionSensor position;
+Adafruit_INA219 ina219;
 
 // 200 st/rev
 // 16µSteps
@@ -109,6 +112,27 @@ bool loopWiFi() {
 void beginWiFi() {}
 bool loopWiFi() { return true; }
 #endif
+
+void statisticsIna219(){
+   float shuntvoltage = 0;
+  float busvoltage = 0;
+  float current_mA = 0;
+  float loadvoltage = 0;
+  float power_mW = 0;
+
+  shuntvoltage = ina219.getShuntVoltage_mV();
+  busvoltage = ina219.getBusVoltage_V();
+  current_mA = ina219.getCurrent_mA();
+  power_mW = ina219.getPower_mW();
+  loadvoltage = busvoltage + (shuntvoltage / 1000);
+  
+  Serial.print("Bus Voltage:   "); Serial.print(busvoltage); Serial.println(" V");
+  Serial.print("Shunt Voltage: "); Serial.print(shuntvoltage); Serial.println(" mV");
+  Serial.print("Load Voltage:  "); Serial.print(loadvoltage); Serial.println(" V");
+  Serial.print("Current:       "); Serial.print(current_mA); Serial.println(" mA");
+  Serial.print("Power:         "); Serial.print(power_mW); Serial.println(" mW");
+  Serial.println("");
+}
 
 // --------------------------------------------------------------------------------
 void setup()
@@ -290,6 +314,9 @@ void setup()
     LOG.e("Position sensor failed");
   }
 
+    // INA219
+   ina219.begin();
+
   // Statistics
   if (statistic.begin()) {
     LOG.i("Statistic initialized");
@@ -299,6 +326,12 @@ void setup()
       // panoAutomat.statistic();
       // joystick.statistics();
       display.statistics();
+      statisticsIna219();
+      analogReadResolution(12); 
+    // analogSetAttenuation(ADC_0db);
+
+      // LOG.d("X VAL: %d", analogRead(36)); // a or b
+      LOG.d("X VAL: %d", analogRead(35)); // a or b
     });
   } else {
     LOG.e("Statistic failed");

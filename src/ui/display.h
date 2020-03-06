@@ -29,13 +29,25 @@ class Display {
 
  private:
   void renderBootScreen(MenuItem& menu);
+
   void renderMainMenu(MenuItem& menu);
+
   void renderLeveling(MenuItem& menu);
+
   void renderSetPanoBounds(MenuItem& menu);
   void renderSetPanoBounds_(bool togglePartial, bool top, bool right, bool bottom, bool left, bool ok, bool cancel);
   bool pushButtonSetBounds(MenuItem& menu);
+
   bool pushButtonPanoConfig(MenuItem& menu);
+
+  bool addToDelayAfterMoveTimeS(int16_t diff);
+  bool addToDelayAfterMoveTimeMs(int16_t diff);
   void renderSetDelayAfterMove(MenuItem& menu);
+  void renderSetDelayAfterMoveS(MenuItem& menu);
+  void renderSetDelayAfterMoveMs(MenuItem& menu);
+  void encoderSetDelayAfterMoveS(MenuItem& self, int8_t upDown);
+  void encoderSetDelayAfterMoveMs(MenuItem& self, int8_t upDown);
+
   void renderSetTime(const char* title, int16_t timeMs, bool selSecs, bool selOneTenthSecs, bool selOk, bool selCancel);
 
   void drawSymbolAt(uint8_t x, uint8_t y, bool selected, uint16_t symbol);

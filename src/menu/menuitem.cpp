@@ -10,11 +10,43 @@ MenuItem::MenuItem(std::string name)
       active_(this),
       requireRepaint_(true),
       renderCallback_(),
-      counter_(4, 0, 0, 0, true)
+      buttonPushCallback_(),
+      // encoderPushCallback_(),
+      indexChangedCallback_(),
+      incrementor_(4),
+      selectionChangedCallback_(),
+      selector_(0, 0, 0, true)
 //------------------------------------------------------------------------------
 {
-  counter_.onIndexChange([this](int16_t from, int16_t to) { requireRepaint(); });
-  counter_.onIsEnabled([this](int16_t index) { return items_[index]->isEnabled(); });
+  incrementor_.onIndexChange([this](int8_t upDown) {
+    if (indexChangedCallback_) {
+      indexChangedCallback_(*this, upDown);
+    }
+    if (upDown == 1) {
+      selector_.up();
+    } else if (upDown == -1) {
+      selector_.down();
+    }
+  });
+
+  selector_.onSelectionChanged([this](int16_t from, int16_t to) {
+    bool repaintRequired = true;
+    if (selectionChangedCallback_) {
+      repaintRequired = selectionChangedCallback_(*this, from, to);
+    }
+    if (repaintRequired) {
+      requireRepaint();
+    }
+  });
+
+  selector_.onIsEnabled([this](int16_t index) {
+    // index validation because exception on menuitems without subitems
+    if (index < items_.size()) {
+      return items_[index]->isEnabled();
+    } else {
+      return false;
+    }
+  });
 }
 
 //------------------------------------------------------------------------------
@@ -23,7 +55,7 @@ MenuItem* MenuItem::add(MenuItem* newItem)
 {
   newItem->setParent(this);
   items_.push_back(newItem);
-  counter_.setMax(items_.size() - 1);
+  selector_.setMax(items_.size() - 1);
   return newItem;
 }
 
@@ -142,13 +174,13 @@ const std::vector<MenuItem*>& MenuItem::getItems() const
 }
 
 //------------------------------------------------------------------------------
-const Counter& MenuItem::getCounter() const { return counter_; }
+const Selector& MenuItem::getSelector() const { return selector_; }
 
 //------------------------------------------------------------------------------
-Counter& MenuItem::getCounter()
+Selector& MenuItem::getSelector()
 //------------------------------------------------------------------------------
 {
-  return counter_;
+  return selector_;
 }
 
 //------------------------------------------------------------------------------
@@ -156,7 +188,14 @@ void MenuItem::encoderChanged(int16_t diff)
 //------------------------------------------------------------------------------
 {
   if (isActive()) {
-    counter_.addToPos(diff);
+    incrementor_.add(diff);
+    // bool changeActive = true;
+    // if (encoderPushCallback_) {
+    //   changeActive = encoderPushCallback_(*this, diff);
+    // }
+    // if (changeActive) {
+    // counter_.addToPos(diff);
+    // }
   } else {
     active_->encoderChanged(diff);
   }
@@ -171,7 +210,7 @@ void MenuItem::buttonPushed()
     if (buttonPushCallback_) {
       changeActive = buttonPushCallback_(*this);
     }
-    if (changeActive && setActiveItem(counter_.getIndex())) {
+    if (changeActive && setActiveItem(selector_.getIndex())) {
       requireRepaint();
     }
   } else {
@@ -206,6 +245,29 @@ MenuItem* MenuItem::onButtonPushed(ButtonPushCallback_t cb)
 //------------------------------------------------------------------------------
 {
   buttonPushCallback_ = cb;
+  return this;
+}
+
+// //------------------------------------------------------------------------------
+// MenuItem* MenuItem::onEncoderPushed(EncoderPushCallback_t cb)
+// //------------------------------------------------------------------------------
+// {
+//   encoderPushCallback_ = cb;
+//   return this;
+// }
+
+//------------------------------------------------------------------------------
+MenuItem* MenuItem::onIndexChanged(IndexChangedCallback_t cb)
+//------------------------------------------------------------------------------
+{
+  indexChangedCallback_ = cb;
+  return this;
+}
+//------------------------------------------------------------------------------
+MenuItem* MenuItem::onSelectionChanged(SelectionChangedCallback_t cb)
+//------------------------------------------------------------------------------
+{
+  selectionChangedCallback_ = cb;
   return this;
 }
 
@@ -301,7 +363,7 @@ MenuItem* MenuItem::operator[](int16_t index)
   if (index < items_.size()) {
     return items_[index];
   }
-  
+
   return NULL;
 }
 
