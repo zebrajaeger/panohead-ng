@@ -21,10 +21,10 @@ class MenuItem {
    * @return false to prevent the change of active item
    */
   typedef std::function<bool(MenuItem& self, int16_t diff)> EncoderPushCallback_t;
-  typedef std::function<void(MenuItem& self, int8_t upDown)> IndexChangedCallback_t;
+  typedef std::function<void(MenuItem& self, Incrementor::Step upDown)> IndexChangedCallback_t;
   typedef std::function<bool(MenuItem& self, int16_t from, int16_t to)> SelectionChangedCallback_t;
 
-  MenuItem(std::string name);
+  MenuItem(const std::string& name);
 
   MenuItem* add(MenuItem* newItem);
   MenuItem* addAsActive(MenuItem* newItem);
@@ -37,6 +37,7 @@ class MenuItem {
   const MenuItem* getActiveItem() const;
   bool isActive() const;
   std::string getActivePath();
+  MenuItem* getActivePathItem();
 
   const std::string& getName() const;
   const std::vector<MenuItem*>& getItems() const;
@@ -49,7 +50,6 @@ class MenuItem {
   void loop();
   MenuItem* onRender(RenderCallback_t cb);
   MenuItem* onButtonPushed(ButtonPushCallback_t cb);
-  // MenuItem* onEncoderPushed(EncoderPushCallback_t cb);
   MenuItem* onIndexChanged(IndexChangedCallback_t cb);
   MenuItem* onSelectionChanged(SelectionChangedCallback_t cb);
   void requireRepaint();

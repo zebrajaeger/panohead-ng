@@ -4,68 +4,57 @@
 
 #include <U8g2lib.h>
 
-#include "menu/menuitem.h"
-#include "pano/view.h"
 #include "util/logger.h"
+
+#include "menuitem_boot.h"
+#include "menuitem_main.h"
 
 class Display {
  public:
-  Display();
-  ~Display();
+  Display() : LOG("Display"), u8g2_(NULL), isBooting_(true), menu_("root"){};
+  ~Display() {
+    if (u8g2_) delete u8g2_;
+  }
 
-  bool begin(uint8_t sclGpio, uint8_t sdaGpio);
-  void loop();
-  void statistics();
+  //------------------------------------------------------------------------------
+  bool begin(uint8_t sclGpio, uint8_t sdaGpio)
+  //------------------------------------------------------------------------------
+  {
+    if (u8g2_) {
+      return false;
+    }
 
-  void bootStart();
-  void bootFinished();
+    u8g2_ = new U8G2_SSD1306_128X64_NONAME_F_HW_I2C(U8G2_R0);
+    u8g2_->setI2CAddress(0x3c * 2);
 
-  void setLeveling(float x, float y);
-  void setPositionX(double revX);
-  void setPositionY(double revY);
+    if (!u8g2_->begin()) {
+      return false;
+    }
 
-  void encoderChanged(int16_t diff);
-  void buttonPushed();
+    LOG.d("OLED I²C adr is %d", u8g2_GetI2CAddress(u8g2_->getU8g2()));
+
+    u8g2_->setContrast(255);
+
+    menu_.add(new MenuItemBoot(u8g2_, "boot"));
+    menu_.add(new MenuItemMain(u8g2_, "main"));
+
+    return true;
+  }
+
+  void setLeveling(float x, float y) { ((MenuItemBase*)menu_.getActivePathItem())->setLeveling(x, y); }
+  void setPositionX(double revX) { ((MenuItemBase*)menu_.getActivePathItem())->setPositionX(revX); }
+  void setPositionY(double revY) { ((MenuItemBase*)menu_.getActivePathItem())->setPositionY(revY); }
+
+  void statistics() { LOG.d("Selected: %s", menu_.getActivePath().c_str()); }
+  void bootStart() { menu_.setActiveItem("boot"); }
+  void bootFinished() { menu_.setActiveItem("main"); }
+  void loop() { menu_.loop(); }
+  void encoderChanged(int16_t diff) { menu_.encoderChanged(diff); }
+  void buttonPushed() { menu_.buttonPushed(); }
 
  private:
-  void renderBootScreen(MenuItem& menu);
-
-  void renderMainMenu(MenuItem& menu);
-
-  void renderLeveling(MenuItem& menu);
-
-  void renderSetPanoBounds(MenuItem& menu);
-  void renderSetPanoBounds_(bool togglePartial, bool top, bool right, bool bottom, bool left, bool ok, bool cancel);
-  bool pushButtonSetBounds(MenuItem& menu);
-
-  bool pushButtonPanoConfig(MenuItem& menu);
-
-  bool addToDelayAfterMoveTimeS(int16_t diff);
-  bool addToDelayAfterMoveTimeMs(int16_t diff);
-  void renderSetDelayAfterMove(MenuItem& menu);
-  void renderSetDelayAfterMoveS(MenuItem& menu);
-  void renderSetDelayAfterMoveMs(MenuItem& menu);
-  void encoderSetDelayAfterMoveS(MenuItem& self, int8_t upDown);
-  void encoderSetDelayAfterMoveMs(MenuItem& self, int8_t upDown);
-
-  void renderSetTime(const char* title, int16_t timeMs, bool selSecs, bool selOneTenthSecs, bool selOk, bool selCancel);
-
-  void drawSymbolAt(uint8_t x, uint8_t y, bool selected, uint16_t symbol);
-  void drawAngleAt(uint8_t x, uint8_t y, bool selected, bool invers, float angle);
-  void drawStringAt(uint8_t x, uint8_t y, bool selected, bool invers, const char* text);
-
   Logger LOG;
-  U8G2_SSD1306_128X64_NONAME_F_HW_I2C* u8g2_;
+  U8G2* u8g2_;
   bool isBooting_;
   MenuItem menu_;
-  MenuItem* menuLeveling_;
-  MenuItem* menuSetBounds_;
-  float levelX_;
-  float levelY_;
-  float posRevX_;
-  float posRevY_;
-  View view_;
-  int32_t delayAfterMoveTimeMs_;
-  int32_t focusTimeMs_;
-  int32_t triggerTimeMs_;
 };

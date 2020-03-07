@@ -1,7 +1,7 @@
 #include "menuitem.h"
 
 //------------------------------------------------------------------------------
-MenuItem::MenuItem(std::string name)
+MenuItem::MenuItem(const std::string& name)
     : name_(name),
       subMenuOnly_(false),
       enabled_(true),
@@ -11,14 +11,13 @@ MenuItem::MenuItem(std::string name)
       requireRepaint_(true),
       renderCallback_(),
       buttonPushCallback_(),
-      // encoderPushCallback_(),
       indexChangedCallback_(),
       incrementor_(4),
       selectionChangedCallback_(),
       selector_(0, 0, 0, true)
 //------------------------------------------------------------------------------
 {
-  incrementor_.onIndexChange([this](int8_t upDown) {
+  incrementor_.onIndexChange([this](Incrementor::Step upDown) {
     if (indexChangedCallback_) {
       indexChangedCallback_(*this, upDown);
     }
@@ -159,6 +158,17 @@ std::string MenuItem::getActivePath()
 }
 
 //------------------------------------------------------------------------------
+MenuItem* MenuItem::getActivePathItem()
+//------------------------------------------------------------------------------
+{
+  if (isActive()) {
+    return this;
+  } else {
+    return active_->getActivePathItem();
+  }
+}
+
+//------------------------------------------------------------------------------
 const std::string& MenuItem::getName() const
 //------------------------------------------------------------------------------
 {
@@ -189,13 +199,6 @@ void MenuItem::encoderChanged(int16_t diff)
 {
   if (isActive()) {
     incrementor_.add(diff);
-    // bool changeActive = true;
-    // if (encoderPushCallback_) {
-    //   changeActive = encoderPushCallback_(*this, diff);
-    // }
-    // if (changeActive) {
-    // counter_.addToPos(diff);
-    // }
   } else {
     active_->encoderChanged(diff);
   }
@@ -248,14 +251,6 @@ MenuItem* MenuItem::onButtonPushed(ButtonPushCallback_t cb)
   return this;
 }
 
-// //------------------------------------------------------------------------------
-// MenuItem* MenuItem::onEncoderPushed(EncoderPushCallback_t cb)
-// //------------------------------------------------------------------------------
-// {
-//   encoderPushCallback_ = cb;
-//   return this;
-// }
-
 //------------------------------------------------------------------------------
 MenuItem* MenuItem::onIndexChanged(IndexChangedCallback_t cb)
 //------------------------------------------------------------------------------
@@ -263,6 +258,7 @@ MenuItem* MenuItem::onIndexChanged(IndexChangedCallback_t cb)
   indexChangedCallback_ = cb;
   return this;
 }
+
 //------------------------------------------------------------------------------
 MenuItem* MenuItem::onSelectionChanged(SelectionChangedCallback_t cb)
 //------------------------------------------------------------------------------

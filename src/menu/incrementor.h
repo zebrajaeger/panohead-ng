@@ -5,57 +5,20 @@
 
 class Incrementor {
  public:
+  enum Step { UP = 1, DOWN = -1 };
+
   /**
    * @param indexDiff +1 or -1
    */
-  typedef std::function<void(int8_t indexDiff)> IndexChangeCallback_t;
+  typedef std::function<void(Step step)> IndexChangeCallback_t;
 
-  Incrementor(uint16_t sensitivity) : sensitivity_(sensitivity), pos_(0) {}
-
-  void reset() { pos_ = 0; }
-  int16_t getIndex() { return pos_ / sensitivity_; }
-
-  void onIndexChange(IndexChangeCallback_t cb) { indexChangeCallback_ = cb; }
-
-  bool incPos() {
-    int16_t oldIndex = getIndex();
-    pos_++;
-    int16_t newIndex = getIndex();
-    bool changed = oldIndex != newIndex;
-    if (changed) {
-      pos_ -= sensitivity_;
-      if (indexChangeCallback_) {
-        indexChangeCallback_(+1);
-      }
-    }
-    return changed;
-  }
-
-  bool decPos() {
-    int16_t oldIndex = getIndex();
-    pos_--;
-    int16_t newIndex = getIndex();
-    bool changed = oldIndex != newIndex;
-    if (changed) {
-      pos_ += sensitivity_;
-      if (indexChangeCallback_) {
-        indexChangeCallback_(-1);
-      }
-    }
-    return changed;
-  }
-
-  void add(int16_t diff) {
-    if (diff > 0) {
-      for (int16_t i = 0; i < diff; ++i) {
-        incPos();
-      }
-    } else if (diff < 0) {
-      for (int16_t i = 0; i > diff; --i) {
-        decPos();
-      }
-    }
-  }
+  Incrementor(uint16_t sensitivity);
+  void reset();
+  int16_t getIndex();
+  void onIndexChange(IndexChangeCallback_t cb);
+  bool incPos();
+  bool decPos();
+  void add(int16_t diff);
 
  private:
   int16_t sensitivity_;
