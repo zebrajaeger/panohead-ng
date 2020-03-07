@@ -70,7 +70,7 @@ class MenuItemBounds : public MenuItemBase {
     requireRepaint();
   }
   //------------------------------------------------------------------------------
-  virtual  void setPositionY(double revY) override
+  virtual void setPositionY(double revY) override
   //------------------------------------------------------------------------------
   {
     posRevY_ = revY;
@@ -78,6 +78,16 @@ class MenuItemBounds : public MenuItemBase {
   }
 
  private:
+  void setPartial(bool isPartial) {
+    bool enabled = !isPartial;
+    (*this)["Top Right"]->setEnabled(enabled);
+    (*this)["Right"]->setEnabled(enabled);
+    (*this)["Bottom Right"]->setEnabled(enabled);
+    (*this)["Bottom Left"]->setEnabled(enabled);
+    (*this)["Left"]->setEnabled(enabled);
+    (*this)["Top Left"]->setEnabled(enabled);
+  }
+
   //------------------------------------------------------------------------------
   void render(MenuItem &menu)
   //------------------------------------------------------------------------------
@@ -126,7 +136,7 @@ class MenuItemBounds : public MenuItemBase {
     u8g2_->clearBuffer();
 
     // partial / full pano
-    DisplayUtils::drawSymbolAt(u8g2_, 22, 22 + 16, togglePartial, view_.isPartial() ? 0x8c : 0xf6);
+    DisplayUtils::drawSymbolAt(u8g2_, 22, 24 + 16, togglePartial, view_.isPartial() ? 0x8c : 0xf6);
 
     // top
     if (top) {
@@ -134,14 +144,6 @@ class MenuItemBounds : public MenuItemBase {
     } else {
       u8g2_->drawFrame(10, 0, 44, 10);
     }
-
-    // right
-    if (right) {
-      u8g2_->drawBox(54, 10, 10, 44);
-    } else {
-      u8g2_->drawFrame(54, 10, 10, 44);
-    }
-
     // bottom
     if (bottom) {
       u8g2_->drawBox(10, 53, 44, 10);
@@ -149,11 +151,19 @@ class MenuItemBounds : public MenuItemBase {
       u8g2_->drawFrame(10, 53, 44, 10);
     }
 
-    // left
-    if (left) {
-      u8g2_->drawBox(0, 10, 10, 44);
-    } else {
-      u8g2_->drawFrame(0, 10, 10, 44);
+    if (!view_.isPartial()) {
+      // left
+      if (left) {
+        u8g2_->drawBox(0, 10, 10, 44);
+      } else {
+        u8g2_->drawFrame(0, 10, 10, 44);
+      }
+      // right
+      if (right) {
+        u8g2_->drawBox(54, 10, 10, 44);
+      } else {
+        u8g2_->drawFrame(54, 10, 10, 44);
+      }
     }
 
     // pos:
@@ -180,6 +190,7 @@ class MenuItemBounds : public MenuItemBase {
     switch (menu.getSelector().getIndex()) {
       case Index::PARTIAL:
         view_.setPartial(!view_.isPartial());
+        setPartial(view_.isPartial());
         menu.requireRepaint();
         break;
       case Index::OK:
