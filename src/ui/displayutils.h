@@ -53,37 +53,6 @@ class DisplayUtils {
     }
   }
 
-  //------------------------------------------------------------------------------
-  static void renderSetTime(U8G2 *u8g2, const char *title, int32_t timeMs, bool selSecs, bool selOneTenthSecs, bool selOk, bool selCancel)
-  //------------------------------------------------------------------------------
-  {
-    u8g2->clearBuffer();
-
-    // headline
-    u8g2->setFont(u8g2_font_timR10_tf);
-    drawStringAt(u8g2, 0, 0, false, false, title);
-
-    int32_t sec = timeMs / 1000;
-    int32_t mSec = (timeMs - (sec * 1000)) / 100;
-
-    char buf[20];
-    sprintf(buf, " %5d", sec);
-    drawStringAt(u8g2, 35, 24, selSecs, false, (char *)&buf);
-
-    drawStringAt(u8g2, 60, 24, false, false, ".");
-
-    sprintf(buf, "%1d", mSec);
-    drawStringAt(u8g2, 65, 24, selOneTenthSecs, false, (char *)&buf);
-
-    // ok
-    drawSymbolAt(u8g2, 64 + 8, 60, selOk, 0x73);
-
-    // cancel
-    u8g2->setFont(u8g2_font_open_iconic_check_2x_t);
-    drawSymbolAt(u8g2, 64 + 8 + 24, 60, selCancel, 0x11b);
-
-    u8g2->sendBuffer();
-  }
 
   //------------------------------------------------------------------------------
   static void renderMenu(U8G2 *u8g2, MenuItem &menu)
