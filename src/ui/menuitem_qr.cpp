@@ -23,26 +23,13 @@ MenuItemQR::MenuItemQR(Display *display, const std::string &name)
 void MenuItemQR::render(MenuItem &menu)
 //------------------------------------------------------------------------------
 {
-  const size_t capacity = JSON_OBJECT_SIZE(8);
-  DynamicJsonDocument doc(capacity);
-
-  doc["left"] = 1.2345678;
-  doc["top"] = 1.2345678;
-  doc["right"] = 1.2345678;
-  doc["bottom"] = 1.2345678;
-  doc["countX"] = 100;
-  doc["countY"] = 100;
-  doc["partial"] = true;
-  doc["shots"] = 100;
-
-  char buffer[256];
-  serializeJson(doc, &buffer, 256);
-
   // maybe use LOCK_VERSION
   uint8_t version = 11;  // 61 pixel size
   QRCode qrcode;
   uint8_t qrcodeData[qrcode_getBufferSize(version)];
-  qrcode_initText(&qrcode, qrcodeData, version, ECC_HIGH, buffer);
+  String json;
+  getDisplay()->getPanoData().toJson(json);
+  qrcode_initText(&qrcode, qrcodeData, version, ECC_HIGH, json.c_str());
 
   //   Serial.printf("| Version | Buffer | Size |\n");
   //   Serial.printf("| --- | --- | --- |\n");
@@ -62,6 +49,14 @@ void MenuItemQR::render(MenuItem &menu)
         u8g2->drawPixel(x, y);
       }
     }
+  }
+
+  if (!getDisplay()->getPanoData().getRaster()) {
+    DisplayUtils::drawStringAt(getU8g2(), 70, 10, false, false, "no raster");
+  }
+
+  if (!getDisplay()->getPanoData().getShots()) {
+    DisplayUtils::drawStringAt(getU8g2(), 70, 30, false, false, "no shots");
   }
 
   u8g2->sendBuffer();

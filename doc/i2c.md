@@ -1,5 +1,7 @@
 # i²C
 
+Possible address conflict betwen ADS1115 
+
 ## ADS1115
 
 - http://www.ti.com/lit/ds/symlink/ads1115.pdf
@@ -18,10 +20,11 @@
 
 - https://cdn-shop.adafruit.com/datasheets/SSD1306.pdf
 - Address: 0x3c
-- Max speed: ?
+- Max speed: Clock Cycle Time min. 2.5µs = 0,4MHz
+- But works with 2MHz...
 
 | Addr |
-| ---: |
+| :---: |
 | 1001000 = 0x48 |
 
 ## MPU9250
@@ -61,3 +64,13 @@ pointer) when using SCL frequencies in excess of 1 MHz.
 | SCL | VS+ | 1001101 = 0x4d |
 | SCL | SDA | 1001110 = 0x4e |
 | SCL | SCL | 1001111 = 0x4f |
+
+## DS3231
+
+- https://datasheets.maximintegrated.com/en/ds/DS3231.pdf
+- Standard-Mode: max. 0.1Mhz
+- Fast-Mode: max. 0.4MHz
+
+| Addr |
+| :---: |
+| 1101000 = 0x68 |
