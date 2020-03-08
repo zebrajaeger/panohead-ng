@@ -11,6 +11,7 @@
 class Raster {
  public:
   virtual ~Raster(){};
+  virtual const char* getTypeName() const = 0;
   virtual uint32_t getRows() const = 0;
   virtual uint32_t getColumnsForRowIndex(uint32_t rowIndex) const = 0;
   virtual Position getPositionFor(uint32_t columnIndex, uint32_t rowIndex) const = 0;
@@ -35,6 +36,13 @@ class Matrix : public Raster {
   {}
 
   //------------------------------------------------------------------------------
+  virtual const char* getTypeName() const
+  //------------------------------------------------------------------------------
+  {
+    return "Matrix";
+  }
+  
+  //------------------------------------------------------------------------------
   virtual uint32_t getRows() const override
   //------------------------------------------------------------------------------
   {
@@ -52,8 +60,8 @@ class Matrix : public Raster {
   virtual Position getPositionFor(uint32_t columnIndex, uint32_t rowIndex) const override
   //------------------------------------------------------------------------------
   {
-    double x = startPosition_.getX() + (panoPicture_.widthWithinPano() * (double)columnIndex);
-    double y = startPosition_.getY() + (panoPicture_.heightWithinPano() * (double)rowIndex);
+    double x = startPosition_.getX() + (panoPicture_.getWidthWithinPano() * (double)columnIndex);
+    double y = startPosition_.getY() + (panoPicture_.getHeightWithinPano() * (double)rowIndex);
     return Position(x, y);
   };
 
