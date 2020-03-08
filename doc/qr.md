@@ -1,6 +1,53 @@
 # QR
 
-Version &lt;= 2
+Version &lt;= 26 works
+
+Version &gt; 26 crash and reboot:
+
+    0x4000c46c: ?? ??:0
+    0x400daf26: rs_init at c:\prj\ph-ng/.pio\libdeps\comport\QRCode_ID1584\src/qrcode.c:587
+     (inlined by) performErrorCorrection at c:\prj\ph-ng/.pio\libdeps\comport\QRCode_ID1584\src/qrcode.c:713
+     (inlined by) qrcode_initBytes at c:\prj\ph-ng/.pio\libdeps\comport\QRCode_ID1584\src/qrcode.c:823
+    0x400db5ca: qrcode_initText at c:\prj\ph-ng/.pio\libdeps\comport\QRCode_ID1584\src/qrcode.c:852
+
+here:
+
+    static void rs_init(uint8_t degree, uint8_t *coeff) {
+    --> memset(coeff, 0, degree); <--
+        coeff[degree - 1] = 1;
+
+The four tables are identical (i did not expect that).
+
+## ECC_LOW
+
+| Version | Buffer | Size |
+| --- | --- | --- |
+| 1 | 56 | 21 |
+| 2 | 79 | 25 |
+| 3 | 106 | 29 |
+| 4 | 137 | 33 |
+| 5 | 172 | 37 |
+| 6 | 211 | 41 |
+| 7 | 254 | 45 |
+| 8 | 301 | 49 |
+| 9 | 352 | 53 |
+| 10 | 407 | 57 |
+| 11 | 466 | 61 |
+| 12 | 529 | 65 |
+| 13 | 596 | 69 |
+| 14 | 667 | 73 |
+| 15 | 742 | 77 |
+| 16 | 821 | 81 |
+| 17 | 904 | 85 |
+| 18 | 991 | 89 |
+| 19 | 1082 | 93 |
+| 20 | 1177 | 97 |
+| 21 | 1276 | 101 |
+| 22 | 1379 | 105 |
+| 23 | 1486 | 109 |
+| 24 | 1597 | 113 |
+| 25 | 1712 | 117 |
+| 26 | 1831 | 121 |
 
 ## ECC_MEDIUM
 
