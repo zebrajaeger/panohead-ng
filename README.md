@@ -37,6 +37,9 @@ Motorized panoramic head based on
 ## TODO
 
 - Consider backlash on movement.
+- Integrate TMC2208 UART connection into motor driver class
+  - Set Enabled/Disabled
+  - Set µSteps to 256
 - Menu shows always.
   - Battery level. (Font: battery19)
   - Mode.
@@ -44,15 +47,15 @@ Motorized panoramic head based on
 - ~~SubMenu for LEVELING.~~
 - ~~Sub Menu for JOGGING.~~
   - ~~Show pano bounds.~~
-  - Show current pos.
+  - ~~Show current pos.~~
   - ~~Show leveling.~~ Display to small...
 - ~~JOGGING in velocity Mode!?. Maybe that works better than in position mode.~~
   - Also Encoder for jogging!? For more accurate movement.
 - Sub Menu for PANO Settings.
   - Number of shots per position.
-  - Focus time per shot.
-  - Trigger  time per shot.
-  - Delay after movement.
+  - ~~Focus time per shot.~~
+  - ~~Trigger  time per shot.~~
+  - ~~Delay after movement.~~
   - Delay between shots.
 - Sub Menu for PANO.
   - Pause and Stop for PANO mode.
@@ -81,8 +84,9 @@ Motorized panoramic head based on
 
 ### Battery
 
-- I plan to use [INR18650-29E](https://irp-cdn.multiscreensite.com/80106371/files/uploaded/file9.pdf) because of it weight and price.
+- I plan to use [INR18650-29E](https://irp-cdn.multiscreensite.com/80106371/files/uploaded/file9.pdf) because of its weight and price.
 - Two 3S packs. I calculate with 9Wh/Cell. A pack has 27Wh.
+  - I destroyed one cell so there is a 2S and a 3S pack...
 - Power consumption
   - ca 1W with disabled steppers
   - ca. 5W with stopped steppers (and TMC2208 coolstep2)
