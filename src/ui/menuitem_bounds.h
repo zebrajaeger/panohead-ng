@@ -6,10 +6,9 @@
 
 #include "menuitem_base.h"
 
-
 class MenuItemBounds : public MenuItemBase {
  public:
-  typedef std::function<void(View view)> SaveCallback_t;
+  typedef std::function<void(MenuItemBounds &self)> SaveCallback_t;
 
   enum Index {
     PARTIAL = 0,
@@ -25,19 +24,26 @@ class MenuItemBounds : public MenuItemBase {
     CANCEL = 10
   };
 
-  MenuItemBounds(Display *display, const std::string &name);
-  void onSave(SaveCallback_t saveCallback);
+  MenuItemBounds(Display *display, const std::string &name, bool showPartialOption);
+
+  void onSave(SaveCallback_t saveCallback) { saveCallback_ = saveCallback; }
+
   virtual void setPositionX(double revX) override;
   virtual void setPositionY(double revY) override;
 
+  void setShowPartialOption(bool showPartialOption) { showPartialOption_ = showPartialOption; };
+  bool isShowPartialOption() { return showPartialOption_; };
+  const View &getView() const { return view_; }
+
  private:
-  void setPartial(bool isPartial);
   void render(MenuItem &menu);
   void render_(bool togglePartial, bool top, bool right, bool bottom, bool left, bool ok, bool cancel);
   bool pushButtonSetBounds(MenuItem &menu);
+  void setPartialItemsVisible(bool isPartial);
 
   float posRevX_;
   float posRevY_;
+  bool showPartialOption_;
   View view_;
   SaveCallback_t saveCallback_;
 };

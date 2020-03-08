@@ -5,14 +5,19 @@
 #include "displayutils.h"
 
 //------------------------------------------------------------------------------
-MenuItemBounds::MenuItemBounds(Display *display, const std::string &name)
+MenuItemBounds::MenuItemBounds(Display *display, const std::string &name, bool showPartialOption)
     : MenuItemBase(display, name),
       posRevX_(0.0),
       posRevY_(0.0),
-      view_(1.234, 12.345, 123.456, 0.0),
+      showPartialOption_(showPartialOption),
+      view_(),
       saveCallback_()
 //------------------------------------------------------------------------------
 {
+  if (!showPartialOption) {
+    view_.setPartial(false);
+  }
+
   using namespace std;
   using namespace std::placeholders;
 
@@ -33,13 +38,6 @@ MenuItemBounds::MenuItemBounds(Display *display, const std::string &name)
 }
 
 //------------------------------------------------------------------------------
-void MenuItemBounds::onSave(SaveCallback_t saveCallback)
-//------------------------------------------------------------------------------
-{
-  saveCallback_ = saveCallback;
-}
-
-//------------------------------------------------------------------------------
 void MenuItemBounds::setPositionX(double revX)
 //------------------------------------------------------------------------------
 {
@@ -55,7 +53,7 @@ void MenuItemBounds::setPositionY(double revY)
   requireRepaint();
 }
 
-void MenuItemBounds::setPartial(bool isPartial) {
+void MenuItemBounds::setPartialItemsVisible(bool isPartial) {
   bool enabled = !isPartial;
   (*this)["Top Right"]->setEnabled(enabled);
   (*this)["Right"]->setEnabled(enabled);
@@ -114,8 +112,10 @@ void MenuItemBounds::render_(bool togglePartial, bool top, bool right, bool bott
 
   u8g2->clearBuffer();
 
-  // partial / full pano
-  DisplayUtils::drawSymbolAt(u8g2, 22, 24 + 16, togglePartial, view_.isPartial() ? 0x8c : 0xf6);
+  if (showPartialOption_) {
+    // partial / full pano
+    DisplayUtils::drawSymbolAt(u8g2, 22, 24 + 16, togglePartial, view_.isPartial() ? 0x8c : 0xf6);
+  }
 
   // top
   if (top) {
@@ -168,14 +168,13 @@ bool MenuItemBounds::pushButtonSetBounds(MenuItem &menu)
 {
   switch (menu.getSelector().getIndex()) {
     case Index::PARTIAL:
-      view_.setPartial(!view_.isPartial());
-      setPartial(view_.isPartial());
+      setPartialItemsVisible(view_.togglePartial());
       menu.requireRepaint();
       break;
     case Index::OK:
       if (saveCallback_) {
-        saveCallback_(view_);
-        getDisplay()->getPanoData().setView(view_);
+        saveCallback_(*this);
+        // getDisplay()->getPanoData().setView(view_);
       }
       menu.goUp();
       break;

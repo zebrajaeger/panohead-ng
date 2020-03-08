@@ -11,34 +11,36 @@ class PanoData {
  public:
   PanoData() : view_(), picture_(), raster_(NULL), shots_(NULL), delayAfterMove_(0), focusTime_(0), triggerTime_(0) {}
 
-  void setView(const View& view) { view_ = view; }
   const View& getView() const { return view_; }
+  void setView(const View& view) { view_ = view; }
 
-  void setPicture(const Picture& picture) { picture_ = picture; }
   const Picture& getPicture() const { return picture_; }
+  Picture& getPicture() { return picture_; }
+  void setPicture(const Picture& picture) { picture_ = picture; }
 
-  void setRaster(const Raster* raster) { raster_ = raster; }
+  Raster* getRaster() { return raster_; }
   const Raster* getRaster() const { return raster_; }
+  void setRaster(Raster* raster) { raster_ = raster; }
 
-  void setShots(const pano::Shots* shots) { shots_ = shots; }
   const pano::Shots* getShots() const { return shots_; }
+  void setShots(pano::Shots* shots) { shots_ = shots; }
 
-  void setDelayAfterMove(int32_t delayAfterMove) { delayAfterMove_ = delayAfterMove; }
   int32_t getDelayAfterMove() { return delayAfterMove_; }
+  void setDelayAfterMove(int32_t delayAfterMove) { delayAfterMove_ = delayAfterMove; }
 
-  void setFocusTime(int32_t focusTime) { focusTime_ = focusTime; }
   int32_t getFocusTime() { return focusTime_; }
-  
-  void setTriggerTime(int32_t triggerTime) { triggerTime_ = triggerTime; }
+  void setFocusTime(int32_t focusTime) { focusTime_ = focusTime; }
+
   int32_t getTriggerTime() { return triggerTime_; }
+  void setTriggerTime(int32_t triggerTime) { triggerTime_ = triggerTime; }
 
   void toJson(String& json) const;
 
  private:
   View view_;
   Picture picture_;
-  const Raster* raster_;
-  const pano::Shots* shots_;
+  Raster* raster_;
+  pano::Shots* shots_;
   int32_t delayAfterMove_;
   int32_t focusTime_;
   int32_t triggerTime_;

@@ -6,7 +6,7 @@
 
 class DisplayUtils {
  public:
-   //------------------------------------------------------------------------------
+  //------------------------------------------------------------------------------
   static void drawSymbolAt(U8G2 *u8g2, uint8_t x, uint8_t y, bool selected, uint16_t symbol)
   //------------------------------------------------------------------------------
   {
@@ -91,19 +91,30 @@ class DisplayUtils {
   {
     u8g2->clearBuffer();
 
+    u8g2->setFont(u8g2_font_timR10_tf);
     uint8_t h = u8g2->getMaxCharHeight() - 2;
     uint8_t selected = menu.getSelector().getIndex();
     const std::vector<MenuItem *> &items = menu.getItems();
+
+    uint16_t x = 0;
+    uint16_t y = 0;
+
     for (std::size_t i = 0; i < items.size(); ++i) {
       const MenuItem &item = *items[i];
       if (item.isEnabled()) {
         u8g2->setFont(u8g2_font_timR10_tf);
-        drawStringAt(u8g2, 0, i * h, (i == selected), false, item.getName().c_str());
+        drawStringAt(u8g2, x, y, (i == selected), false, item.getName().c_str());
       } else {
         u8g2->setFont(u8g2_font_timR08_tf);
         std::string sep1 = "  ";
         std::string sep2 = "  ";
-        drawStringAt(u8g2, 0, i * h + 2, (i == selected), false, (sep1 + item.getName() + sep2).c_str());
+        drawStringAt(u8g2, x, y + 2, (i == selected), false, (sep1 + item.getName() + sep2).c_str());
+      }
+
+      y += h;
+      if (y > 64 - h) {
+        y = 0;
+        x += 64;
       }
     }
 
