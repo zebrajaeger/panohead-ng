@@ -5,15 +5,20 @@
 
 #include <U8g2lib.h>
 
+#include "display.h"
 #include "displayutils.h"
 
 class MenuItemBase : public MenuItem {
  public:
-  MenuItemBase(U8G2 *u8g2, const std::string &name) : MenuItem(name), u8g2_(u8g2) {}
+  MenuItemBase(Display *display, const std::string &name) : MenuItem(name), display_(display) {}
 
   virtual void setPositionX(double revX) {}
   virtual void setPositionY(double revY) {}
   virtual void setLeveling(float x, float y){};
 
-  U8G2 *u8g2_;
+  U8G2 *getU8g2();
+  Display *getDisplay();
+
+ private:
+  Display *display_;
 };
