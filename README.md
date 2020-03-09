@@ -38,7 +38,7 @@ Motorized panoramic head based on
 
 - Consider backlash on movement.
 - Menu shows always.
-  - Battery level.
+  - Battery level. (Font: battery19)
   - Mode.
 - ~~Main Menu to switch between IDLE, LEVELING, JOGGING and PANO mode.~~
 - ~~SubMenu for LEVELING.~~

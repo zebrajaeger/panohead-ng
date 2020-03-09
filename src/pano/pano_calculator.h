@@ -10,12 +10,12 @@ class PanoCalculator {
  public:
   Raster* createMatrixRasterForPano(const View& view, const Picture& panoPicture) {
     // pano size
-    double panoWidth = view.width();
-    double panoHeight = view.height();
+    double panoWidth = view.calculateWidth();
+    double panoHeight = view.calculateHeight();
 
     // pic size without overlap
-    double picWidth = panoPicture.widthWithinPano();
-    double picHeight = panoPicture.heightWithinPano();
+    double picWidth = panoPicture.getWidthWithinPano();
+    double picHeight = panoPicture.getHeightWithinPano();
 
     // pic count
     double countX = panoWidth / picWidth;
@@ -25,10 +25,10 @@ class PanoCalculator {
 
     // real overlap
     double realPictureWidthWithinPano = panoWidth / (double)pictureCountX;
-    double realOverlapWidth = panoPicture.width() - realPictureWidthWithinPano;
+    double realOverlapWidth = panoPicture.getWidth() - realPictureWidthWithinPano;
 
     double realPictureHeightWithinPano = panoHeight / (double)pictureCountY;
-    double realOverlapHeight = panoPicture.height() - realPictureHeightWithinPano;
+    double realOverlapHeight = panoPicture.getHeight() - realPictureHeightWithinPano;
 
     // calculate matrix
     double startX = view.getX1() - (realOverlapWidth / 2.0);
