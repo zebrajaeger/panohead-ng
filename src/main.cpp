@@ -20,7 +20,7 @@
 #include "pano/pano_calculator.h"
 #include "pano/panoutils.h"
 
-Logger& LOG(LoggerFactory::getLogger("MAIN"));
+Logger &LOG(LoggerFactory::getLogger("MAIN"));
 
 Statistic statistic;
 Display display;
@@ -114,8 +114,8 @@ void beginWiFi() {}
 bool loopWiFi() { return true; }
 #endif
 
-void statisticsIna219(){
-   float shuntvoltage = 0;
+void statisticsIna219() {
+  float shuntvoltage = 0;
   float busvoltage = 0;
   float current_mA = 0;
   float loadvoltage = 0;
@@ -126,12 +126,22 @@ void statisticsIna219(){
   current_mA = ina219.getCurrent_mA();
   power_mW = ina219.getPower_mW();
   loadvoltage = busvoltage + (shuntvoltage / 1000);
-  
-  Serial.print("Bus Voltage:   "); Serial.print(busvoltage); Serial.println(" V");
-  Serial.print("Shunt Voltage: "); Serial.print(shuntvoltage); Serial.println(" mV");
-  Serial.print("Load Voltage:  "); Serial.print(loadvoltage); Serial.println(" V");
-  Serial.print("Current:       "); Serial.print(current_mA); Serial.println(" mA");
-  Serial.print("Power:         "); Serial.print(power_mW); Serial.println(" mW");
+
+  Serial.print("Bus Voltage:   ");
+  Serial.print(busvoltage);
+  Serial.println(" V");
+  Serial.print("Shunt Voltage: ");
+  Serial.print(shuntvoltage);
+  Serial.println(" mV");
+  Serial.print("Load Voltage:  ");
+  Serial.print(loadvoltage);
+  Serial.println(" V");
+  Serial.print("Current:       ");
+  Serial.print(current_mA);
+  Serial.println(" mA");
+  Serial.print("Power:         ");
+  Serial.print(power_mW);
+  Serial.println(" mW");
   Serial.println("");
 }
 
@@ -317,8 +327,8 @@ void setup()
     LOG.e("Position sensor failed");
   }
 
-    // INA219
-   ina219.begin();
+  // INA219
+  ina219.begin();
 
   // Statistics
   if (statistic.begin()) {
@@ -330,11 +340,11 @@ void setup()
       // joystick.statistics();
       display.statistics();
       statisticsIna219();
-      analogReadResolution(12); 
-    // analogSetAttenuation(ADC_0db);
+      analogReadResolution(12);
+      // analogSetAttenuation(ADC_0db);
 
       // LOG.d("X VAL: %d", analogRead(36)); // a or b
-      LOG.d("X VAL: %d", analogRead(35)); // a or b
+      LOG.d("X VAL: %d", analogRead(35));  // a or b
     });
   } else {
     LOG.e("Statistic failed");
