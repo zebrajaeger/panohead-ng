@@ -4,12 +4,12 @@
 #include <functional>
 
 #include "hal/ads1115.h"
-#include "util/logger.h"
+#include "util/loggerfactory.h"
 #include "util/singletimer.h"
 
 class ADC {
  public:
-  ADC() : LOG("ADC"), adc_(), timer_("ADC"), currentChannel_(0) {}
+  ADC() : LOG(LoggerFactory::getLogger("ADC")), adc_(), timer_("ADC"), currentChannel_(0) {}
 
   bool begin(uint32_t periodMs = 5) {
     bool result = adc_.begin();

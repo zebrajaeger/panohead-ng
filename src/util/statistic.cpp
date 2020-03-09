@@ -19,7 +19,7 @@
 
 //------------------------------------------------------------------------------
 Statistic::Statistic()
-    : LOG("Statistics"),
+    : LOG(LoggerFactory::getLogger("Statistics")),
       lastMeasurementTime_(0),
       loopCount_(0),
       period_(10000000),

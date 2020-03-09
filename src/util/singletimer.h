@@ -3,13 +3,13 @@
 #include <Arduino.h>
 #include <functional>
 
-#include "util/logger.h"
+#include "util/loggerfactory.h"
 
 class SingleTimer {
  public:
   typedef std::function<void()> callback_t;
 
-  SingleTimer(const String& name);
+  SingleTimer(const std::string& name);
 
   void startS(double periodS, bool strict = false, bool recurrent = false);
   void startS(double periodS, bool strict, bool recurrent, callback_t cb);
@@ -32,7 +32,7 @@ class SingleTimer {
   void trigger();
 
  private:
-  Logger LOG;
+  Logger &LOG;
   bool running_;
   bool recurrent_;
   bool strict_;

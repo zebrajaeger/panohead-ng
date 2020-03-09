@@ -4,7 +4,7 @@
 
 //------------------------------------------------------------------------------
 Display::Display()
-    : LOG("Display"),
+    : LOG(LoggerFactory::getLogger("Display")),
       u8g2_(NULL),
       isBooting_(true),
       menu_("root"),

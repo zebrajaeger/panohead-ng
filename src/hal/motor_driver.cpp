@@ -2,7 +2,7 @@
 
 //------------------------------------------------------------------------------
 MotorDriver::MotorDriver()
-    : LOG("MotorDriver"),
+    : LOG(LoggerFactory::getLogger("MotorDriver")),
       clockSource_(),
       tmc429_(),
       translators_({NULL, NULL, NULL}),

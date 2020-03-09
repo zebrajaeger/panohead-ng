@@ -3,7 +3,7 @@
 #include <Arduino.h>
 #include <functional>
 
-#include "util/logger.h"
+#include "util/loggerfactory.h"
 
 // based on https://github.com/igorantolic/ai-esp32-rotary-encoder
 class Encoder {
@@ -31,7 +31,7 @@ class Encoder {
   void IRAM_ATTR isr();
 
  private:
-  Logger LOG;
+  Logger& LOG;
   portMUX_TYPE mux_;
 
   uint8_t encoderAPin_;

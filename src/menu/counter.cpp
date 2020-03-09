@@ -149,8 +149,8 @@ bool Counter::goToNextEnabledIndex() {
       return true;
     }
     pos_ = oldPos;
-    return false;
   }
+  return false;
 }
 
 /**

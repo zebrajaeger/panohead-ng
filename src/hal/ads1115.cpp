@@ -4,7 +4,7 @@
 
 //------------------------------------------------------------------------------
 ADS1115::ADS1115()
-    : LOG("ADS1115"),
+    : LOG(LoggerFactory::getLogger("ADS1115")),
       i2cAddress_(0),
       gain_(GAIN_ONE),
       conversionDelayMicros_(1163),
@@ -83,7 +83,7 @@ bool ADS1115::trigger_(uint8_t channel)
                     ADS1015_REG_CONFIG_CLAT_NONLAT |   // Non-latching (default val)
                     ADS1015_REG_CONFIG_CPOL_ACTVLOW |  // Alert/Rdy active low   (default val)
                     ADS1015_REG_CONFIG_CMODE_TRAD |    // Traditional comparator (default val)
-                    ADS1015_REG_CONFIG_DR_860SPS |    // 1600 samples per second (default)
+                    ADS1015_REG_CONFIG_DR_860SPS |     // 1600 samples per second (default)
                     ADS1015_REG_CONFIG_MODE_SINGLE;    // Single-shot mode (default)
 
   // Set PGA/voltage range

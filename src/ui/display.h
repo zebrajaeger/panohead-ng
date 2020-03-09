@@ -6,7 +6,7 @@
 
 #include "menu/menuitem.h"
 #include "pano/view.h"
-#include "util/logger.h"
+#include "util/loggerfactory.h"
 
 class Display {
  public:
@@ -51,7 +51,7 @@ class Display {
   void drawAngleAt(uint8_t x, uint8_t y, bool selected, bool invers, float angle);
   void drawStringAt(uint8_t x, uint8_t y, bool selected, bool invers, const char* text);
 
-  Logger LOG;
+  Logger &LOG;
   U8G2_SSD1306_128X64_NONAME_F_SW_I2C* u8g2_;
   bool isBooting_;
   MenuItem menu_;

@@ -3,7 +3,7 @@
 #include <Arduino.h>
 #include <functional>
 
-#include "util/logger.h"
+#include "util/loggerfactory.h"
 
 // thx to Adafruit:
 /*=========================================================================
@@ -102,7 +102,7 @@ class ADS1115 {
   bool readRegister_(uint8_t reg, uint16_t* result);
   bool writeRegister_(uint8_t reg, uint16_t value);
 
-  Logger LOG;
+  Logger& LOG;
   uint8_t i2cAddress_;
   adsGain_t gain_;
   uint32_t conversionDelayMicros_;

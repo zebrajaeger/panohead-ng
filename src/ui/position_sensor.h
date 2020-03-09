@@ -6,16 +6,16 @@
 // requires https://platformio.org/lib/show/5602/Bolder%20Flight%20Systems%20MPU9250
 #include <MPU9250.h>
 
-#include "util/logger.h"
+#include "util/loggerfactory.h"
 #include "util/singletimer.h"
 
 class PositionSensor {
  public:
   typedef std::function<void()> callback_t;
 
-  PositionSensor() : LOG("PositionSensor"), periosUs_(1000*50), imu_(Wire, 0x68), timer_("PositionSensor"){};
+  PositionSensor() : LOG(LoggerFactory::getLogger("PositionSensor")), periosUs_(1000 * 50), imu_(Wire, 0x68), timer_("PositionSensor"){};
 
-  bool begin(uint64_t periodUs = 1000*50) {
+  bool begin(uint64_t periodUs = 1000 * 50) {
     periosUs_ = periodUs;
     int16_t s = imu_.begin();
     if (s == 1) {
@@ -67,7 +67,7 @@ class PositionSensor {
   // Serial.println(IMU.getTemperature_C(), 6);
 
  private:
-  Logger LOG;
+  Logger &LOG;
   uint64_t periosUs_;
   MPU9250 imu_;
   SingleTimer timer_;
