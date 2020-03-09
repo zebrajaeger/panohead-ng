@@ -8,7 +8,7 @@
 #include "ui/joystick.h"
 #include "ui/position_sensor.h"
 #include "util/encoder.h"
-#include "util/logger.h"
+#include "util/loggerfactory.h"
 #include "util/singletimer.h"
 #include "util/statistic.h"
 
@@ -20,7 +20,7 @@
 #include "pano/pano_calculator.h"
 #include "pano/panoutils.h"
 
-Logger LOG("MAIN");
+Logger& LOG(LoggerFactory::getLogger("MAIN"));
 
 Statistic statistic;
 Display display;
@@ -72,6 +72,7 @@ Adafruit_INA219 ina219;
 #include "net/ota.h"
 #include "net/wifiutils.h"
 OTA ota;
+int i = SDA;
 // --------------------------------------------------------------------------------
 void beginWiFi()
 // --------------------------------------------------------------------------------
@@ -138,6 +139,8 @@ void statisticsIna219(){
 void setup()
 // --------------------------------------------------------------------------------
 {
+  // Logger::setLoglevel("Display", Logger::OFF);
+
   delay(1100);  // lets the visual studio code/platformIO console work...
 
   Serial.begin(115200);

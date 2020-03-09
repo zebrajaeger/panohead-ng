@@ -3,12 +3,12 @@
 #include <Arduino.h>
 #include <functional>
 
-#include "util/logger.h"
+#include "util/loggerfactory.h"
 #include "util/singletimer.h"
 
-#include "pano/shot.h"
 #include "pano/position.h"
 #include "pano/raster.h"
+#include "pano/shot.h"
 
 class PanoAutomat {
  public:
@@ -33,7 +33,7 @@ class PanoAutomat {
       statusCallback_t;
 
   PanoAutomat()
-      : LOG("PanoAutomat"),
+      : LOG(LoggerFactory::getLogger("PanoAutomat")),
         raster_(NULL),
         shots_(0, 0, 0),
         timer_("PanoAutomat"),
@@ -236,7 +236,7 @@ class PanoAutomat {
   }
 
  private:
-  Logger LOG;
+  Logger& LOG;
   Raster* raster_;
   pano::Shots shots_;
   SingleTimer timer_;

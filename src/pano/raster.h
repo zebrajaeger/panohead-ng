@@ -3,7 +3,7 @@
 
 #include <Arduino.h>
 
-#include "util/logger.h"
+#include "util/loggerfactory.h"
 
 #include "position.h"
 #include "picture.h"
@@ -22,7 +22,7 @@ class Matrix : public Raster {
  public:
   //------------------------------------------------------------------------------
   Matrix(const Position& startPosition, const Picture& panoPicture, uint32_t pictureColumns, uint32_t pictureRows)
-      : LOG("Matrix"),
+      : LOG(LoggerFactory::getLogger("Matrix")),
         startPosition_(startPosition),
         panoPicture_(panoPicture),
         pictureColumns_(pictureColumns),
@@ -74,7 +74,7 @@ class Matrix : public Raster {
   }
 
  private:
-  Logger LOG;
+  Logger &LOG;
   Position startPosition_;
   Picture panoPicture_;
   uint32_t pictureColumns_;

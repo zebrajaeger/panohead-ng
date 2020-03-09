@@ -7,7 +7,7 @@
 
 #include "hal/clocksource.h"
 #include "hal/translator.h"
-#include "util/logger.h"
+#include "util/loggerfactory.h"
 #include "util/singletimer.h"
 
 // requires https://platformio.org/lib/show/5822/TMC429
@@ -42,7 +42,7 @@ class MotorDriver {
   int64_t readPos(uint8_t axisIndex);
 
  private:
-  Logger LOG;
+  Logger& LOG;
   ClockSource clockSource_;
   TMC429 tmc429_;
   std::array<Translator*, 3> translators_;
