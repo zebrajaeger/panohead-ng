@@ -4,11 +4,11 @@
 
 #include "displayutils.h"
 
+#include "distributor.h"
+
 //------------------------------------------------------------------------------
 MenuItemBounds::MenuItemBounds(Display *display, const std::string &name, bool showPartialOption)
     : MenuItemBase(display, name),
-      posRevX_(0.0),
-      posRevY_(0.0),
       showPartialOption_(showPartialOption),
       view_(),
       saveCallback_()
@@ -24,6 +24,8 @@ MenuItemBounds::MenuItemBounds(Display *display, const std::string &name, bool s
   onRender(bind(&MenuItemBounds::render, this, _1));
   onButtonPushed(bind(&MenuItemBounds::pushButtonSetBounds, this, _1));
 
+  Distributor::getInstance().getPosition().addListener([this](const Position &value) { requireRepaint(); });
+
   add(new MenuItemBase(display, "TogglePartial"));
   add(new MenuItemBase(display, "Top"));
   add(new MenuItemBase(display, "Top Right"));
@@ -38,22 +40,9 @@ MenuItemBounds::MenuItemBounds(Display *display, const std::string &name, bool s
 }
 
 //------------------------------------------------------------------------------
-void MenuItemBounds::setPositionX(double revX)
+void MenuItemBounds::setPartialItemsVisible(bool isPartial)
 //------------------------------------------------------------------------------
 {
-  posRevX_ = revX;
-  requireRepaint();
-}
-
-//------------------------------------------------------------------------------
-void MenuItemBounds::setPositionY(double revY)
-//------------------------------------------------------------------------------
-{
-  posRevY_ = revY;
-  requireRepaint();
-}
-
-void MenuItemBounds::setPartialItemsVisible(bool isPartial) {
   bool enabled = !isPartial;
   (*this)["Top Right"]->setEnabled(enabled);
   (*this)["Right"]->setEnabled(enabled);
@@ -146,11 +135,12 @@ void MenuItemBounds::render_(bool togglePartial, bool top, bool right, bool bott
   }
 
   // pos:
+  Position &pos = Distributor::getInstance().getPosition().get();
   u8g2->setFont(u8g2_font_timR10_tf);
   u8g2->drawStr(71, 8, "x:");
-  DisplayUtils::drawAngleAt(u8g2, 87, -2, false, false, PanoUtils::revToDeg(posRevX_));
+  DisplayUtils::drawAngleAt(u8g2, 87, -2, false, false, PanoUtils::revToDeg(pos.getX()));
   u8g2->drawStr(71, 22, "y:");
-  DisplayUtils::drawAngleAt(u8g2, 87, 12, false, false, PanoUtils::revToDeg(posRevY_));
+  DisplayUtils::drawAngleAt(u8g2, 87, 12, false, false, PanoUtils::revToDeg(pos.getY()));
 
   // ok
   DisplayUtils::drawSymbolAt(u8g2, 64 + 8, 60, ok, 0x73);
@@ -174,7 +164,6 @@ bool MenuItemBounds::pushButtonSetBounds(MenuItem &menu)
     case Index::OK:
       if (saveCallback_) {
         saveCallback_(*this);
-        // getDisplay()->getPanoData().setView(view_);
       }
       menu.goUp();
       break;

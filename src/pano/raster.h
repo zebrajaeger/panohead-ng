@@ -3,9 +3,10 @@
 
 #include <Arduino.h>
 
+#include "data/position.h"
+
 #include "util/loggerfactory.h"
 
-#include "position.h"
 #include "picture.h"
 
 class Raster {

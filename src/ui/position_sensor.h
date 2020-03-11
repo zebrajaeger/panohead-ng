@@ -6,12 +6,14 @@
 // requires https://platformio.org/lib/show/5602/Bolder%20Flight%20Systems%20MPU9250
 #include <MPU9250.h>
 
+#include "data/position.h"
+
 #include "util/loggerfactory.h"
 #include "util/singletimer.h"
 
 class PositionSensor {
  public:
-  typedef std::function<void()> callback_t;
+  typedef std::function<void(PositionSensor &self)> PositionSensorCallback_t;
 
   PositionSensor() : LOG(LoggerFactory::getLogger("PositionSensor")), periosUs_(1000 * 50), imu_(Wire, 0x68), timer_("PositionSensor"){};
 
@@ -26,7 +28,7 @@ class PositionSensor {
 
       timer_.startUs(periosUs_, false, true, [this]() {
         if (imu_.readSensor() == 1 && cb_) {
-          cb_();
+          cb_(*this);
         }
       });
 
@@ -37,7 +39,7 @@ class PositionSensor {
 
   void loop() { timer_.loop(); }
 
-  void onData(callback_t cb) { cb_ = cb; }
+  void onData(PositionSensorCallback_t cb) { cb_ = cb; }
 
   float getAngleX() { return atan(imu_.getAccelX_mss() / imu_.getAccelZ_mss()) * 57.2957; }
   float getAngleY() { return atan(imu_.getAccelY_mss() / imu_.getAccelZ_mss()) * 57.2957; }
@@ -71,5 +73,5 @@ class PositionSensor {
   uint64_t periosUs_;
   MPU9250 imu_;
   SingleTimer timer_;
-  callback_t cb_;
+  PositionSensorCallback_t cb_;
 };

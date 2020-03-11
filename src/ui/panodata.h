@@ -2,7 +2,8 @@
 
 #include <Arduino.h>
 
-#include "pano/view.h"
+#include "data/view.h"
+
 #include "pano/picture.h"
 #include "pano/raster.h"
 #include "pano/shot.h"
@@ -22,8 +23,8 @@ class PanoData {
   const Raster* getRaster() const { return raster_; }
   void setRaster(Raster* raster) { raster_ = raster; }
 
-  const pano::Shots* getShots() const { return shots_; }
-  void setShots(pano::Shots* shots) { shots_ = shots; }
+  const Shots* getShots() const { return shots_; }
+  void setShots(Shots* shots) { shots_ = shots; }
 
   int32_t getDelayAfterMove() { return delayAfterMove_; }
   void setDelayAfterMove(int32_t delayAfterMove) { delayAfterMove_ = delayAfterMove; }
@@ -40,7 +41,7 @@ class PanoData {
   View view_;
   Picture picture_;
   Raster* raster_;
-  pano::Shots* shots_;
+  Shots* shots_;
   int32_t delayAfterMove_;
   int32_t focusTime_;
   int32_t triggerTime_;

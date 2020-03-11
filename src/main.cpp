@@ -4,6 +4,8 @@
 
 #include <Adafruit_INA219.h>
 
+#include "distributor.h"
+
 #include "ui/display.h"
 #include "ui/joystick.h"
 #include "ui/position_sensor.h"
@@ -22,6 +24,7 @@
 
 Logger &LOG(LoggerFactory::getLogger("MAIN"));
 
+Distributor &distributor = Distributor::getInstance();
 Statistic statistic;
 Display display;
 Joystick joystick;
@@ -211,10 +214,14 @@ void setup()
     motorDriver.onPosChange([](uint8_t axisIndex, double pos) {
       switch (axisIndex) {
         case 0:
-          display.setPositionX(pos);
+          // display.setPositionX(pos);
+          distributor.getPosition().get().setX(pos);
+          distributor.getPosition().propagateChange();
           break;
         case 1:
-          display.setPositionY(pos);
+          // display.setPositionY(pos);
+          distributor.getPosition().get().setY(pos);
+          distributor.getPosition().propagateChange();
           break;
         default:
           break;
@@ -258,7 +265,7 @@ void setup()
   Picture picture(PanoUtils::degToRev(30), PanoUtils::degToRev(40), PanoUtils::degToRev(12), PanoUtils::degToRev(16));
   Raster *raster = calc.createMatrixRasterForPano(view, picture);
 
-  pano::Shots shots(500, 500, 0);
+  Shots shots(500, 500, 0);
   shots += {500, 500};
   // shots += {500, 1000};
   // shots += {500, 2000};
@@ -301,19 +308,28 @@ void setup()
   if (joystick.begin(0.05, 1000, true)) {
     LOG.i("Joystick initialized");
     joystickTimer.startMs(50, false, true, [] {
+      Position joyPos(0.0, 0.0);
+      bool changed = false;
       if (joystick.getXAxis().hasValue()) {
+        changed = true;
         float v = joystick.getXAxis().getValue();
+        joyPos.setX(v);
         LOG.d("jogX: %f", v);
         motorDriver.jogV(0, 0.05 * v * v * v);  // v³ for better handling on slowmo
       } else {
         motorDriver.jogV(0, 0.0);
       }
       if (joystick.getYAxis().hasValue()) {
+        changed = true;
         float v = joystick.getYAxis().getValue();
+        joyPos.setY(v);
         LOG.d("jogY: %f", v);
         motorDriver.jogV(1, 0.05 * v * v * v);  // v³ for better handling on slowmo
       } else {
         motorDriver.jogV(1, 0.0);
+      }
+      if (changed) {
+        distributor.getJoystick().set(joyPos);
       }
     });
   } else {
@@ -323,7 +339,10 @@ void setup()
   // Position
   if (position.begin()) {
     LOG.i("Position sensor initialized");
-    position.onData([] { display.setLeveling(position.getRevX(), position.getRevY()); });
+    position.onData([](PositionSensor &self) {
+      distributor.getLevel().set(Position(self.getRevX(), self.getRevX()));
+      // display.setLeveling(position.getRevX(), position.getRevY());
+    });
   } else {
     LOG.e("Position sensor failed");
   }
@@ -341,7 +360,7 @@ void setup()
       // joystick.statistics();
       display.statistics();
       statisticsIna219();
-      analogReadResolution(12);
+      // analogReadResolution(12);
       // analogSetAttenuation(ADC_0db);
 
       // LOG.d("X VAL: %d", analogRead(36)); // a or b

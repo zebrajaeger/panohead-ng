@@ -3,6 +3,10 @@
 #include <ArduinoJson.h>
 #include <qrcode.h>
 
+#include "distributor.h"
+
+#include "pano/panoutils.h"
+
 //------------------------------------------------------------------------------
 MenuItemQR::MenuItemQR(Display *display, const std::string &name)
     : MenuItemBase(display, name)
@@ -28,7 +32,11 @@ void MenuItemQR::render(MenuItem &menu)
   QRCode qrcode;
   uint8_t qrcodeData[qrcode_getBufferSize(version)];
   String json;
-  getDisplay()->getPanoData().toJson(json);
+
+  Distributor::getInstance().getView();
+
+  PanoUtils::toJson(json, Distributor::getInstance().getView(), Distributor::getInstance().getPicture(),
+                    Distributor::getInstance().getRaster(), Distributor::getInstance().getShots());
   qrcode_initText(&qrcode, qrcodeData, version, ECC_HIGH, json.c_str());
 
   //   Serial.printf("| Version | Buffer | Size |\n");
@@ -51,11 +59,11 @@ void MenuItemQR::render(MenuItem &menu)
     }
   }
 
-  if (!getDisplay()->getPanoData().getRaster()) {
+  if (!Distributor::getInstance().getRaster()) {
     DisplayUtils::drawStringAt(getU8g2(), 70, 10, false, false, "no raster");
   }
 
-  if (!getDisplay()->getPanoData().getShots()) {
+  if (!Distributor::getInstance().getShots()) {
     DisplayUtils::drawStringAt(getU8g2(), 70, 30, false, false, "no shots");
   }
 

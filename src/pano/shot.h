@@ -3,7 +3,6 @@
 #include <Arduino.h>
 #include <vector>
 
-namespace pano {
 class Shot {
  public:
   Shot(uint32_t focusTimeMs, uint32_t triggerTimeMs) : focusTimeMs_(focusTimeMs), triggerTimeMs_(triggerTimeMs) {}
@@ -37,4 +36,3 @@ class Shots {
   uint32_t delayAfterLastShotMs_;
   std::vector<Shot> shots_;
 };
-}

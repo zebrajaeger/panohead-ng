@@ -2,9 +2,10 @@
 
 #include <Arduino.h>
 
+#include "data/position.h"
+#include "data/view.h"
+
 #include "pano/picture.h"
-#include "pano/position.h"
-#include "pano/view.h"
 
 class PanoCalculator {
  public:

@@ -4,7 +4,7 @@
 #include "menuitem_boot.h"
 #include "menuitem_main.h"
 
-Display::Display() : LOG(LoggerFactory::getLogger("Display")), u8g2_(NULL), isBooting_(true), menu_("root"), panoData_(){};
+Display::Display() : LOG(LoggerFactory::getLogger("Display")), u8g2_(NULL), isBooting_(true), menu_("root"){};
 
 Display::~Display() {
   if (u8g2_) delete u8g2_;
@@ -35,10 +35,6 @@ bool Display::begin(uint8_t sclGpio, uint8_t sdaGpio)
   return true;
 }
 
-void Display::setLeveling(float x, float y) { ((MenuItemBase*)menu_.getActivePathItem())->setLeveling(x, y); }
-void Display::setPositionX(double revX) { ((MenuItemBase*)menu_.getActivePathItem())->setPositionX(revX); }
-void Display::setPositionY(double revY) { ((MenuItemBase*)menu_.getActivePathItem())->setPositionY(revY); }
-
 void Display::statistics() { LOG.d("Selected: %s", menu_.getActivePath().c_str()); }
 void Display::bootStart() { menu_.setActiveItem("boot"); }
 void Display::bootFinished() { menu_.setActiveItem("main"); }
@@ -46,6 +42,4 @@ void Display::loop() { menu_.loop(); }
 void Display::encoderChanged(int16_t diff) { menu_.encoderChanged(diff); }
 void Display::buttonPushed() { menu_.buttonPushed(); }
 
-const PanoData& Display::getPanoData() const { return panoData_; }
-PanoData& Display::getPanoData() { return panoData_; }
 U8G2* Display::getU8g2() { return u8g2_; }

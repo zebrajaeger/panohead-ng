@@ -3,10 +3,11 @@
 #include <Arduino.h>
 #include <functional>
 
+#include "data/position.h"
+
 #include "util/loggerfactory.h"
 #include "util/singletimer.h"
 
-#include "pano/position.h"
 #include "pano/raster.h"
 #include "pano/shot.h"
 
@@ -55,7 +56,7 @@ class PanoAutomat {
     return true;
   }
 
-  bool start(Raster* raster, const pano::Shots& shots) {
+  bool start(Raster* raster, const Shots& shots) {
     if (raster_) {
       delete raster_;
     }
@@ -238,7 +239,7 @@ class PanoAutomat {
  private:
   Logger& LOG;
   Raster* raster_;
-  pano::Shots shots_;
+  Shots shots_;
   SingleTimer timer_;
   state_t state_;
   uint32_t currentColumn_;

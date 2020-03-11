@@ -3,6 +3,8 @@
 #include "menuitem_number.h"
 #include "displayutils.h"
 
+#include "distributor.h"
+
 //------------------------------------------------------------------------------
 MenuItemPanoConfig::MenuItemPanoConfig(Display *display, const std::string &name)
     : MenuItemBase(display, name)
@@ -10,13 +12,13 @@ MenuItemPanoConfig::MenuItemPanoConfig(Display *display, const std::string &name
 {
   add(new MenuItemBase(display, ".."));
   add((new MenuItemNumber(display, "Delay after move", "s", 10000))->onSave([this](const MenuItemNumber &self) {
-    getDisplay()->getPanoData().setDelayAfterMove(self.getValue());
+    Distributor::getInstance().getDelayAfterMove().set(self.getValue());
   }));
   add((new MenuItemNumber(display, "Focus time", "s", 10000))->onSave([this](const MenuItemNumber &self) {
-    getDisplay()->getPanoData().setFocusTime(self.getValue());
+    Distributor::getInstance().getFocusTime().set(self.getValue());
   }));
   add((new MenuItemNumber(display, "Trigger time", "s", 10000))->onSave([this](const MenuItemNumber &self) {
-    getDisplay()->getPanoData().setTriggerTime(self.getValue());
+    Distributor::getInstance().getTriggerTime().set(self.getValue());
   }));
   // panoConfig->add(new MenuItemBase(u8g2, "Delay between shots"));
   // panoConfig->add(new MenuItemBase(u8g2, "Shot count"));

@@ -1,21 +1,27 @@
 #include "menuitem_main.h"
 
 #include "menuitem_qr.h"
-#include "menuitem_bounds_pano.h"
-#include "menuitem_bounds_picture.h"
+#include "menuitem_bounds.h"
 #include "menuitem_level.h"
 #include "menuitem_panoconfig.h"
 #include "menuitem_overlap.h"
 #include "displayutils.h"
 
+#include "distributor.h"
 //------------------------------------------------------------------------------
 MenuItemMain::MenuItemMain(Display *display, const std::string &name)
     : MenuItemBase(display, name)
 //------------------------------------------------------------------------------
 {
   add(new MenuItemPanoConfig(display, "Pano cfg"));
-  add(new MenuItemBoundsPano(display, "Pano bnd"));
-  add(new MenuItemBoundsPicture(display, "Pic bnd"));
+  add((new MenuItemBounds(display, "Pic bnd", false))->onSave([this, display](MenuItemBounds &self) {
+    Picture& picture = Distributor::getInstance().getPicture().get();
+    picture.setWidth(self.getView().calculateWidth());
+    picture.setHeight(self.getView().calculateHeight());
+  }));
+  add((new MenuItemBounds(display, "Pano bnd", true))->onSave([this](MenuItemBounds &self) {
+    Distributor::getInstance().getView().set(self.getView());
+  }));
   add(new MenuItemOverlap(display, "Pic ovl"));
   add(new MenuItemLevel(display, "Leveling"));
   add(new MenuItemQR(display, "QR"));

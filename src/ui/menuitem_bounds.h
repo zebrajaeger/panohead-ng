@@ -2,7 +2,7 @@
 
 #include <functional>
 
-#include "pano/view.h"
+#include "data/view.h"
 
 #include "menuitem_base.h"
 
@@ -26,10 +26,10 @@ class MenuItemBounds : public MenuItemBase {
 
   MenuItemBounds(Display *display, const std::string &name, bool showPartialOption);
 
-  void onSave(SaveCallback_t saveCallback) { saveCallback_ = saveCallback; }
-
-  virtual void setPositionX(double revX) override;
-  virtual void setPositionY(double revY) override;
+  MenuItemBounds* onSave(SaveCallback_t saveCallback) {
+    saveCallback_ = saveCallback;
+    return this;
+  }
 
   void setShowPartialOption(bool showPartialOption) { showPartialOption_ = showPartialOption; };
   bool isShowPartialOption() { return showPartialOption_; };
@@ -41,8 +41,8 @@ class MenuItemBounds : public MenuItemBase {
   bool pushButtonSetBounds(MenuItem &menu);
   void setPartialItemsVisible(bool isPartial);
 
-  float posRevX_;
-  float posRevY_;
+  // float posRevX_;
+  // float posRevY_;
   bool showPartialOption_;
   View view_;
   SaveCallback_t saveCallback_;

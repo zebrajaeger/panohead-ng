@@ -3,6 +3,8 @@
 #include "menuitem_number.h"
 #include "displayutils.h"
 
+#include "distributor.h"
+
 //------------------------------------------------------------------------------
 MenuItemOverlap::MenuItemOverlap(Display *display, const std::string &name)
     : MenuItemBase(display, name)
@@ -10,10 +12,14 @@ MenuItemOverlap::MenuItemOverlap(Display *display, const std::string &name)
 {
   add(new MenuItemBase(display, ".."));
   add((new MenuItemNumber(display, "Overlap X", "%", 100000))->onSave([this](const MenuItemNumber &self) {
-    getDisplay()->getPanoData().getPicture().setOverlapWidth((double)self.getValue() / 1000.0);
+    Value<Picture> &picture = Distributor::getInstance().getPicture();
+    picture.get().setOverlapWidth((double)self.getValue() / 1000.0);
+    picture.propagateChange();
   }));
   add((new MenuItemNumber(display, "Overlap Y", "%", 100000))->onSave([this](const MenuItemNumber &self) {
-    getDisplay()->getPanoData().getPicture().setOverlapHeight((double)self.getValue() / 1000.0);
+    Value<Picture> &picture = Distributor::getInstance().getPicture();
+    picture.get().setOverlapHeight((double)self.getValue() / 1000.0);
+    picture.propagateChange();
   }));
 
   onRender([this](MenuItem &menu) {
