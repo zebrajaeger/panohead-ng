@@ -2,12 +2,12 @@
 
 #include <Arduino.h>
 
-#include "util/logger.h"
+#include "util/loggerfactory.h"
 
 class JoystickAxis {
  public:
 
-  JoystickAxis(const String& name);
+  JoystickAxis(const std::string& name);
 
   void begin(float threshold = 0.1, float minRawDistanceFromCenterToBeValid = 0.0, bool autoCalibrate = true);
   void statistics();
@@ -24,7 +24,7 @@ class JoystickAxis {
   void reCalculateBorders();
   static float map(float x, float in_min, float in_max, float out_min, float out_max);
 
-  Logger LOG;
+  Logger &LOG;
 
   bool autoCalibrate_;
   bool isCalibrated_;

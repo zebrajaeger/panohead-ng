@@ -20,19 +20,19 @@ void IRAM_ATTR Encoder::isr()
 
 //------------------------------------------------------------------------------
 Encoder::Encoder()
-    : LOG("Encoder"),
-    mux_(portMUX_INITIALIZER_UNLOCKED),
-    encoderAPin_(-1),
-    encoderBPin_(-1),
-    encoderButtonPin_(-1),
-    encoderVccPin_(-1),
-    encoderPos_(0),
-    previousEncoderPos_(0),
-    previousAB_(0),
-    previousButtonState_(false),
-    encoderStates_{0, -1, 1, 0, 1, 0, 0, -1, -1, 0, 0, 1, 0, 1, -1, 0},
-    valueCallback_(),
-    buttonCallback_()
+    : LOG(LoggerFactory::getLogger("Encoder")),
+      mux_(portMUX_INITIALIZER_UNLOCKED),
+      encoderAPin_(-1),
+      encoderBPin_(-1),
+      encoderButtonPin_(-1),
+      encoderVccPin_(-1),
+      encoderPos_(0),
+      previousEncoderPos_(0),
+      previousAB_(0),
+      previousButtonState_(false),
+      encoderStates_{0, -1, 1, 0, 1, 0, 0, -1, -1, 0, 0, 1, 0, 1, -1, 0},
+      valueCallback_(),
+      buttonCallback_()
 //------------------------------------------------------------------------------
 {}
 
@@ -122,7 +122,7 @@ int16_t Encoder::getValue() const
 }
 
 //------------------------------------------------------------------------------
-void Encoder::setValue(int16_t v) 
+void Encoder::setValue(int16_t v)
 //------------------------------------------------------------------------------
 {
   encoderPos_ = v;

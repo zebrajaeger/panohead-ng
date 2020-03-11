@@ -3,14 +3,14 @@
 #include <Arduino.h>
 #include <functional>
 
-#include "util/logger.h"
+#include "util/loggerfactory.h"
 #include "util/singletimer.h"
 
 class ADC {
  public:
   typedef std::function<void(uint8_t channel, uint16_t value)> ConversionCallback_t;
 
-  ADC() : LOG("ADC"), timer_("ADC"), currentChannel_(0) {}
+  ADC() : LOG(LoggerFactory::getLogger("ADC")), timer_("ADC"), currentChannel_(0) {}
 
   virtual bool begin(uint32_t periodMs = 5) {
     timer_.startMs(periodMs, false, true, std::bind(&ADC::onTimer, this));

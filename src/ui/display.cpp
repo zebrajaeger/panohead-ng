@@ -1,9 +1,10 @@
+
 #include "display.h"
 
 #include "menuitem_boot.h"
 #include "menuitem_main.h"
 
-Display::Display() : LOG("Display"), u8g2_(NULL), isBooting_(true), menu_("root"), panoData_(){};
+Display::Display() : LOG(LoggerFactory::getLogger("Display")), u8g2_(NULL), isBooting_(true), menu_("root"), panoData_(){};
 
 Display::~Display() {
   if (u8g2_) delete u8g2_;

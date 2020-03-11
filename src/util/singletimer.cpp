@@ -1,8 +1,8 @@
 #include "singletimer.h"
 
 //------------------------------------------------------------------------------
-SingleTimer::SingleTimer(const String& name)
-    : LOG("SingleTimer(" + name + ")"),
+SingleTimer::SingleTimer(const std::string& name)
+    : LOG(LoggerFactory::getLogger("SingleTimer(" + name + ")")),
       running_(false)
 //------------------------------------------------------------------------------
 {}

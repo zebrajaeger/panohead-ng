@@ -3,8 +3,8 @@
 #include <limits>
 
 //------------------------------------------------------------------------------
-JoystickAxis::JoystickAxis(const String& name)
-    : LOG(name),
+JoystickAxis::JoystickAxis(const std::string& name)
+    : LOG(LoggerFactory::getLogger(name)),
       autoCalibrate_(true),
       isCalibrated_(false),
       minRawDistanceFromCenterToBeValid_(0.0),

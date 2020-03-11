@@ -20,7 +20,7 @@
 #include "Arduino.h"
 #include <functional>
 
-#include "util/logger.h"
+#include "util/loggerfactory.h"
 
 class OTA {
  public:
@@ -38,7 +38,7 @@ class OTA {
   void onProgress(ProgressCallback_t cb);
 
  private:
-  Logger LOG;
+  Logger &LOG;
   bool isUpdating_;
   StartEndCallback_t startCallback_;
   StartEndCallback_t endCallback_;
