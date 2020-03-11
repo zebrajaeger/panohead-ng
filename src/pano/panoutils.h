@@ -8,6 +8,7 @@
 #include "data/view.h"
 #include "pano/picture.h"
 #include "pano/shot.h"
+#include "pano/raster.h"
 
 class PanoUtils {
  public:

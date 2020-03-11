@@ -7,8 +7,6 @@
 #include "util/loggerfactory.h"
 #include "menu/menuitem.h"
 
-#include "panodata.h"
-
 class Display {
  public:
   Display();
