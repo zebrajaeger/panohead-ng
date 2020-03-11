@@ -3,41 +3,44 @@
 #include <Arduino.h>
 #include <functional>
 
-#include "hal/ads1115.h"
 #include "util/logger.h"
 #include "util/singletimer.h"
 
 class ADC {
  public:
-  ADC() : LOG("ADC"), adc_(), timer_("ADC"), currentChannel_(0) {}
+  typedef std::function<void(uint8_t channel, uint16_t value)> ConversionCallback_t;
 
-  bool begin(uint32_t periodMs = 5) {
-    bool result = adc_.begin();
-    if (result) {
-      timer_.startMs(periodMs, false, true, std::bind(&ADC::onTimer, this));
-    }
-    return result;
+  ADC() : LOG("ADC"), timer_("ADC"), currentChannel_(0) {}
+
+  virtual bool begin(uint32_t periodMs = 5) {
+    timer_.startMs(periodMs, false, true, std::bind(&ADC::onTimer, this));
+    return true;
   }
+  virtual void loop() { timer_.loop(); }
+  virtual uint8_t getChannelCount() = 0;
 
-  void loop() {
-    adc_.loop();
-    timer_.loop();
-  }
-
-  void onResult(ADS1115::conversionCallback_t cb) { adc_.onResult(cb); }
+  void onResult(ConversionCallback_t cb) { conversionCallback_ = cb; }
 
  protected:
-  void onTimer() {
-    adc_.triggerConversion(currentChannel_);
-    currentChannel_++;
-    if (currentChannel_ > 3) {
-      currentChannel_ = 0;
+  virtual void triggerConversion(uint8_t channel) = 0;
+  void publishValue(uint8_t channel, uint16_t value) {
+    if (conversionCallback_) {
+      conversionCallback_(channel, value);
     }
   }
 
  private:
+  void onTimer() {
+    uint8_t c = getChannelCount();
+    if (c > 0) {
+      triggerConversion(currentChannel_++);
+      if (currentChannel_ >= c) {
+        currentChannel_ = 0;
+      }
+    }
+  };
   Logger LOG;
-  ADS1115 adc_;
   SingleTimer timer_;
   uint8_t currentChannel_;
+  ConversionCallback_t conversionCallback_;
 };

@@ -87,12 +87,12 @@ typedef enum {
 
 class ADS1115 {
  public:
-  typedef std::function<void(uint8_t channel, uint16_t value)> conversionCallback_t;
+  typedef std::function<void(uint8_t channel, uint16_t value)> ConversionCallback_t;
 
   ADS1115();
   bool begin(uint8_t i2cAddress = 0x48);
   void loop();
-  void onResult(conversionCallback_t cb);
+  void onResult(ConversionCallback_t cb);
   bool triggerConversion(uint8_t channel);
   bool readSync(uint8_t channel, uint16_t& result);
 
@@ -108,5 +108,5 @@ class ADS1115 {
   uint32_t conversionDelayMicros_;
   uint64_t conversionEnd_;
   uint8_t requestedChannel_;
-  conversionCallback_t cb_;
+  ConversionCallback_t cb_;
 };

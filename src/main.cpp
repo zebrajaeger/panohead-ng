@@ -12,7 +12,7 @@
 #include "util/singletimer.h"
 #include "util/statistic.h"
 
-#include "hal/adc.h"
+#include "hal/adc_esp32.h"
 #include "hal/camera.h"
 #include "hal/motor_driver.h"
 #include "menu/menuitem.h"
@@ -30,7 +30,7 @@ Encoder encoder;
 MotorDriver motorDriver;
 PanoAutomat panoAutomat;
 Camera camera;
-ADC adc;
+ADC_ESP32 adc;
 PositionSensor position;
 Adafruit_INA219 ina219;
 
@@ -113,8 +113,8 @@ void beginWiFi() {}
 bool loopWiFi() { return true; }
 #endif
 
-void statisticsIna219(){
-   float shuntvoltage = 0;
+void statisticsIna219() {
+  float shuntvoltage = 0;
   float busvoltage = 0;
   float current_mA = 0;
   float loadvoltage = 0;
@@ -125,12 +125,22 @@ void statisticsIna219(){
   current_mA = ina219.getCurrent_mA();
   power_mW = ina219.getPower_mW();
   loadvoltage = busvoltage + (shuntvoltage / 1000);
-  
-  Serial.print("Bus Voltage:   "); Serial.print(busvoltage); Serial.println(" V");
-  Serial.print("Shunt Voltage: "); Serial.print(shuntvoltage); Serial.println(" mV");
-  Serial.print("Load Voltage:  "); Serial.print(loadvoltage); Serial.println(" V");
-  Serial.print("Current:       "); Serial.print(current_mA); Serial.println(" mA");
-  Serial.print("Power:         "); Serial.print(power_mW); Serial.println(" mW");
+
+  Serial.print("Bus Voltage:   ");
+  Serial.print(busvoltage);
+  Serial.println(" V");
+  Serial.print("Shunt Voltage: ");
+  Serial.print(shuntvoltage);
+  Serial.println(" mV");
+  Serial.print("Load Voltage:  ");
+  Serial.print(loadvoltage);
+  Serial.println(" V");
+  Serial.print("Current:       ");
+  Serial.print(current_mA);
+  Serial.println(" mA");
+  Serial.print("Power:         ");
+  Serial.print(power_mW);
+  Serial.println(" mW");
   Serial.println("");
 }
 
@@ -252,39 +262,40 @@ void setup()
   // panoAutomat.start(raster, shots);
 
   // ADC
-  if (adc.begin()) {
-    LOG.i("ADS1115 found");
+  // if (adc.begin({36,37,38,39,32,33,34,35},250)) { // ADC_CH[0..7]
+  if (adc.begin({32, 35})) {  // ADC_CH[4,7]
+    LOG.i("ADC found");
     adc.onResult([](uint8_t channel, uint16_t value) {
       // LOG.i("ADC : %u[%u]", channel, value);
       switch (channel) {
         case 0: {
           if (joystick.getXAxis().isCalibrated()) {
             joystick.setRawX(value);
+            // LOG.d("joy.x value @ %u", value);
           } else {
             joystick.setRawCenterX(value);
-            LOG.d("joy.x calibrated @ %u", value);
+            LOG.d("joy.x center calibrated @ %u", value);
           }
         } break;
         case 1: {
           if (joystick.getYAxis().isCalibrated()) {
             joystick.setRawY(value);
+            // LOG.d("joy.y value @ %u", value);
           } else {
             joystick.setRawCenterY(value);
-            LOG.d("joy.y calibrated @ %u", value);
+            LOG.d("joy.y center calibrated @ %u", value);
           }
         } break;
-        case 2:
-          break;
-        case 3:
+        default:
           break;
       }
     });
   } else {
-    LOG.e("ADS1115 NOT found");
+    LOG.e("ADC NOT found");
   }
 
   // Joystick
-  if (joystick.begin(0.05, 5000, true)) {
+  if (joystick.begin(0.05, 1000, true)) {
     LOG.i("Joystick initialized");
     joystickTimer.startMs(50, false, true, [] {
       if (joystick.getXAxis().hasValue()) {
@@ -314,8 +325,8 @@ void setup()
     LOG.e("Position sensor failed");
   }
 
-    // INA219
-   ina219.begin();
+  // INA219
+  ina219.begin();
 
   // Statistics
   if (statistic.begin()) {
@@ -327,11 +338,11 @@ void setup()
       // joystick.statistics();
       display.statistics();
       statisticsIna219();
-      analogReadResolution(12); 
-    // analogSetAttenuation(ADC_0db);
+      analogReadResolution(12);
+      // analogSetAttenuation(ADC_0db);
 
       // LOG.d("X VAL: %d", analogRead(36)); // a or b
-      LOG.d("X VAL: %d", analogRead(35)); // a or b
+      LOG.d("X VAL: %d", analogRead(35));  // a or b
     });
   } else {
     LOG.e("Statistic failed");
