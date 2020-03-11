@@ -67,7 +67,7 @@ Motorized panoramic head based on
 - SubMenu to calibrate Motor speed and accleration values.
 - ~~Scopes for Logger.~~
   - ~~Static map to see/reach all loggers for changing level.~~
-  - ~~Check current level to avoid useless calculations. isDebug(), isInfo(), ...~
+  - ~~Check current level to avoid useless calculations. isDebug(), isInfo(), ...~~
   - Using Lambdas? LOG.onDebug([]{ LOG.d("foo: %f", myComplicatedCalculation(); )})
 - WiFi
   - WS Server.
