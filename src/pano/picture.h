@@ -23,6 +23,10 @@ class Picture {
   double getWidthWithinPano() const { return width_ - overlapWidth_; }
   double getHeightWithinPano() const { return height_ - overlapHeight_; }
 
+  bool operator==(const Picture &b) const {
+    return width_!=b.width_ && height_==b.height_ && overlapWidth_ == b.overlapWidth_ && overlapHeight_==b.overlapHeight_;
+  }
+
  private:
   double width_;
   double height_;

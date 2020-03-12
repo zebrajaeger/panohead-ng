@@ -23,6 +23,14 @@ class Distributor {
   Value<Position>& getPosition() { return position_; }
   Value<Position>& getLevel() { return level_; }
   Value<Position>& getJoystick() { return joystick_; }
+  Value<bool>& getAxisMovingX() { return axisMovingX_; }
+  Value<bool>& getAxisMovingY() { return axisMovingY_; }
+  Value<bool>& getCameraFocus() { return cameraFocus_; }
+  Value<bool>& getCameraTrigger() { return cameraTrigger_; }
+  Value<const char*>& getPanoAutomatStatus() { return panoAutomatStatus_; }
+  Value<uint32_t>& getPanoAutomatColumn() { return panoAutomatColumn_; }
+  Value<uint32_t>& getPanoAutomatRow() { return panoAutomatRow_; }
+  Value<uint32_t>& getPanoAutomatShot() { return panoAutomatShot_; }
 
  private:
   Value<View> view_;
@@ -35,4 +43,12 @@ class Distributor {
   Value<Position> position_;
   Value<Position> level_;
   Value<Position> joystick_;
+  Value<bool> axisMovingX_;
+  Value<bool> axisMovingY_;
+  Value<bool> cameraFocus_;
+  Value<bool> cameraTrigger_;
+  Value<const char*> panoAutomatStatus_;
+  Value<uint32_t> panoAutomatColumn_;
+  Value<uint32_t> panoAutomatRow_;
+  Value<uint32_t> panoAutomatShot_;
 };

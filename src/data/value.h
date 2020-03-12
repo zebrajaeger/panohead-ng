@@ -14,8 +14,11 @@ class Value {
   const V& get() const { return value_; }
   void set(const V& value, bool isValid = true) {
     isValid_ = isValid;
+    bool changed = (value_ == value);
     value_ = value;
-    propagateChange();
+    if (changed) {
+      propagateChange();
+    }
   }
   const V& operator*() const& { return value_; }
   V& operator*() & { return value_; }
@@ -31,6 +34,15 @@ class Value {
 
   void addListener(ValueListenerCallback_t listener) { listeners_.push_back(listener); }
   void removeListener(ValueListenerCallback_t listener) { listeners_.remove(listener); }
+
+  bool operator==(const Value<V>& b) const {
+    if (isValid_ && b.isValid_) {
+      return (value_ == b.value_);
+    } else {
+      return (isValid_ == b.isValid_);
+    }
+  }
+  bool operator==(const V& b) const { return isValid_ ? value_ == b : false; }
 
  private:
   std::vector<ValueListenerCallback_t> listeners_;

@@ -34,6 +34,15 @@ class Optional {
   T&& operator*() && { return *value_; }
   const T&& operator*() const&& { return *value_; }
 
+  bool operator==(const Optional<T>& b) const {
+    if (isSet_ && b.isSet_) {
+      return (value_ == b.value_);
+    } else {
+      return (isSet_ == b.isSet_);
+    }
+  }
+  bool operator==(const T& b) const { return isSet_ ? value_ == b : false; }
+
  private:
   bool isSet_;
   T value_;

@@ -41,6 +41,8 @@ class View {
     }
   }
 
+  bool operator==(const View &b) const { return x1_ == b.x1_ && x2_ == b.x2_ && y1_ == b.y1_ && y2_ == b.y2_; }
+
  private:
   Optional<double> x1_;
   Optional<double> x2_;

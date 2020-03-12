@@ -209,6 +209,8 @@ void setup()
     motorDriver.onStatusChange([](uint8_t axisIndex, const std::array<bool, 3> &axisMoving) {
       if (!axisMoving[0] && !axisMoving[1] && !axisMoving[2]) {
         panoAutomat.moveDone();
+        distributor.getAxisMovingX().set(axisMoving[0]);
+        distributor.getAxisMovingY().set(axisMoving[1]);
       }
     });
     motorDriver.onPosChange([](uint8_t axisIndex, double pos) {
@@ -244,6 +246,8 @@ void setup()
     panoAutomat.onCamera([](bool focus, bool trigger) {
       // LOG.d("Camera: %d, %d", focus, trigger);
       camera.set(focus, trigger);
+      distributor.getCameraFocus().set(focus);
+      distributor.getCameraTrigger().set(trigger);
     });
     panoAutomat.onMove([](Position pos) {
       // LOG.d("GoTo: %f, %f", pos.getX(), pos.getY());
@@ -252,8 +256,13 @@ void setup()
     });
     panoAutomat.onStatus(
         [](uint32_t columnIndex, uint32_t rowIndex, uint32_t shotIndex, PanoAutomat::state_t stateFrom, PanoAutomat::state_t stateTo) {
+          const char *stateName = PanoAutomat::stateToName(stateTo);
           LOG.d("@%d,%d[%d], %s -> %s", columnIndex, rowIndex, shotIndex, PanoAutomat::stateToName(stateFrom),
                 PanoAutomat::stateToName(stateTo));
+          distributor.getPanoAutomatStatus().set(stateName);
+          distributor.getPanoAutomatColumn().set(columnIndex);
+          distributor.getPanoAutomatRow().set(rowIndex);
+          distributor.getPanoAutomatShot().set(shotIndex);
         });
   } else {
     LOG.e("PanoAutomat failed");
