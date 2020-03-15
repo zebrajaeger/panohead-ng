@@ -14,7 +14,8 @@ class Value {
   const V& get() const { return value_; }
   void set(const V& value, bool isValid = true) {
     isValid_ = isValid;
-    bool changed = (value_ == value);
+    bool changed = !(value_ == value);
+    // Serial.printf("VAL changed: %d\n", changed);
     value_ = value;
     if (changed) {
       propagateChange();

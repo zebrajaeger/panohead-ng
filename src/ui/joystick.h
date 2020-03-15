@@ -14,22 +14,22 @@ class Joystick {
   /**
    * Calibration
    */
-  void setRawCenterX(float rawCenterValueX);
-  void setRawCenterY(float rawCenterValueY);
+  void setRawCenterX(float rawCenterValueX){x_.setRawCenter(rawCenterValueX);}
+  void setRawCenterY(float rawCenterValueY){y_.setRawCenter(rawCenterValueY);}
   void setRawCenter(float rawCenterValueX, float rawCenterValueY);
-  bool isCalibrated() const;
+  bool isCalibrated() const{return x_.isCalibrated() && y_.isCalibrated();}
 
-  float setRawX(float x);
-  float setRawY(float y);
+  float setRawX(float x){return x_.setRawValue(x);}
+  float setRawY(float y){return y_.setRawValue(y);}
   void setRaw(float x, float y);
 
-  float getX() const;
-  float getY() const;
+  float getX() const{return x_.getValue();}
+  float getY() const{return y_.getValue();}
 
-  bool hasValue() const;
+  bool hasValue() const{return x_.hasValue() || y_.hasValue();}
 
-  const JoystickAxis& getXAxis() const;
-  const JoystickAxis& getYAxis() const;
+  const JoystickAxis& getXAxis() const{return x_;}
+  const JoystickAxis& getYAxis() const{return y_;}
 
  private:
   JoystickAxis x_;

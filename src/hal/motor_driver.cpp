@@ -21,6 +21,13 @@ bool MotorDriver::begin(uint8_t pinCS, uint8_t pinClockSource, uint8_t clockSpee
 {
   translators_ = translators;
 
+// _spi_num: 2 
+// VSPI: 3     
+// sck: 14     
+// miso: 12    
+// mosi: 13
+// ss: 15
+  SPI.begin(14,2,4,-1);
   clockSource_.begin(pinClockSource, 1000000 * clockSpeedMHz);
   delay(100);  // give tmc some time to initialize
 

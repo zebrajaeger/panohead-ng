@@ -24,18 +24,18 @@
 
 class OTA {
  public:
- typedef std::function<void()> StartEndCallback_t;
- typedef std::function<void(double uploaded)> ProgressCallback_t;
+  typedef std::function<void()> StartEndCallback_t;
+  typedef std::function<void(double uploaded)> ProgressCallback_t;
 
   OTA();
   bool begin();
   void loop();
 
-  bool isUpdating();
+  bool isUpdating(){return isUpdating_;}
 
-  void onStart(StartEndCallback_t cb);
-  void onEnd(StartEndCallback_t cb);
-  void onProgress(ProgressCallback_t cb);
+  void onStart(StartEndCallback_t cb) { startCallback_ = cb; }
+  void onEnd(StartEndCallback_t cb) { endCallback_ = cb; }
+  void onProgress(ProgressCallback_t cb) { progressCallback_ = cb; }
 
  private:
   Logger &LOG;

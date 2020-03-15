@@ -34,7 +34,7 @@ bool OTA::begin()
 //------------------------------------------------------------------------------
 {
   ArduinoOTA
-      .onStart([&]() {
+      .onStart([this] {
         if (startCallback_) {
           startCallback_();
         }
@@ -47,36 +47,36 @@ bool OTA::begin()
           type = "filesystem";
           SPIFFS.end();
         }
-        Serial.println("[OTA] Start updating " + type);
+        LOG.i("Start updating.");
       })
       .onEnd([&]() {
         if (endCallback_) {
           endCallback_();
         }
 
-        Serial.println("\nEnd");
+        LOG.i("End");
         isUpdating_ = false;
       })
       .onProgress([&](unsigned int progress, unsigned int total) {
         if (progressCallback_) {
-          progressCallback_((double)progress/(double)total);
+          progressCallback_((double)progress / (double)total);
         }
-
-        Serial.printf("[OTA] Progress: %u%%\r", (progress / (total / 100)));
+        float percent = (100.0 * (float)progress) / (float)total;
+        Serial.printf("Progress: %5.1f%%\r", percent);
       })
       .onError([=](ota_error_t error) {
         isUpdating_ = false;
-        Serial.printf("[OTA] Error[%u]: ", error);
+        LOG.e("Error[%u]: ", error);
         if (error == OTA_AUTH_ERROR)
-          Serial.println("[OTA] Auth Failed");
+          LOG.e("Auth Failed");
         else if (error == OTA_BEGIN_ERROR)
-          Serial.println("[OTA] Begin Failed");
+          LOG.e("Begin Failed");
         else if (error == OTA_CONNECT_ERROR)
-          Serial.println("[OTA] Connect Failed");
+          LOG.e("Connect Failed");
         else if (error == OTA_RECEIVE_ERROR)
-          Serial.println("[OTA] Receive Failed");
+          LOG.e("Receive Failed");
         else if (error == OTA_END_ERROR)
-          Serial.println("[OTA] End Failed");
+          LOG.e("End Failed");
       });
 
   ArduinoOTA.begin();
@@ -89,23 +89,3 @@ void OTA::loop()
 {
   ArduinoOTA.handle();
 }
-
-//------------------------------------------------------------------------------
-bool OTA::isUpdating()
-//------------------------------------------------------------------------------
-{
-  return isUpdating_;
-}
-
-//------------------------------------------------------------------------------
-void OTA::onStart(StartEndCallback_t cb)
-//------------------------------------------------------------------------------
-{}
-//------------------------------------------------------------------------------
-void OTA::onEnd(StartEndCallback_t cb)
-//------------------------------------------------------------------------------
-{}
-//------------------------------------------------------------------------------
-void OTA::onProgress(ProgressCallback_t cb)
-//------------------------------------------------------------------------------
-{}

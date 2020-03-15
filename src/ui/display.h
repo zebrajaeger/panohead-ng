@@ -12,7 +12,7 @@ class Display {
   Display();
   ~Display();
 
-  bool begin(uint8_t sclGpio, uint8_t sdaGpio);
+  bool begin();
 
   void statistics();
   void bootStart();

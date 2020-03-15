@@ -26,6 +26,8 @@ Motorized panoramic head based on
 - [PlatformIO](https://platformio.org/) / Arduino for software.
 - Maybe [Angular](https://angular.io/) (10+ with ivy) and websockets on JSON base for remote interfacing.
 
+![Prototype](IMG_20200315_144253_537-1600.jpg "Prototype")
+
 ## Power supply
 
 - Battery from [4 - 12.6]V (4-8 NiMH or 2-3 LiPo in series).

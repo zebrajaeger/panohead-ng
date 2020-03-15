@@ -13,12 +13,12 @@ class JoystickAxis {
   void statistics();
 
   void setRawCenter(float rawCenter);
-  bool isCalibrated() const;
+  bool isCalibrated() const {return isCalibrated_;}
   void setRawBorder(float rawMin, float rawMax);
 
   float setRawValue(float v);
-  float getValue() const ;
-  bool hasValue() const;
+  float getValue() const { return currentValue_;}
+  bool hasValue() const{return hasValue_;}
 
  private:
   void reCalculateBorders();
@@ -29,9 +29,7 @@ class JoystickAxis {
   bool autoCalibrate_;
   bool isCalibrated_;
 
-  float minRawDistanceFromCenterToBeValid_;
-  float minValid_;
-  float maxValid_;
+  float preliminaryDistanceFormCenter_;
 
   float rawCenter_;
   float rawMin_;

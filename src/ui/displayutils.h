@@ -68,7 +68,7 @@ class DisplayUtils {
     uint16_t x = 0;
     uint16_t y = 0;
 
-    for (std::size_t i = 0; i < items.size(); ++i) {
+    for (std::size_t i = 0; i < items.size() && i<8; ++i) {
       const MenuItem &item = *items[i];
       if (item.isEnabled()) {
         u8g2->setFont(u8g2_font_timR10_tf);

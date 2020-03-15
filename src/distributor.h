@@ -1,6 +1,7 @@
 #pragma once
 
 #include "data/position.h"
+#include "data/power.h"
 #include "data/value.h"
 #include "data/view.h"
 #include "pano/picture.h"
@@ -13,6 +14,7 @@ class Distributor {
 
   Distributor() {}
 
+  Value<Power>& getPower() { return power_; }
   Value<View>& getView() { return view_; }
   Value<Picture>& getPicture() { return picture_; }
   Value<int32_t>& getDelayAfterMove() { return delayAfterMove_; }
@@ -33,6 +35,7 @@ class Distributor {
   Value<uint32_t>& getPanoAutomatShot() { return panoAutomatShot_; }
 
  private:
+  Value<Power> power_;
   Value<View> view_;
   Value<Picture> picture_;
   Value<int32_t> delayAfterMove_;
