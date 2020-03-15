@@ -37,7 +37,10 @@ Motorized panoramic head based on
 - Step Down (to ~3.3V) module based on [MP2315](https://www.monolithicpower.com/en/documentview/productdocument/index/version/2/document_type/Datasheet/lang/en/sku/MP2315/document_id/513/) to power logic.
 
 ## TODO
-
+- Voltage supervisor for defined Reset.
+- Store Joystick calibration.
+- Sliding menu.
+- ~~Power menu.~~
 - Consider backlash on movement.
 - Integrate TMC2208 UART connection into motor driver class
   - Set Enabled/Disabled
