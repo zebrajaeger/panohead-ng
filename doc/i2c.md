@@ -2,7 +2,9 @@
 
 Possible address conflict betwen ADS1115 
 
-## ADS1115
+## ~~ADS1115~~
+
+Not used anymore.
 
 - http://www.ti.com/lit/ds/symlink/ads1115.pdf
 
@@ -74,3 +76,19 @@ pointer) when using SCL frequencies in excess of 1 MHz.
 | Addr |
 | :---: |
 | 1101000 = 0x68 |
+
+## PCF8574
+
+- https://www.nxp.com/docs/en/data-sheet/PCF8574_PCF8574A.pdf
+- Standard-Mode: max. 0.1Mhz
+
+| A2 | A1 | A0 | Addr |
+| --- | --- | --- | --- |
+| 0 | 0 | 0 | 0x20 |
+| 0 | 0 | 1 | 0x21 |
+| 0 | 1 | 0 | 0x22 |
+| 0 | 1 | 1 | 0x23 |
+| 1 | 0 | 0 | 0x24 |
+| 1 | 0 | 1 | 0x25 |
+| 1 | 1 | 0 | 0x26 |
+| 1 | 1 | 1 | 0x27 |

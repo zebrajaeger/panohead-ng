@@ -2,30 +2,41 @@
 
 #include <Arduino.h>
 
+#include "hal/digitalio.h"
+#include "util/loggerfactory.h"
+
 struct Camera {
  public:
-  Camera() : focusPin_(0), triggerPin_(0) {}
+  Camera() : LOG(LoggerFactory::getLogger("Camera")), digitalIO_(NULL), focusPin_(0), triggerPin_(0) {}
 
-  bool begin(uint8_t focusPin, uint8_t triggerPin) {
+  bool begin(DigitalIO *digitalIO, uint8_t focusPin, uint8_t triggerPin) {
+    digitalIO_ = digitalIO;
     focusPin_ = focusPin;
-    pinMode(focusPin_, OUTPUT);
-
     triggerPin_ = triggerPin;
-    pinMode(triggerPin_, OUTPUT);
 
     return true;
   }
 
-  void setFocus(boolean focus) { digitalWrite(focusPin_, focus); }
+  void setFocus(boolean focus) {
+    if (digitalIO_) {
+      digitalIO_->set(focusPin_, !focus);
+    }
+  }
 
-  void setTrigger(boolean trigger) { digitalWrite(triggerPin_, trigger); }
+  void setTrigger(boolean trigger) {
+    if (digitalIO_) {
+      digitalIO_->set(triggerPin_, !trigger);
+    }
+  }
 
   void set(boolean focus, boolean trigger) {
-    digitalWrite(focusPin_, focus);
-    digitalWrite(triggerPin_, trigger);
+    setFocus(focus);
+    setTrigger(trigger);
   }
 
  private:
+  Logger &LOG;
+  DigitalIO *digitalIO_;
   uint8_t focusPin_;
   uint8_t triggerPin_;
 };

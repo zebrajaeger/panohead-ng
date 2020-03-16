@@ -4,9 +4,7 @@
 #include <driver/ledc.h>
 
 #include "util/singletimer.h"
-
 #include "hal/adc_esp32.h"
-#include "hal/camera.h"
 #include "hal/motor_driver.h"
 #include "menu/menuitem.h"
 
@@ -18,6 +16,7 @@ App::App()
     : LOG(LoggerFactory::getLogger("APP")),
       distributor_(Distributor::getInstance()),
       statistic_(),
+      io_(),
       display_(),
       joystick_(),
       joystickTimer_("Joystick"),
@@ -36,6 +35,7 @@ void App::setup()
 // --------------------------------------------------------------------------------
 {
   setupI2C(19, 18, 2000000);
+  setupIO();
   setupDisplay();
   setupEncoder(34, 39, 36);
   // 200 st/rev
@@ -43,7 +43,7 @@ void App::setup()
   // gear1: 1:5
   // gear2: 26+(103/121) ->  https://www.omc-stepperonline.com/download/11HS12-0674D1-PG27.pdf
   setupMotorDriver(16, 21, 20, (200.0 * 16.0 * 5.0 * (26.0 + (103.0 / 121.0))));
-  setupCamera(22, 23);
+  setupCamera(6, 7);
   setupPanoAutomat();
   setupADC(35, 32);
   setupJoystick();
@@ -83,6 +83,20 @@ void App::setupI2C(uint8_t sda, uint8_t scl, uint32_t speed)
     }
   } else {
     LOG.e("I²C failed");
+  }
+}
+
+// --------------------------------------------------------------------------------
+void App::setupIO()
+// --------------------------------------------------------------------------------
+{
+  if (io_.begin()) {
+    LOG.i("IO initialized");
+    // io_.set(0,0);
+    // io_.set(6,0);
+    // io_.set(7,0);
+  } else {
+    LOG.e("IO failed");
   }
 }
 
@@ -159,11 +173,13 @@ void App::setupMotorDriver(uint8_t pinCS, uint8_t pinClockSource, uint8_t clockS
 }
 
 // --------------------------------------------------------------------------------
-void App::setupCamera(uint8_t gpioFocus, uint8_t gpioTrigger)
+void App::setupCamera(uint8_t ioFocus, uint8_t ioTrigger)
 // --------------------------------------------------------------------------------
 {
-  if (camera_.begin(gpioFocus, gpioTrigger)) {
+  if (camera_.begin(&io_, ioFocus, ioTrigger)) {
     LOG.i("Camera initialized");
+    camera_.setFocus(false);
+    camera_.setTrigger(true);
   } else {
     LOG.e("Camera failed");
   }
