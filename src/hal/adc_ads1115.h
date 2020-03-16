@@ -10,6 +10,7 @@ class ADC_ADS1115 : public ADC {
     adc_.onResult([this](uint8_t channel, uint16_t value) { ADC::publishValue(channel, value); });
   }
 
+  bool begin(int8_t i2caddres, uint32_t periodMs = 5) { return adc_.begin(i2caddres) && ADC::begin(periodMs); }
   virtual bool begin(uint32_t periodMs = 5) override { return adc_.begin() && ADC::begin(periodMs); }
 
   virtual void loop() override {

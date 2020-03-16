@@ -13,8 +13,10 @@
 #include "util/loggerfactory.h"
 #include "util/statistic.h"
 
-#include "hal/adc_esp32.h"
+// #include "hal/adc_esp32.h"
+#include "hal/adc_ads1115.h"
 #include "hal/camera.h"
+#include "hal/led.h"
 #include "hal/motor_driver.h"
 #include "hal/pcf8574.h"
 #include "hal/powersensor.h"
@@ -30,12 +32,13 @@ class App {
  private:
   void setupI2C(uint8_t sda, uint8_t scl, uint32_t speed);
   void setupIO();
+  void setupLed(uint8_t statusLedPin);
   void setupDisplay();
   void setupEncoder(uint8_t gpioA, uint8_t gpioB, uint8_t gpioButton);
   void setupMotorDriver(uint8_t pinCS, uint8_t pinClockSource, uint8_t clockSpeedMHz, double microstepsPerRevolution);
   void setupCamera(uint8_t ioFocus, uint8_t ioTrigger);
   void setupPanoAutomat();
-  void setupADC(uint8_t gpioX, uint8_t gpioY);
+  void setupADC(uint8_t i2cadress);
   void setupJoystick();
   void setupPositionSensor();
   void setupPowerSensor();
@@ -53,7 +56,8 @@ class App {
   MotorDriver motorDriver_;
   PanoAutomat panoAutomat_;
   Camera camera_;
-  ADC_ESP32 adc_;
+  ADC_ADS1115 adc_;
   PositionSensor positionSensor_;
   PowerSensor powerSensor_;
+  Led statusLed_;
 };

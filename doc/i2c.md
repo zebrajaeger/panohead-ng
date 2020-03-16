@@ -1,8 +1,8 @@
 # i²C
 
-Possible address conflict betwen ADS1115 
+!!! Possible address conflict betwen ADS1115 and OLED !!!
 
-## ~~ADS1115~~
+## ADS1115
 
 Not used anymore.
 

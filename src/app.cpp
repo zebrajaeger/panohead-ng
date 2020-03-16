@@ -4,7 +4,6 @@
 #include <driver/ledc.h>
 
 #include "util/singletimer.h"
-#include "hal/adc_esp32.h"
 #include "hal/motor_driver.h"
 #include "menu/menuitem.h"
 
@@ -36,6 +35,7 @@ void App::setup()
 {
   setupI2C(19, 18, 2000000);
   setupIO();
+  setupLed(0);
   setupDisplay();
   setupEncoder(34, 39, 36);
   // 200 st/rev
@@ -45,7 +45,7 @@ void App::setup()
   setupMotorDriver(16, 21, 20, (200.0 * 16.0 * 5.0 * (26.0 + (103.0 / 121.0))));
   setupCamera(6, 7);
   setupPanoAutomat();
-  setupADC(35, 32);
+  setupADC(0x4A); // ADDR connected with SDA
   setupJoystick();
   setupPositionSensor();
   setupPowerSensor();
@@ -67,6 +67,7 @@ void App::loop()
   positionSensor_.loop();
   display_.loop();
   powerSensor_.loop();
+  statusLed_.loop();
 }
 
 // --------------------------------------------------------------------------------
@@ -92,11 +93,20 @@ void App::setupIO()
 {
   if (io_.begin()) {
     LOG.i("IO initialized");
-    // io_.set(0,0);
-    // io_.set(6,0);
-    // io_.set(7,0);
   } else {
     LOG.e("IO failed");
+  }
+}
+
+// --------------------------------------------------------------------------------
+void App::setupLed(uint8_t statusLedPin)
+// --------------------------------------------------------------------------------
+{
+  if (statusLed_.begin(&io_, statusLedPin)) {
+    LOG.i("Status LED initialized");
+    statusLed_.blink();
+  } else {
+    LOG.e("Status LED failed");
   }
 }
 
@@ -221,28 +231,27 @@ void App::setupPanoAutomat()
 }
 
 // --------------------------------------------------------------------------------
-void App::setupADC(uint8_t gpioX, uint8_t gpioY)
+void App::setupADC(uint8_t i2cadress)
 // --------------------------------------------------------------------------------
 {
-  // if (adc.begin({36,37,38,39,32,33,34,35},250)) { // ADC_CH[0..7]
-  if (adc_.begin({gpioX, gpioY})) {  // ADC_CH[4,7]
+  if (adc_.begin(i2cadress, 5)) {
     LOG.i("ADC found");
     adc_.onResult([this](uint8_t channel, uint16_t value) {
-      // LOG.i("ADC : %u[%u]", channel, value);
+      // LOG.i("ADC : %u[%4u]", channel, value);
       switch (channel) {
-        case 0: {
+        case 3: {
           if (joystick_.getXAxis().isCalibrated()) {
             joystick_.setRawX(value);
-            // LOG.d("joy.x value @ %u", value);
+            // LOG.d("joy.x value @ %4u", value);
           } else {
             joystick_.setRawCenterX(value);
             LOG.d("joy.x center calibrated @ %u", value);
           }
         } break;
-        case 1: {
+        case 2: {
           if (joystick_.getYAxis().isCalibrated()) {
             joystick_.setRawY(value);
-            // LOG.d("joy.y value @ %u", value);
+            // LOG.d("joy.y value @ %4u", value);
           } else {
             joystick_.setRawCenterY(value);
             LOG.d("joy.y center calibrated @ %u", value);
@@ -261,27 +270,31 @@ void App::setupADC(uint8_t gpioX, uint8_t gpioY)
 void App::setupJoystick()
 // --------------------------------------------------------------------------------
 {
-  if (joystick_.begin(0.05, 1000, true)) {
+  if (joystick_.begin(0.025, 10000, true)) {
     LOG.i("Joystick initialized");
     joystickTimer_.startMs(50, false, true, [this] {
+      bool led = false;
       Position joyPos(0.0, 0.0);
       if (joystick_.getXAxis().hasValue()) {
         float v = joystick_.getXAxis().getValue();
         joyPos.setX(v);
-        // LOG.d("jogX: %f", v);
+        LOG.d("jogX: %f", v);
         motorDriver_.jogV(0, 0.05 * v * v * v);  // v³ for better handling on slowmo
+        led = true;
       } else {
         motorDriver_.jogV(0, 0.0);
       }
       if (joystick_.getYAxis().hasValue()) {
         float v = joystick_.getYAxis().getValue();
         joyPos.setY(v);
-        // LOG.d("jogY: %f", v);
+        LOG.d("jogY: %f", v);
         motorDriver_.jogV(1, 0.05 * v * v * v);  // v³ for better handling on slowmo
+        led = true;
       } else {
         motorDriver_.jogV(1, 0.0);
       }
       distributor_.getJoystick().set(joyPos);
+      statusLed_.set(!led);  // low active
     });
   } else {
     LOG.e("Joystick failed");
@@ -319,17 +332,12 @@ void App::setupStatistics()
   if (statistic_.begin()) {
     LOG.i("Statistic initialized");
     statistic_.onStatistic([this]() {
-      // encoder.statistics();
-      // motorDriver.statistic();
-      // panoAutomat.statistic();
-      joystick_.statistics();
+      // encoder_.statistics();
+      // motorDriver_.statistic();
+      panoAutomat_.statistic();
+      // joystick_.statistics();
       display_.statistics();
-      // statisticsIna219();
-      // analogReadResolution(12);
       // analogSetAttenuation(ADC_0db);
-
-      // LOG.d("X VAL: %d", analogRead(36)); // a or b
-      LOG.d("X VAL: %d", analogRead(35));  // a or b
     });
   } else {
     LOG.e("Statistic failed");
