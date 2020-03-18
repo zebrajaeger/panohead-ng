@@ -6,7 +6,6 @@
 template <typename V>
 class Value {
  public:
-  // TODO transfer Value Object reference instead of Value Object's value because of validity check and notification on clear
   typedef std::function<void(const Value<V>& value)> ValueListenerCallback_t;
 
   Value() : listeners_(), value_(), isValid_(false) {}
