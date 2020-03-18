@@ -39,11 +39,11 @@ Motorized panoramic head based on
 ## TODO
 
 - Schematic
-- Improve voltage supply for joystick.
+- Improve voltage supply for joystick. TL431 + Resistor and Capacitor for 2.5V joystick voltage.
 - ~~Change SPI pins due to firmware flash error~~
-- Sliding menu.
+- ~~Sliding menu.~~
 - Voltage supervisor for defined Reset.
-- Store Joystick calibration.
+- Store joystick calibration.
 - ~~Power menu.~~
 - ~~Status LED~~
 - PWM timer instead of SingleTimer for flashing;

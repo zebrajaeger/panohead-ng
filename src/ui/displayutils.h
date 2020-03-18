@@ -1,7 +1,6 @@
 #pragma once
 
 #include <Arduino.h>
-
 #include <U8g2lib.h>
 
 class DisplayUtils {
@@ -53,22 +52,29 @@ class DisplayUtils {
     }
   }
 
-
   //------------------------------------------------------------------------------
   static void renderMenu(U8G2 *u8g2, MenuItem &menu)
   //------------------------------------------------------------------------------
   {
     u8g2->clearBuffer();
 
+    const std::vector<MenuItem *> &items = menu.getItems();
     u8g2->setFont(u8g2_font_timR10_tf);
     uint8_t h = u8g2->getMaxCharHeight() - 2;
     uint8_t selected = menu.getSelector().getIndex();
-    const std::vector<MenuItem *> &items = menu.getItems();
+    uint8_t size = items.size();
+    uint8_t page = selected / 8;
+
+    uint8_t start = page * 8;
+    uint8_t end = size;
+    if ((end - start) > 8) {
+      end = start + 8;
+    }
 
     uint16_t x = 0;
     uint16_t y = 0;
 
-    for (std::size_t i = 0; i < items.size() && i<8; ++i) {
+    for (std::size_t i = start; i < end; ++i) {
       const MenuItem &item = *items[i];
       if (item.isEnabled()) {
         u8g2->setFont(u8g2_font_timR10_tf);
