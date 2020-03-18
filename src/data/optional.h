@@ -25,6 +25,7 @@ class Optional {
 
   Optional& operator=(T value) {
     value_ = value;
+    isSet_ = true;
     return *this;
   }
 

@@ -27,6 +27,10 @@ class Picture {
     return width_!=b.width_ && height_==b.height_ && overlapWidth_ == b.overlapWidth_ && overlapHeight_==b.overlapHeight_;
   }
 
+  bool isComplete(){
+    return width_>0 && height_>0 && overlapWidth_>0 && overlapHeight_>0;
+  }
+
  private:
   double width_;
   double height_;

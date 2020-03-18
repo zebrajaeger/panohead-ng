@@ -1,14 +1,13 @@
 #include "menuitem_bounds.h"
 
-#include "pano/panoutils.h"
-
 #include "displayutils.h"
-
 #include "distributor.h"
+#include "pano/panoutils.h"
 
 //------------------------------------------------------------------------------
 MenuItemBounds::MenuItemBounds(Display *display, const std::string &name, bool showPartialOption)
     : MenuItemBase(display, name),
+      LOG(LoggerFactory::getLogger("MenuItemBounds")),
       showPartialOption_(showPartialOption),
       view_(),
       saveCallback_()
@@ -23,6 +22,7 @@ MenuItemBounds::MenuItemBounds(Display *display, const std::string &name, bool s
 
   onRender(bind(&MenuItemBounds::render, this, _1));
   onButtonPushed(bind(&MenuItemBounds::pushButtonSetBounds, this, _1));
+  onEnter([this](MenuItem &self) { LOG.view_.clear(); });
 
   Distributor::getInstance().getPosition().addListener([this](const Position &value) { requireRepaint(); });
 
@@ -111,12 +111,18 @@ void MenuItemBounds::render_(bool togglePartial, bool top, bool right, bool bott
     u8g2->drawBox(10, 0, 44, 10);
   } else {
     u8g2->drawFrame(10, 0, 44, 10);
+    if (view_.getY1()) {
+      u8g2->drawFrame(12, 2, 40, 6);
+    }
   }
   // bottom
   if (bottom) {
     u8g2->drawBox(10, 53, 44, 10);
   } else {
     u8g2->drawFrame(10, 53, 44, 10);
+    if (view_.getY2()) {
+      u8g2->drawFrame(12, 55, 40, 6);
+    }
   }
 
   if (!view_.isPartial()) {
@@ -125,12 +131,18 @@ void MenuItemBounds::render_(bool togglePartial, bool top, bool right, bool bott
       u8g2->drawBox(0, 10, 10, 44);
     } else {
       u8g2->drawFrame(0, 10, 10, 44);
+      if (view_.getX1()) {
+        u8g2->drawFrame(2, 12, 6, 40);
+      }
     }
     // right
     if (right) {
       u8g2->drawBox(54, 10, 10, 44);
     } else {
       u8g2->drawFrame(54, 10, 10, 44);
+      if (view_.getX2()) {
+        u8g2->drawFrame(56, 12, 6, 40);
+      }
     }
   }
 
@@ -156,22 +168,52 @@ void MenuItemBounds::render_(bool togglePartial, bool top, bool right, bool bott
 bool MenuItemBounds::pushButtonSetBounds(MenuItem &menu)
 //------------------------------------------------------------------------------
 {
-  switch (menu.getSelector().getIndex()) {
-    case Index::PARTIAL:
-      setPartialItemsVisible(view_.togglePartial());
-      menu.requireRepaint();
-      break;
-    case Index::OK:
-      if (saveCallback_) {
-        saveCallback_(*this);
-      }
-      menu.goUp();
-      break;
-    case Index::CANCEL:
-      menu.goUp();
-      break;
-    default:
-      break;
+  uint8_t index = menu.getSelector().getIndex();
+  bool top = index == Index::TOP || index == Index::TOP_LEFT || index == Index::TOP_RIGHT;
+  bool bottom = index == Index::BOTTOM || index == Index::BOTTOM_LEFT || index == Index::BOTTOM_RIGHT;
+  bool left = index == Index::LEFT || index == Index::TOP_LEFT || index == Index::BOTTOM_LEFT;
+  bool right = index == Index::RIGHT || index == Index::TOP_RIGHT || index == Index::BOTTOM_RIGHT;
+
+  if (top || bottom || left || right) {
+    Position &pos = Distributor::getInstance().getPosition().get();
+    if (top) {
+      LOG.i("Set TOP to %f", pos.getY());
+      view_.setY1(pos.getY());
+      requireRepaint();
+    }
+    if (bottom) {
+      LOG.i("Set BOTTOM to %f", pos.getY());
+      view_.setY2(pos.getY());
+      requireRepaint();
+    }
+    if (left) {
+      LOG.i("Set LEFT to %f", pos.getX());
+      view_.setX1(pos.getX());
+      requireRepaint();
+    }
+    if (right) {
+      LOG.i("Set RIGHT to %f", pos.getX());
+      view_.setX2(pos.getX());
+      requireRepaint();
+    }
+  } else {
+    switch (index) {
+      case Index::PARTIAL:
+        setPartialItemsVisible(view_.togglePartial());
+        requireRepaint();
+        break;
+      case Index::OK:
+        if (saveCallback_) {
+          saveCallback_(*this);
+        }
+        goUp();
+        break;
+      case Index::CANCEL:
+        goUp();
+        break;
+      default:
+        break;
+    }
   }
   return false;
 }

@@ -3,12 +3,11 @@
 #include <Wire.h>
 #include <driver/ledc.h>
 
-#include "util/singletimer.h"
 #include "hal/motor_driver.h"
 #include "menu/menuitem.h"
-
 #include "pano/pano_calculator.h"
 #include "pano/panoutils.h"
+#include "util/singletimer.h"
 
 // --------------------------------------------------------------------------------
 App::App()
@@ -45,7 +44,7 @@ void App::setup()
   setupMotorDriver(16, 21, 20, (200.0 * 16.0 * 5.0 * (26.0 + (103.0 / 121.0))));
   setupCamera(6, 7);
   setupPanoAutomat();
-  setupADC(0x4A); // ADDR connected with SDA
+  setupADC(0x4A);  // ADDR connected with SDA
   setupJoystick();
   setupPositionSensor();
   setupPowerSensor();
@@ -131,7 +130,11 @@ void App::setupEncoder(uint8_t gpioA, uint8_t gpioB, uint8_t gpioButton)
   encoder_.onValueChanged([this](int16_t oldValue, int16_t newValue) { display_.encoderChanged(newValue - oldValue); });
   encoder_.onButtonChanged([this](Encoder::ButtonState buttonState) {
     if (buttonState == Encoder::ButtonState::PUSHED) {
+      LOG.d("Button.push");
       display_.buttonPushed();
+    }
+    if (buttonState == Encoder::ButtonState::RELEASED) {
+      LOG.d("Button.released");
     }
   });
 }

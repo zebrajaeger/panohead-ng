@@ -3,8 +3,8 @@
 #include <functional>
 
 #include "data/view.h"
-
 #include "menuitem_base.h"
+#include "util/loggerfactory.h"
 
 class MenuItemBounds : public MenuItemBase {
  public:
@@ -26,7 +26,7 @@ class MenuItemBounds : public MenuItemBase {
 
   MenuItemBounds(Display *display, const std::string &name, bool showPartialOption);
 
-  MenuItemBounds* onSave(SaveCallback_t saveCallback) {
+  MenuItemBounds *onSave(SaveCallback_t saveCallback) {
     saveCallback_ = saveCallback;
     return this;
   }
@@ -36,6 +36,7 @@ class MenuItemBounds : public MenuItemBase {
   const View &getView() const { return view_; }
 
  private:
+  Logger &LOG;
   void render(MenuItem &menu);
   void render_(bool togglePartial, bool top, bool right, bool bottom, bool left, bool ok, bool cancel);
   bool pushButtonSetBounds(MenuItem &menu);
