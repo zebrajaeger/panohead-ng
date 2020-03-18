@@ -22,9 +22,12 @@ MenuItemBounds::MenuItemBounds(Display *display, const std::string &name, bool s
 
   onRender(bind(&MenuItemBounds::render, this, _1));
   onButtonPushed(bind(&MenuItemBounds::pushButtonSetBounds, this, _1));
-  onEnter([this](MenuItem &self) { LOG.view_.clear(); });
+  onEnter([this](MenuItem &self) {
+    LOG.d("CLEAR");
+    view_.clear();
+  });
 
-  Distributor::getInstance().getPosition().addListener([this](const Position &value) { requireRepaint(); });
+  Distributor::getInstance().getPosition().addListener([this](const Value<Position> &value) { requireRepaint(); });
 
   add(new MenuItemBase(display, "TogglePartial"));
   add(new MenuItemBase(display, "Top"));

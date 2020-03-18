@@ -19,7 +19,7 @@ MenuItemJoystick::MenuItemJoystick(Display *display, const std::string &name)
     return false;
   });
 
-  Distributor::getInstance().getJoystick().addListener([this](const Position &value) { requireRepaint(); });
+  Distributor::getInstance().getJoystick().addListener([this](const Value<Position> &value) { requireRepaint(); });
 }
 
 //------------------------------------------------------------------------------

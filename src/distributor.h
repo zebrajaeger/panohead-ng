@@ -18,12 +18,12 @@ class Distributor {
   static Distributor& getInstance();
 
   Distributor() : LOG(LoggerFactory::getLogger("Distributor")) {
-    view_.addListener([this](const View& v) { check(); });
-    picture_.addListener([this](const Picture& v) { check(); });
-    picture_.addListener([this](const Picture& v) { check(); });
-    focusTime_.addListener([this](const int32_t& v) { check(); });
-    triggerTime_.addListener([this](const int32_t& v) { check(); });
-    panoComplete_.addListener([this](const bool& complete) { LOG.i("Pano complete: %d", complete); });
+    view_.addListener([this](const Value<View>& v) { check(); });
+    picture_.addListener([this](const Value<Picture>& v) { check(); });
+    picture_.addListener([this](const Value<Picture>& v) { check(); });
+    focusTime_.addListener([this](const Value<int32_t>& v) { check(); });
+    triggerTime_.addListener([this](const Value<int32_t>& v) { check(); });
+    panoComplete_.addListener([this](const Value<bool>& complete) { LOG.i("Pano complete: %d", complete); });
   }
 
   Value<Power>& getPower() { return power_; }
@@ -50,14 +50,14 @@ class Distributor {
 
  private:
   void check() {
-    bool viewComplete = view_.get().isComplete();
-    bool pictureComplete = picture_.get().isComplete();
-    bool focusTimeComplete = focusTime_.get() > 0;
-    bool triggerTimeComplete = triggerTime_.get() > 0;
+    bool viewComplete = (*view_).isComplete();
+    bool pictureComplete = (*picture_).isComplete();
+    bool focusTimeComplete = *focusTime_ > 0;
+    bool triggerTimeComplete = *triggerTime_ > 0;
 
     bool complete = viewComplete && pictureComplete && focusTimeComplete && triggerTimeComplete;
     LOG.i("CHECK view:%d pic:%d foc:%d, trig:%d -> %d", viewComplete, pictureComplete, focusTimeComplete, triggerTimeComplete, complete);
-    panoComplete_.set(complete);
+    panoComplete_ = complete;
   }
 
   Logger& LOG;

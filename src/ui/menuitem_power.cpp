@@ -18,7 +18,7 @@ MenuItemPower::MenuItemPower(Display *display, const std::string &name)
     self.goUp();
     return false;
   });
-  Distributor::getInstance().getPower().addListener([this](const Power &value) { requireRepaint(); });
+  Distributor::getInstance().getPower().addListener([this](const Value<Power> &value) { requireRepaint(); });
 }
 
 //------------------------------------------------------------------------------

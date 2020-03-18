@@ -6,36 +6,61 @@
 template <typename V>
 class Value {
  public:
-  typedef std::function<void(const V& value)> ValueListenerCallback_t;
+  // TODO transfer Value Object reference instead of Value Object's value because of validity check and notification on clear
+  typedef std::function<void(const Value<V>& value)> ValueListenerCallback_t;
 
   Value() : listeners_(), value_(), isValid_(false) {}
 
+  // get value
   V& get() { return value_; }
   const V& get() const { return value_; }
+  const V& operator*() const& { return value_; }
+  V& operator*() & { return value_; }
+
+  // set value
   void set(const V& value, bool isValid = true) {
+    bool changed = (isValid_ != isValid_) || !(value_ == value);
     isValid_ = isValid;
-    bool changed = !(value_ == value);
-    // Serial.printf("VAL changed: %d\n", changed);
     value_ = value;
     if (changed) {
       propagateChange();
     }
   }
-  const V& operator*() const& { return value_; }
-  V& operator*() & { return value_; }
-  void propagateChange() {
-    for (uint8_t i = 0; i < listeners_.size(); ++i) {
-      listeners_[i](value_);
+  Value& operator=(const V value) {
+    set(value);
+    return *this;
+  }
+  Value& operator=(const Value<V>& value) {
+    set(value.value_, value.isValid_);
+    return *this;
+  }
+
+  // remove value
+  void clear() {
+    bool oldValue = isValid_;
+    isValid_ = false;
+    if (oldValue) {
+      propagateChange();
     }
   }
 
+  // notify listeners for any indirect changes
+  void propagateChange() {
+    for (uint8_t i = 0; i < listeners_.size(); ++i) {
+      listeners_[i](*this);
+    }
+  }
+
+  // check if value is set
   bool isValid() { return isValid_; }
   void setValid(bool isValid = true) { isValid_ = isValid; }
   operator bool() const { return isValid_; }
 
+  // listeners
   void addListener(ValueListenerCallback_t listener) { listeners_.push_back(listener); }
   void removeListener(ValueListenerCallback_t listener) { listeners_.remove(listener); }
 
+  // compare
   bool operator==(const Value<V>& b) const {
     if (isValid_ && b.isValid_) {
       return (value_ == b.value_);

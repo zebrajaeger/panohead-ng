@@ -19,7 +19,7 @@ MenuItemLevel::MenuItemLevel(Display *display, const std::string &name)
     return false;
   });
 
-  Distributor::getInstance().getLevel().addListener([this](const Position &value) { requireRepaint(); });
+  Distributor::getInstance().getLevel().addListener([this](const Value<Position> &value) { requireRepaint(); });
 }
 
 //------------------------------------------------------------------------------
