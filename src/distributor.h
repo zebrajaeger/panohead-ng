@@ -9,6 +9,7 @@
 #include "pano/picture.h"
 #include "pano/raster.h"
 #include "pano/shot.h"
+
 #include "util/loggerfactory.h"
 
 class Distributor {

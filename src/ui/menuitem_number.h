@@ -14,6 +14,11 @@ class MenuItemNumber : public MenuItemBase {
 
   MenuItemNumber *onSave(SaveCallback_t saveCallback);
 
+  void setValue(int32_t value) {
+    value_ = value;
+    requireRepaint();
+  }
+
   void render(MenuItem &menu);
   void renderFull(MenuItem &menu) { render_(true, false, false, false); }
   void renderPart(MenuItem &menu) { render_(false, true, false, false); }

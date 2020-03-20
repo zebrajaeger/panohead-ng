@@ -10,6 +10,7 @@
 #include "ui/joystick.h"
 #include "ui/position_sensor.h"
 #include "util/encoder.h"
+#include "util/kvstore.h"
 #include "util/loggerfactory.h"
 #include "util/statistic.h"
 
@@ -30,6 +31,7 @@ class App {
   void loop();
 
  private:
+  void setupKVStore(const char* name);
   void setupI2C(uint8_t sda, uint8_t scl, uint32_t speed);
   void setupIO();
   void setupLed(uint8_t statusLedPin);
@@ -45,7 +47,8 @@ class App {
   void setupStatistics();
 
   Logger &LOG;
-
+  KVStore kvStore_;
+  
   Distributor &distributor_ = Distributor::getInstance();
   Statistic statistic_;
   PCF8574 io_;

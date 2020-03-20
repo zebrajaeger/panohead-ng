@@ -7,11 +7,17 @@ template <typename V>
 class Value {
  public:
   typedef std::function<void(const Value<V>& value)> ValueListenerCallback_t;
+  typedef std::function<void(const V& value)> ValueCallback_t;
 
   Value() : listeners_(), value_(), isValid_(false) {}
 
   // get value
   V& get() { return value_; }
+  void get(ValueCallback_t cb) {
+    if (isValid_) {
+      cb(value_);
+    }
+  }
   const V& get() const { return value_; }
   const V& operator*() const& { return value_; }
   V& operator*() & { return value_; }

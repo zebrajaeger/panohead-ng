@@ -12,6 +12,7 @@
 // --------------------------------------------------------------------------------
 App::App()
     : LOG(LoggerFactory::getLogger("APP")),
+      kvStore_(),
       distributor_(Distributor::getInstance()),
       statistic_(),
       io_(),
@@ -32,6 +33,7 @@ App::App()
 void App::setup()
 // --------------------------------------------------------------------------------
 {
+  setupKVStore("app");
   setupI2C(19, 18, 2000000);
   setupIO();
   setupLed(0);
@@ -67,6 +69,65 @@ void App::loop()
   display_.loop();
   powerSensor_.loop();
   statusLed_.loop();
+}
+
+// --------------------------------------------------------------------------------
+void App::setupKVStore(const char *name)
+// --------------------------------------------------------------------------------
+{
+  if (kvStore_.begin(name)) {
+    LOG.i("KVStore initialized");
+    kvStore_.get64("pic.ovl.x", [this](const KVStore::kv64_t &value) {
+      LOG.i("set pic.ovl.x = % %f", value.f);
+      Distributor::getInstance().getPicture().get().setOverlapWidth(value.f);
+    });
+    kvStore_.get64("pic.ovl.y", [this](const KVStore::kv64_t &value) {
+      LOG.i("set pic.ovl.y = %f %", value.f);
+      Distributor::getInstance().getPicture().get().setOverlapHeight(value.f);
+    });
+    kvStore_.get32("pano.delAfMov", [this](const KVStore::kv32_t &value) {
+      LOG.i("pano.delAfMov = %d ms", value.i);
+      Distributor::getInstance().getDelayAfterMove().set(value.i);
+    });
+    kvStore_.get32("pano.focTime", [this](const KVStore::kv32_t &value) {
+      LOG.i("pano.focTime = %d ms", value.i);
+      Distributor::getInstance().getFocusTime().set(value.i);
+    });
+    kvStore_.get32("pano.trigTime", [this](const KVStore::kv32_t &value) {
+      LOG.i("pano.trigTime = %d ms", value.i);
+      Distributor::getInstance().getTriggerTime().set(value.i);
+    });
+
+    Distributor::getInstance().getPicture().addListener([this](const Value<Picture> &value) {
+      KVStore::kv64_t temp;
+      temp.f = (*value).getOverlapWidth();
+      kvStore_.set64("pic.ovl.x", temp);
+      temp.f = (*value).getOverlapHeight();
+      kvStore_.set64("pic.ovl.y", temp);
+      kvStore_.commit();
+    });
+    Distributor::getInstance().getDelayAfterMove().addListener([this](const Value<int32_t> &value) {
+      KVStore::kv32_t temp;
+      temp.i = *value;
+      LOG.i("pano.delAfMov = %d ms", temp.i);
+      kvStore_.set32("pano.delAfMov", temp);
+      kvStore_.commit();
+    });
+    Distributor::getInstance().getFocusTime().addListener([this](const Value<int32_t> &value) {
+      KVStore::kv32_t temp;
+      temp.i = *value;
+      kvStore_.set32("pano.focTime", temp);
+      kvStore_.commit();
+    });
+    Distributor::getInstance().getTriggerTime().addListener([this](const Value<int32_t> &value) {
+      KVStore::kv32_t temp;
+      temp.i = *value;
+      kvStore_.set32("pano.trigTime", temp);
+      kvStore_.commit();
+    });
+  } else {
+    LOG.e("KVStore failed");
+  }
 }
 
 // --------------------------------------------------------------------------------
@@ -273,7 +334,7 @@ void App::setupADC(uint8_t i2cadress)
 void App::setupJoystick()
 // --------------------------------------------------------------------------------
 {
-  if (joystick_.begin(0.025, 10000, true)) {
+  if (joystick_.begin(0.0005, 80000, true)) {
     LOG.i("Joystick initialized");
     joystickTimer_.startMs(50, false, true, [this] {
       bool led = false;
@@ -338,7 +399,7 @@ void App::setupStatistics()
       // encoder_.statistics();
       // motorDriver_.statistic();
       panoAutomat_.statistic();
-      // joystick_.statistics();
+      joystick_.statistics();
       display_.statistics();
       // analogSetAttenuation(ADC_0db);
     });
