@@ -15,6 +15,7 @@ class MenuItemNumber : public MenuItemBase {
   MenuItemNumber *onSave(SaveCallback_t saveCallback);
 
   void setValue(int32_t value) {
+    LOG.d("'%s'.setValue(%d)", getName().c_str(), value);
     value_ = value;
     requireRepaint();
   }

@@ -8,6 +8,7 @@
 
 #include "incrementor.h"
 #include "selector.h"
+#include "util/loggerfactory.h"
 
 // =====================================================================
 class MenuItem;
@@ -27,14 +28,15 @@ class MenuItem {
   typedef std::function<void(MenuItem& self)> EnterItemCallback_t;
 
   MenuItem(const std::string& name);
+  ~MenuItem();
 
   MenuItem* add(MenuItem* newItem);
   MenuItem* addAsActive(MenuItem* newItem);
   bool isLeaf() const { return items_.empty(); }
 
-  void goUp();
-  bool setActiveItem(int16_t index);
-  bool setActiveItem(std::string name);
+  void goUp(bool callEnterNotification = true);
+  bool setActiveItem(int16_t index, bool callEnterNotification = true);
+  bool setActiveItem(std::string name, bool callEnterNotification = true);
   MenuItem* getActiveItem() { return active_; }
   const MenuItem* getActiveItem() const { return active_; }
   bool isActive() const { return this == active_; }
@@ -76,6 +78,9 @@ class MenuItem {
 
   MenuItem* operator[](int16_t index);
   MenuItem* operator[](std::string name);
+
+ protected:
+  Logger& LOG;
 
  private:
   void setParent(MenuItem* parent) { parent_ = parent; }

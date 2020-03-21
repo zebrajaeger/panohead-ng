@@ -78,50 +78,54 @@ void App::setupKVStore(const char *name)
   if (kvStore_.begin(name)) {
     LOG.i("KVStore initialized");
     kvStore_.get64("pic.ovl.x", [this](const KVStore::kv64_t &value) {
-      LOG.i("set pic.ovl.x = % %f", value.f);
+      LOG.i("kv-get pic.ovl.x = %f %", value.f);
       Distributor::getInstance().getPicture().get().setOverlapWidth(value.f);
     });
     kvStore_.get64("pic.ovl.y", [this](const KVStore::kv64_t &value) {
-      LOG.i("set pic.ovl.y = %f %", value.f);
+      LOG.i("kv-get pic.ovl.y = %f %", value.f);
       Distributor::getInstance().getPicture().get().setOverlapHeight(value.f);
     });
     kvStore_.get32("pano.delAfMov", [this](const KVStore::kv32_t &value) {
-      LOG.i("pano.delAfMov = %d ms", value.i);
+      LOG.i("kv-get pano.delAfMov = %d ms", value.i);
       Distributor::getInstance().getDelayAfterMove().set(value.i);
     });
     kvStore_.get32("pano.focTime", [this](const KVStore::kv32_t &value) {
-      LOG.i("pano.focTime = %d ms", value.i);
+      LOG.i("kv-get pano.focTime = %d ms", value.i);
       Distributor::getInstance().getFocusTime().set(value.i);
     });
     kvStore_.get32("pano.trigTime", [this](const KVStore::kv32_t &value) {
-      LOG.i("pano.trigTime = %d ms", value.i);
+      LOG.i("kv-get pano.trigTime = %d ms", value.i);
       Distributor::getInstance().getTriggerTime().set(value.i);
     });
 
     Distributor::getInstance().getPicture().addListener([this](const Value<Picture> &value) {
       KVStore::kv64_t temp;
       temp.f = (*value).getOverlapWidth();
+      LOG.i("kv-set pic.ovl.x = %f %", temp.f);
       kvStore_.set64("pic.ovl.x", temp);
       temp.f = (*value).getOverlapHeight();
+      LOG.i("kv-set pic.ovl.y = %f %", temp.f);
       kvStore_.set64("pic.ovl.y", temp);
       kvStore_.commit();
     });
     Distributor::getInstance().getDelayAfterMove().addListener([this](const Value<int32_t> &value) {
       KVStore::kv32_t temp;
       temp.i = *value;
-      LOG.i("pano.delAfMov = %d ms", temp.i);
+      LOG.i("kv-set pano.delAfMov = %d ms", temp.i);
       kvStore_.set32("pano.delAfMov", temp);
       kvStore_.commit();
     });
     Distributor::getInstance().getFocusTime().addListener([this](const Value<int32_t> &value) {
       KVStore::kv32_t temp;
       temp.i = *value;
+      LOG.i("kv-set pano.focTime = %d ms", temp.i);
       kvStore_.set32("pano.focTime", temp);
       kvStore_.commit();
     });
     Distributor::getInstance().getTriggerTime().addListener([this](const Value<int32_t> &value) {
       KVStore::kv32_t temp;
       temp.i = *value;
+      LOG.i("kv-set pano.trigTime = %d ms", temp.i);
       kvStore_.set32("pano.trigTime", temp);
       kvStore_.commit();
     });

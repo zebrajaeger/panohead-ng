@@ -80,15 +80,16 @@ class KVStore {
     if (handle_) {
       esp_err_t err = nvs_get_u32(handle_, key, &(value.u));
       if (err == ESP_OK) {
-        LOG.d("Got Value for key: '%s'", key);
+        LOG.d("(G32-1)Got value for key: '%s'", key);
         return true;
-      } else if (err != ESP_ERR_NVS_NOT_FOUND) {
-        LOG.e("Value for key: '%s' not read. Reason: %s", key, esp_err_to_name(err));
+      } else if (err == ESP_ERR_NVS_NOT_FOUND) {
+        LOG.e("(G32-2)Value for key: '%s' not found.");
+      } else {
+        LOG.e("(G32-3)Failed to read value for key: '%s'. Reason: %s", key, esp_err_to_name(err));
       }
     }
     return false;
   }
-
   void get32(const char* key, GetCallback32_t cb) {
     kv32_t value;
     if (get32(key, value)) {
@@ -100,10 +101,12 @@ class KVStore {
     if (handle_) {
       esp_err_t err = nvs_get_u64(handle_, key, &(value.u));
       if (err == ESP_OK) {
-        LOG.d("Got Value for key: '%s'", key);
+        LOG.d("(G64-1)Got value for key: '%s'", key);
         return true;
-      } else if (err != ESP_ERR_NVS_NOT_FOUND) {
-        LOG.e("Value for key: '%s' not read. Reason: %s", key, esp_err_to_name(err));
+      } else if (err == ESP_ERR_NVS_NOT_FOUND) {
+        LOG.e("(G64-2)Value for key: '%s' not found.");
+      } else {
+        LOG.e("(G64-3)Failed to read value for key: '%s'. Reason: %s", key, esp_err_to_name(err));
       }
     }
     return false;
@@ -120,16 +123,24 @@ class KVStore {
     if (handle_) {
       kv32_t temp;
       esp_err_t err = nvs_get_u32(handle_, key, &(temp.u));
-      if (err == ESP_ERR_NVS_NOT_FOUND || (err == ESP_OK && temp.u == value.u)) {
+      if (err == ESP_OK) {
+        LOG.d("(S32-1)Found value for key: '%s'", key);
         err = nvs_set_u32(handle_, key, value.u);
         if (err == ESP_OK) {
-          LOG.d("Wrote value for key: '%s'", key);
-          return true;
+          LOG.d("(S32-1)Wrote value for key: '%s'", key);
         } else {
-          LOG.e("Value not written. Reason: %s", esp_err_to_name(err));
+          LOG.e("(S32-1)Value not written. Reason: %s", esp_err_to_name(err));
+        }
+      } else if (err == ESP_ERR_NVS_NOT_FOUND) {
+        LOG.d("(S32-2)Could not find value for key: '%s'", key);
+        err = nvs_set_u32(handle_, key, value.u);
+        if (err == ESP_OK) {
+          LOG.d("(S32-2)Wrote value for key: '%s'", key);
+        } else {
+          LOG.e("(S32-2)Value not written. Reason: %s", esp_err_to_name(err));
         }
       } else {
-        LOG.w("Value for key: '%s' not read. Reason: %s", key, esp_err_to_name(err));
+        LOG.e("(S32-3)Value not written. Failed to read value for key: '%s'. Reason: %s", key, esp_err_to_name(err));
       }
     }
     return false;
@@ -139,16 +150,24 @@ class KVStore {
     if (handle_) {
       kv64_t temp;
       esp_err_t err = nvs_get_u64(handle_, key, &(temp.u));
-      if (err == ESP_ERR_NVS_NOT_FOUND || (err == ESP_OK && temp.u == value.u)) {
+      if (err == ESP_OK) {
+        LOG.d("(S64-1)Found value for key: '%s'", key);
         err = nvs_set_u64(handle_, key, value.u);
         if (err == ESP_OK) {
-          LOG.d("Wrote value for key: '%s'", key);
-          return true;
+          LOG.d("(S64-1)Wrote value for key: '%s'", key);
         } else {
-          LOG.e("Value not written. Reason: %s", esp_err_to_name(err));
+          LOG.e("(S64-1)Value not written. Reason: %s", esp_err_to_name(err));
+        }
+      } else if (err == ESP_ERR_NVS_NOT_FOUND) {
+        LOG.d("(S64-2)Could not find value for key: '%s'", key);
+        err = nvs_set_u64(handle_, key, value.u);
+        if (err == ESP_OK) {
+          LOG.d("(S64-2)Wrote value for key: '%s'", key);
+        } else {
+          LOG.e("(S64-2)Value not written. Reason: %s", esp_err_to_name(err));
         }
       } else {
-        LOG.w("Value for key: '%s' not read. Reason: %s", key, esp_err_to_name(err));
+        LOG.e("(S64-3)Value not written. Failed to read value for key: '%s'. Reason: %s", key, esp_err_to_name(err));
       }
     }
     return false;
@@ -158,6 +177,7 @@ class KVStore {
     esp_err_t err;
     err = nvs_commit(handle_);
     if (err == ESP_OK) {
+      LOG.d("Commit OK.");
       return true;
     } else {
       LOG.e("Not commited. Reason: %s", esp_err_to_name(err));

@@ -18,14 +18,14 @@ MenuItemNumber::MenuItemNumber(Display *display, const std::string &name, const 
       ->onRender(bind(&MenuItemNumber::renderFull, this, _1))
       ->onIndexChanged(bind(&MenuItemNumber::encoderFull, this, _1, _2))
       ->onButtonPushed([](MenuItem &self) {
-        self.goUp();
+        self.goUp(false);
         return false;
       });
   add(new MenuItemBase(display, "part"))
       ->onRender(bind(&MenuItemNumber::renderPart, this, _1))
       ->onIndexChanged(bind(&MenuItemNumber::encoderPart, this, _1, _2))
       ->onButtonPushed([](MenuItem &self) {
-        self.goUp();
+        self.goUp(false);
         return false;
       });
   add(new MenuItemBase(display, "ok"));

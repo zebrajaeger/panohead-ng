@@ -2,7 +2,8 @@
 
 //------------------------------------------------------------------------------
 MenuItem::MenuItem(const std::string& name)
-    : name_(name),
+    : LOG(LoggerFactory::getLogger("MenuItem")),
+      name_(name),
       subMenuOnly_(false),
       enabled_(true),
       parent_(NULL),
@@ -17,6 +18,8 @@ MenuItem::MenuItem(const std::string& name)
       selector_(0, 0, 0, true)
 //------------------------------------------------------------------------------
 {
+  // LOG.d("Create MenuItem '%s'", name_.c_str());
+  
   incrementor_.onIndexChange([this](Incrementor::Step upDown) {
     if (indexChangedCallback_) {
       indexChangedCallback_(*this, upDown);
@@ -49,6 +52,13 @@ MenuItem::MenuItem(const std::string& name)
 }
 
 //------------------------------------------------------------------------------
+MenuItem::~MenuItem()
+//------------------------------------------------------------------------------
+{
+  // LOG.d("Destroy MenuItem '%s'", name_.c_str());
+}
+
+//------------------------------------------------------------------------------
 MenuItem* MenuItem::add(MenuItem* newItem)
 //------------------------------------------------------------------------------
 {
@@ -67,7 +77,7 @@ MenuItem* MenuItem::addAsActive(MenuItem* newItem)
 }
 
 //------------------------------------------------------------------------------
-void MenuItem::goUp()
+void MenuItem::goUp(bool callEnterNotification)
 //------------------------------------------------------------------------------
 {
   MenuItem* current = getParent();
@@ -75,26 +85,30 @@ void MenuItem::goUp()
     if (current->isSubMenuOnly()) {
       current = current->getParent();
     } else {
-      parent_->setActiveItem(-1);
+      parent_->setActiveItem(-1, callEnterNotification);
       break;
     }
   }
 }
 
 //------------------------------------------------------------------------------
-bool MenuItem::setActiveItem(int16_t index)
+bool MenuItem::setActiveItem(int16_t index, bool callEnterNotification)
 //------------------------------------------------------------------------------
 {
   if (index == -1) {
     active_ = this;
     active_->requireRepaint();
-    propagateEnter();
+    if (callEnterNotification) {
+      propagateEnter();
+    }
     return true;
   } else {
     if (items_.size() > index) {
       active_ = items_[index];
       active_->requireRepaint();
-      active_->propagateEnter();
+      if (callEnterNotification) {
+        active_->propagateEnter();
+      }
       return true;
     }
   }
@@ -102,13 +116,15 @@ bool MenuItem::setActiveItem(int16_t index)
 }
 
 //------------------------------------------------------------------------------
-bool MenuItem::setActiveItem(std::string name)
+bool MenuItem::setActiveItem(std::string name, bool callEnterNotification)
 //------------------------------------------------------------------------------
 {
   if (name == name_) {
     active_ = this;
     active_->requireRepaint();
-    propagateEnter();
+    if (callEnterNotification) {
+      propagateEnter();
+    }
     return true;
   } else {
     for (std::size_t i = 0; i < items_.size(); ++i) {
@@ -116,7 +132,9 @@ bool MenuItem::setActiveItem(std::string name)
       if (name == item->getName()) {
         active_ = item;
         active_->requireRepaint();
-        active_->propagateEnter();
+        if (callEnterNotification) {
+          active_->propagateEnter();
+        }
         return true;
       }
     }

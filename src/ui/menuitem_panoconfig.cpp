@@ -11,22 +11,25 @@ MenuItemPanoConfig::MenuItemPanoConfig(Display *display, const std::string &name
 {
   add(new MenuItemBase(display, ".."));
   add((new MenuItemNumber(display, "Delay after move", "s", 10000))
-          ->onSave([this](const MenuItemNumber &self) { Distributor::getInstance().getDelayAfterMove().set(self.getValue()); })
+          ->onSave([this](const MenuItemNumber &self) {
+            int32_t v = self.getValue();
+            LOG.d("MEEEEEEEEEP %d", v);
+             Distributor::getInstance().getDelayAfterMove().set(v); })
           ->onEnter([](MenuItem &self) {
             MenuItemNumber &menuItemNumber = (MenuItemNumber &)self;
-            Distributor::getInstance().getDelayAfterMove().get([&menuItemNumber](int32_t value) { menuItemNumber.setValue(value); });
+            Distributor::i.getDelayAfterMove().get([&menuItemNumber](int32_t value) { menuItemNumber.setValue(value); });
           }));
   add((new MenuItemNumber(display, "Focus time", "s", 10000))
           ->onSave([this](const MenuItemNumber &self) { Distributor::getInstance().getFocusTime().set(self.getValue()); })
           ->onEnter([](MenuItem &self) {
             MenuItemNumber &menuItemNumber = (MenuItemNumber &)self;
-            Distributor::getInstance().getFocusTime().get([&menuItemNumber](int32_t value) { menuItemNumber.setValue(value); });
+            Distributor::i.getFocusTime().get([&menuItemNumber](int32_t value) { menuItemNumber.setValue(value); });
           }));
   add((new MenuItemNumber(display, "Trigger time", "s", 10000))
           ->onSave([this](const MenuItemNumber &self) { Distributor::getInstance().getTriggerTime().set(self.getValue()); })
           ->onEnter([](MenuItem &self) {
             MenuItemNumber &menuItemNumber = (MenuItemNumber &)self;
-            Distributor::getInstance().getTriggerTime().get([&menuItemNumber](int32_t value) { menuItemNumber.setValue(value); });
+            Distributor::i.getTriggerTime().get([&menuItemNumber](int32_t value) { menuItemNumber.setValue(value); });
           }));
   // panoConfig->add(new MenuItemBase(u8g2, "Delay between shots"));
   // panoConfig->add(new MenuItemBase(u8g2, "Shot count"));
