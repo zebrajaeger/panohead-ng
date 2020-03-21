@@ -9,6 +9,8 @@ class Value {
   typedef std::function<void(const Value<V>& value)> ValueListenerCallback_t;
   typedef std::function<void(const V& value)> ValueCallback_t;
 
+  typedef enum  { DONT_CALL, CALL_IF_VALID, CALL } InstantlyBehavior_t;
+
   Value() : listeners_(), value_(), isValid_(false) {}
 
   // get value
@@ -63,9 +65,21 @@ class Value {
 
   // listeners
   void addListener(ValueListenerCallback_t listener) { listeners_.push_back(listener); }
-  void addListener(bool sendInstantly, ValueListenerCallback_t listener) {
+  void addListener(InstantlyBehavior_t instantlyBehavior, ValueListenerCallback_t listener) {
     listeners_.push_back(listener);
-    listener(*this);
+    switch (instantlyBehavior) {
+      case DONT_CALL:
+        // nothing to do;
+        break;
+      case CALL_IF_VALID:
+        if (isValid_) {
+          listener(*this);
+        }
+        break;
+      case CALL:
+        listener(*this);
+        break;
+    }
   }
   void removeListener(ValueListenerCallback_t listener) { listeners_.remove(listener); }
 

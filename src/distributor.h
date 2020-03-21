@@ -9,7 +9,6 @@
 #include "pano/picture.h"
 #include "pano/raster.h"
 #include "pano/shot.h"
-
 #include "util/loggerfactory.h"
 
 class Distributor {
@@ -17,6 +16,11 @@ class Distributor {
   typedef std::function<void(bool complete)> PanoCompleteCallback_t;
 
   static Distributor& getInstance();
+  inline static Distributor& i() { return getInstance(); };
+
+  // prevent accidential instance
+  Distributor(Distributor const&) = delete;
+  void operator=(Distributor const&) = delete;
 
   Distributor() : LOG(LoggerFactory::getLogger("Distributor")) {
     view_.addListener([this](const Value<View>& v) { check(); });
