@@ -80,7 +80,7 @@ class KVStore {
     if (handle_) {
       esp_err_t err = nvs_get_u32(handle_, key, &(value.u));
       if (err == ESP_OK) {
-        LOG.e("Got Value for key: '%s'", key);
+        LOG.d("Got Value for key: '%s'", key);
         return true;
       } else if (err != ESP_ERR_NVS_NOT_FOUND) {
         LOG.e("Value for key: '%s' not read. Reason: %s", key, esp_err_to_name(err));
@@ -100,7 +100,7 @@ class KVStore {
     if (handle_) {
       esp_err_t err = nvs_get_u64(handle_, key, &(value.u));
       if (err == ESP_OK) {
-        LOG.e("Got Value for key: '%s'", key);
+        LOG.d("Got Value for key: '%s'", key);
         return true;
       } else if (err != ESP_ERR_NVS_NOT_FOUND) {
         LOG.e("Value for key: '%s' not read. Reason: %s", key, esp_err_to_name(err));
@@ -123,13 +123,13 @@ class KVStore {
       if (err == ESP_ERR_NVS_NOT_FOUND || (err == ESP_OK && temp.u == value.u)) {
         err = nvs_set_u32(handle_, key, value.u);
         if (err == ESP_OK) {
-          LOG.e("Wrote value for key: '%s'", key);
+          LOG.d("Wrote value for key: '%s'", key);
           return true;
         } else {
           LOG.e("Value not written. Reason: %s", esp_err_to_name(err));
         }
       } else {
-        LOG.e("Value for key: '%s' not read. Reason: %s", key, esp_err_to_name(err));
+        LOG.w("Value for key: '%s' not read. Reason: %s", key, esp_err_to_name(err));
       }
     }
     return false;
@@ -142,13 +142,13 @@ class KVStore {
       if (err == ESP_ERR_NVS_NOT_FOUND || (err == ESP_OK && temp.u == value.u)) {
         err = nvs_set_u64(handle_, key, value.u);
         if (err == ESP_OK) {
-          LOG.e("Wrote value for key: '%s'", key);
+          LOG.d("Wrote value for key: '%s'", key);
           return true;
         } else {
           LOG.e("Value not written. Reason: %s", esp_err_to_name(err));
         }
       } else {
-        LOG.e("Value for key: '%s' not read. Reason: %s", key, esp_err_to_name(err));
+        LOG.w("Value for key: '%s' not read. Reason: %s", key, esp_err_to_name(err));
       }
     }
     return false;
