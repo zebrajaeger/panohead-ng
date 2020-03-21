@@ -63,6 +63,10 @@ class Value {
 
   // listeners
   void addListener(ValueListenerCallback_t listener) { listeners_.push_back(listener); }
+  void addListener(bool sendInstantly, ValueListenerCallback_t listener) {
+    listeners_.push_back(listener);
+    listener(*this);
+  }
   void removeListener(ValueListenerCallback_t listener) { listeners_.remove(listener); }
 
   // compare
