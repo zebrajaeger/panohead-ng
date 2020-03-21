@@ -334,7 +334,7 @@ void App::setupADC(uint8_t i2cadress)
 void App::setupJoystick()
 // --------------------------------------------------------------------------------
 {
-  if (joystick_.begin(0.0005, 8000, true)) {
+  if (joystick_.begin(0.0045, 8000, true)) {
     LOG.i("Joystick initialized");
     joystickTimer_.startMs(50, false, true, [this] {
       bool led = false;
