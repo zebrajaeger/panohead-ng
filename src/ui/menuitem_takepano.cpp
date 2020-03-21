@@ -10,9 +10,9 @@ MenuItemTakePano::MenuItemTakePano(Display *display, const std::string &name) : 
   onRender(bind(&MenuItemTakePano::render, this, _1));
 
   disable();
-  Distributor::i().getPanoComplete().addListener(Value<bool>::CALL_IF_VALID, [this](const Value<bool> &complete) {
+  Distributor::i.getPanoComplete().addListener(Value<bool>::CALL_IF_VALID, [this](const Value<bool> &complete) {
     setEnabled(*complete);
-    getParent()->requireRepaint();
+    requireRepaintParent();
   });
 }
 

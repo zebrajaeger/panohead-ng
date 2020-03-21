@@ -1,7 +1,6 @@
 #include "menuitem_joystick.h"
 
 #include "displayutils.h"
-
 #include "distributor.h"
 
 //------------------------------------------------------------------------------
@@ -19,7 +18,7 @@ MenuItemJoystick::MenuItemJoystick(Display *display, const std::string &name)
     return false;
   });
 
-  Distributor::getInstance().getJoystick().addListener([this](const Value<Position> &value) { requireRepaint(); });
+  Distributor::i.getJoystick() += [this](const Value<Position> &value) { requireRepaint(); };
 }
 
 //------------------------------------------------------------------------------

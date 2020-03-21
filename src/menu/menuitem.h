@@ -1,12 +1,13 @@
 #pragma once
 
 #include <Arduino.h>
+
 #include <functional>
 #include <string>
 #include <vector>
 
-#include "selector.h"
 #include "incrementor.h"
+#include "selector.h"
 
 // =====================================================================
 class MenuItem;
@@ -29,21 +30,21 @@ class MenuItem {
 
   MenuItem* add(MenuItem* newItem);
   MenuItem* addAsActive(MenuItem* newItem);
-  bool isLeaf() const{return items_.empty();}
+  bool isLeaf() const { return items_.empty(); }
 
   void goUp();
   bool setActiveItem(int16_t index);
   bool setActiveItem(std::string name);
-  MenuItem* getActiveItem(){return active_;}
-  const MenuItem* getActiveItem() const{return active_;}
-  bool isActive() const{return this == active_;}
+  MenuItem* getActiveItem() { return active_; }
+  const MenuItem* getActiveItem() const { return active_; }
+  bool isActive() const { return this == active_; }
   std::string getActivePath();
   MenuItem* getActivePathItem();
 
-  const std::string& getName() const{return name_;}
-  const std::vector<MenuItem*>& getItems() const{return items_;}
-  const Selector& getSelector() const{return selector_;}
-  Selector& getSelector(){return selector_;}
+  const std::string& getName() const { return name_; }
+  const std::vector<MenuItem*>& getItems() const { return items_; }
+  const Selector& getSelector() const { return selector_; }
+  Selector& getSelector() { return selector_; }
 
   void encoderChanged(int16_t diff);
   void buttonPushed();
@@ -54,25 +55,30 @@ class MenuItem {
   MenuItem* onIndexChanged(IndexChangedCallback_t cb);
   MenuItem* onSelectionChanged(SelectionChangedCallback_t cb);
   MenuItem* onEnter(EnterItemCallback_t cb);
-  void requireRepaint(){requireRepaint_ = true;}
+  void requireRepaint() { requireRepaint_ = true; }
+  void requireRepaintParent() {
+    if (parent_) {
+      parent_->requireRepaint();
+    }
+  }
 
-  bool isEnabled() const{return enabled_;}
+  bool isEnabled() const { return enabled_; }
   MenuItem* setEnabled(bool enabled);
   MenuItem* enable();
   MenuItem* disable();
 
-  bool isSubMenuOnly(){return subMenuOnly_;}
-  MenuItem* subMenuOnly(){return setSubMenuOnly(true);}
+  bool isSubMenuOnly() { return subMenuOnly_; }
+  MenuItem* subMenuOnly() { return setSubMenuOnly(true); }
   MenuItem* setSubMenuOnly(bool subMenuOnly);
 
-  MenuItem* getParent(){return parent_;}
-  const MenuItem* getParent() const{return parent_;}
+  MenuItem* getParent() { return parent_; }
+  const MenuItem* getParent() const { return parent_; }
 
   MenuItem* operator[](int16_t index);
   MenuItem* operator[](std::string name);
 
  private:
-  void setParent(MenuItem* parent){parent_ = parent;}
+  void setParent(MenuItem* parent) { parent_ = parent; }
   void propagateEnter();
 
   std::string name_;
@@ -85,7 +91,7 @@ class MenuItem {
   RenderCallback_t renderCallback_;
   ButtonPushCallback_t buttonPushCallback_;
   // EncoderPushCallback_t encoderPushCallback_;
-  IndexChangedCallback_t indexChangedCallback_; 
+  IndexChangedCallback_t indexChangedCallback_;
   Incrementor incrementor_;
   SelectionChangedCallback_t selectionChangedCallback_;
   Selector selector_;

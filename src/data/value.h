@@ -9,7 +9,7 @@ class Value {
   typedef std::function<void(const Value<V>& value)> ValueListenerCallback_t;
   typedef std::function<void(const V& value)> ValueCallback_t;
 
-  typedef enum  { DONT_CALL, CALL_IF_VALID, CALL } InstantlyBehavior_t;
+  typedef enum { DONT_CALL, CALL_IF_VALID, CALL } InstantlyBehavior_t;
 
   Value() : listeners_(), value_(), isValid_(false) {}
 
@@ -65,6 +65,7 @@ class Value {
 
   // listeners
   void addListener(ValueListenerCallback_t listener) { listeners_.push_back(listener); }
+  Value<V>& operator+=(ValueListenerCallback_t listener) { listeners_.push_back(listener); return *this; }
   void addListener(InstantlyBehavior_t instantlyBehavior, ValueListenerCallback_t listener) {
     listeners_.push_back(listener);
     switch (instantlyBehavior) {

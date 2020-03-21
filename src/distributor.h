@@ -16,7 +16,8 @@ class Distributor {
   typedef std::function<void(bool complete)> PanoCompleteCallback_t;
 
   static Distributor& getInstance();
-  inline static Distributor& i() { return getInstance(); };
+  // operators connot be static so this is the shorter form of getInstance
+  static Distributor& i;
 
   // prevent accidential instance
   Distributor(Distributor const&) = delete;
