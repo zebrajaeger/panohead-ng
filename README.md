@@ -42,7 +42,7 @@ Motorized panoramic head based on
 - ~~Improve voltage supply for joystick. TL431 + Resistor and Capacitor for 2.5V joystick voltage.~~
 - ~~Change SPI pins due to firmware flash error~~
 - ~~Sliding menu.~~
-- Voltage supervisor for defined Reset.
+- Voltage supervisor for defined Reset. First try: TL7702ACP
 - Store joystick calibration.
 - ~~Power menu.~~
 - ~~Status LED~~
