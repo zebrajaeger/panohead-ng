@@ -5,7 +5,6 @@
 
 #include "hal/motor_driver.h"
 #include "menu/menuitem.h"
-#include "pano/pano_calculator.h"
 #include "pano/panoutils.h"
 #include "util/singletimer.h"
 
@@ -223,7 +222,7 @@ void App::setupMotorDriver(uint8_t pinCS, uint8_t pinClockSource, uint8_t clockS
 
     motorDriver_.onStatusChange([this](uint8_t axisIndex, const std::array<bool, 3> &axisMoving) {
       if (!axisMoving[0] && !axisMoving[1] && !axisMoving[2]) {
-        panoAutomat_.moveDone();
+        panoAutomat_.triggerMoveDone();
         distributor_.getAxisMovingX().set(axisMoving[0]);
         distributor_.getAxisMovingY().set(axisMoving[1]);
       }
@@ -283,16 +282,16 @@ void App::setupPanoAutomat()
       motorDriver_.goTo(1, pos.getY());
     });
 
-    panoAutomat_.onStatus(
-        [this](uint32_t columnIndex, uint32_t rowIndex, uint32_t shotIndex, PanoAutomat::state_t stateFrom, PanoAutomat::state_t stateTo) {
-          const char *stateName = PanoAutomat::stateToName(stateTo);
-          LOG.d("@%d,%d[%d], %s -> %s", columnIndex, rowIndex, shotIndex, PanoAutomat::stateToName(stateFrom),
-                PanoAutomat::stateToName(stateTo));
-          distributor_.getPanoAutomatStatus().set(stateName);
-          distributor_.getPanoAutomatColumn().set(columnIndex);
-          distributor_.getPanoAutomatRow().set(rowIndex);
-          distributor_.getPanoAutomatShot().set(shotIndex);
-        });
+    // panoAutomat_.onStatus(
+    //     [this](uint32_t columnIndex, uint32_t rowIndex, uint32_t shotIndex, PanoAutomat::state_t stateFrom, PanoAutomat::state_t stateTo) {
+    //       const char *stateName = PanoAutomat::stateToName(stateTo);
+    //       LOG.d("@%d,%d[%d], %s -> %s", columnIndex, rowIndex, shotIndex, PanoAutomat::stateToName(stateFrom),
+    //             PanoAutomat::stateToName(stateTo));
+    //       distributor_.getPanoAutomatStatus().set(stateName);
+    //       distributor_.getPanoAutomatColumn().set(columnIndex);
+    //       distributor_.getPanoAutomatRow().set(rowIndex);
+    //       distributor_.getPanoAutomatShot().set(shotIndex);
+    //     });
   } else {
     LOG.e("PanoAutomat failed");
   }

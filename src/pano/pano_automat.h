@@ -1,192 +1,111 @@
 #pragma once
 
 #include <Arduino.h>
+
 #include <functional>
 
+#include "automat_state.h"
 #include "data/position.h"
-
+#include "movement_timing.h"
+#include "pano.h"
+#include "pano_state.h"
 #include "util/loggerfactory.h"
 #include "util/singletimer.h"
 
-#include "pano/raster.h"
-#include "pano/shot.h"
-
 class PanoAutomat {
  public:
-  typedef enum {
-    UNINITIALIZED,
-    INITAILIZED,
-    MOVE,
-    WAIT_AFTER_MOVE,
-    FOCUS,
-    TRIGGER,
-    WAIT_BETWEEN_SHOTS,
-    WAIT_AFTER_LAST_SHOT,
-    FINISH
-  } state_t;
-
-  typedef std::function<void(bool focus, bool trigger)> cameraCallback_t;
-  typedef std::function<void(uint32_t columnIndex, uint32_t rowIndex, uint32_t shotIndex)> pictureCallback_t;
-  typedef std::function<void(Position position)> moveCallback_t;
-  typedef std::function<void(double progress)> progressCallback_t;
-  typedef std::function<void()> panoFinishCallback_t;
-  typedef std::function<void(uint32_t columnIndex, uint32_t rowIndex, uint32_t shotIndex, state_t stateFrom, state_t stateTo)>
-      statusCallback_t;
+  typedef std::function<void(Position position)> MoveCallback_t;
+  typedef std::function<void(bool focus, bool trigger)> CameraCallback_t;
+  typedef std::function<void(const Pano& pano, const PanoState& panoState)> StatusCallback_t;
 
   PanoAutomat()
       : LOG(LoggerFactory::getLogger("PanoAutomat")),
-        raster_(NULL),
-        shots_(0, 0, 0),
         timer_("PanoAutomat"),
-        state_(UNINITIALIZED),
-        currentColumn_(0),
-        currentRow_(0),
-        currentShot_(0),
-        cameraCallback_([this](bool, bool) { LOG.d("cameraCallback_ uninitialized"); }),
-        beforePictureCallback_([](uint32_t, uint32_t, uint32_t) {}),
-        afterPictureCallback_([](uint32_t, uint32_t, uint32_t) {}),
+        pano_(),
+        movementTiming_(),
+        panoState_(),
         moveCallback_([this](Position) { LOG.d("moveCallback_ uninitialized"); }),
-        progressCallback_([](double) {}),
-        panoFinishCallback_([] {}),
-        statusCallback_([](uint32_t columnIndex, uint32_t rowIndex, uint32_t shotIndex, state_t stateFrom, state_t stateTo) {}) {}
+        cameraCallback_([this](bool, bool) { LOG.d("cameraCallback_ uninitialized"); }),
+        statusCallback_([](const Pano& pano, const PanoState& panoState) {}) {}
 
   bool begin() {
     timer_.onTimer(std::bind(&PanoAutomat::onTimer, this));
-    setState(INITAILIZED);
+    setState(AutomatState_t::INITAILIZED);
     return true;
   }
+  void loop() { timer_.loop(); }
 
-  bool start(Raster* raster, const Shots& shots) {
-    if (raster_) {
-      delete raster_;
-    }
-    raster_ = raster;
-    shots_ = shots;
+  void setMovementTiming(const MovementTiming& movementTiming) { movementTiming_ = movementTiming; }
 
-    resetPosition();
-    resetShot();
+  void start(Pano pano) {
+    panoState_.reset();
 
     setState(MOVE);
     triggerMove();
-
-    return true;
   }
 
-  bool moveDone() {
-    if (state_ == MOVE) {
-      setState(WAIT_AFTER_MOVE);
-      // LOG.i("Wait for %dms", shots_.getDelayAfterMoveMs());
-      triggerTimerMs(shots_.getDelayAfterMoveMs());
+  bool triggerMoveDone() {
+    if (getState() == MOVE) {
+      setState(AutomatState_t::WAIT_AFTER_MOVE);
+      triggerDelayAfterMove();
       return true;
     }
     return false;
   }
 
-  void onCamera(cameraCallback_t cb) { cameraCallback_ = cb; }
-  void onBeforePicture(pictureCallback_t cb) { beforePictureCallback_ = cb; }
-  void onAfterPicture(pictureCallback_t cb) { afterPictureCallback_ = cb; }
-  void onMove(moveCallback_t cb) { moveCallback_ = cb; }
-  void onProgress(progressCallback_t cb) { progressCallback_ = cb; }
-  void onPanoFinish(panoFinishCallback_t cb) { panoFinishCallback_ = cb; }
-  void onStatus(statusCallback_t cb) { statusCallback_ = cb; }
-
-  void loop() { timer_.loop(); }
+  void onMove(MoveCallback_t cb) { moveCallback_ = cb; }
+  void onCamera(CameraCallback_t cb) { cameraCallback_ = cb; }
+  void onStatus(StatusCallback_t cb) { statusCallback_ = cb; }
 
   void statistic() {
-    if (raster_) {
-      raster_->statistics();
-    } else {
-      LOG.d("# Raster: null");
-    }
-    LOG.d("# State: %s", stateToName(state_));
-    LOG.d("# Col: %d", currentColumn_);
-    LOG.d("# Row: %d", currentRow_);
-    LOG.d("# Sht: %d", currentShot_);
+    LOG.i("Timing: delayAfterMoveMs:%d, delayBetweenShotsMs:%d, delayAfterLastShotMs:%d", movementTiming_.getDelayAfterMoveMs(),
+          movementTiming_.getDelayBetweenShotsMs(), movementTiming_.getDelayAfterLastShotMs());
+
+    panoState_.statistic();
   }
 
-  static const char* stateToName(state_t state) {
-    switch (state) {
-      case UNINITIALIZED:
-        return "UNINITIALIZED";
-        break;
-      case INITAILIZED:
-        return "INITAILIZED";
-        break;
-      case MOVE:
-        return "MOVE";
-        break;
-      case WAIT_AFTER_MOVE:
-        return "WAIT_AFTER_MOVE";
-        break;
-      case FOCUS:
-        return "FOCUS";
-        break;
-      case TRIGGER:
-        return "TRIGGER";
-        break;
-      case WAIT_BETWEEN_SHOTS:
-        return "WAIT_BETWEEN_SHOTS";
-        break;
-      case WAIT_AFTER_LAST_SHOT:
-        return "WAIT_AFTER_LAST_SHOT";
-        break;
-      case FINISH:
-        return "FINISH";
-        break;
-    }
-    return "?unknown?";
+ private:
+  AutomatState_t setState(AutomatState_t newState) {
+    AutomatState_t old = panoState_.setState(newState);
+    statusCallback_(pano_, panoState_);
+    LOG.i("State change %s -> %s", stateToName(old), stateToName(newState));
+    return old;
   }
 
- protected:
-  state_t setState(state_t newState) {
-    state_t temp = state_;
-    state_ = newState;
-    statusCallback_(currentColumn_, currentRow_, currentShot_, temp, state_);
-    // LOG.i("State change %s -> %s", stateToName(temp), stateToName(newState));
-    return temp;
-  }
+  AutomatState_t getState() { return panoState_.getAutomatState(); }
 
   void onTimer() {
-    switch (state_) {
-      case WAIT_AFTER_MOVE:
-      case WAIT_BETWEEN_SHOTS: {
-        LOG.i("###################################################");
-        LOG.i("##### @[%u,%u] take shot(%u/%u) #####", currentColumn_, currentRow_, currentShot_, shots_.getShotCount());
-        LOG.i("###################################################");
-        beforePictureCallback_(currentColumn_, currentRow_, currentShot_);
-        setState(FOCUS);
+    switch (getState()) {
+      case AutomatState_t::WAIT_AFTER_MOVE:
+      case AutomatState_t::WAIT_BETWEEN_SHOTS: {
+        setState(AutomatState_t::FOCUS);
         cameraCallback_(true, false);
-        // LOG.e("XXX %d %d", currentShot_, shots_[currentShot_].getFocusTimeMs());
-        triggerTimerMs(shots_[currentShot_].getFocusTimeMs());
+        triggerFocusTime();
       } break;
 
-      case FOCUS: {
-        setState(TRIGGER);
+      case AutomatState_t::FOCUS: {
+        setState(AutomatState_t::TRIGGER);
         cameraCallback_(true, true);  // or false,true ?
-        triggerTimerMs(shots_[currentShot_].getTriggerTimeMs());
+        triggerTriggerTime();
       } break;
 
-      case TRIGGER: {
+      case AutomatState_t::TRIGGER: {
         cameraCallback_(false, false);
-        afterPictureCallback_(currentColumn_, currentRow_, currentShot_);
-        if (prepareNextShot()) {
-          setState(WAIT_BETWEEN_SHOTS);
-          triggerTimerMs(shots_.getDelayBetweenShotsMs());
+        if (panoState_.getPanoPosition().next().isFirstShot()) {
+          setState(AutomatState_t::WAIT_AFTER_LAST_SHOT);
+          triggerDelayAfterLastShot();
         } else {
-          resetShot();
-          setState(WAIT_AFTER_LAST_SHOT);
-          triggerTimerMs(shots_.getDelayAfterLastShotMs());
+          setState(AutomatState_t::WAIT_BETWEEN_SHOTS);
+          triggerDelayBetwenShots();
         }
       } break;
 
-      case WAIT_AFTER_LAST_SHOT: {
-        if (prepareNextPosition()) {
-          setState(MOVE);
+      case AutomatState_t::WAIT_AFTER_LAST_SHOT: {
+        if (panoState_.getPanoPosition()) {
+          setState(AutomatState_t::MOVE);
           triggerMove();
         } else {
-          resetPosition();
-          setState(FINISH);
-          panoFinishCallback_();
+          setState(AutomatState_t::FINISH);
         }
       } break;
 
@@ -195,35 +114,20 @@ class PanoAutomat {
     }
   }
 
-  void resetShot() { currentShot_ = 0; }
+  void triggerDelayAfterMove() { triggerTimerMs(movementTiming_.getDelayAfterMoveMs()); }
+  void triggerDelayBetwenShots() { triggerTimerMs(movementTiming_.getDelayBetweenShotsMs()); }
+  void triggerDelayAfterLastShot() { triggerTimerMs(movementTiming_.getDelayAfterLastShotMs()); }
 
-  bool prepareNextShot() {
-    currentShot_++;
-    // LOG.d("prepareNextShot() ->  current:%d max:%d", currentShot_, shots_.getShotCount());
-    if (currentShot_ >= shots_.getShotCount()) {
-      currentShot_ = 0;
-      return false;
-    } else {
-      return true;
-    }
+  void triggerFocusTime() {
+    uint32_t shotIndex = panoState_.getPanoPosition().getShotIndex();
+    uint32_t focusTime = pano_.getShot(shotIndex).getFocusTimeMs();
+    triggerTimerMs(focusTime);
   }
 
-  void resetPosition() {
-    currentColumn_ = 0;
-    currentRow_ = 0;
-  }
-
-  bool prepareNextPosition() {
-    currentColumn_++;
-    if (currentColumn_ >= raster_->getColumnsForRowIndex(currentRow_)) {
-      currentColumn_ = 0;
-      currentRow_++;
-
-      if (currentRow_ >= raster_->getRows()) {
-        return false;
-      }
-    }
-    return true;
+  void triggerTriggerTime() {
+    uint32_t shotIndex = panoState_.getPanoPosition().getShotIndex();
+    uint32_t triggerTime = pano_.getShot(shotIndex).getTriggerTimeMs();
+    triggerTimerMs(triggerTime);
   }
 
   void triggerTimerMs(uint32_t ms) {
@@ -232,24 +136,18 @@ class PanoAutomat {
   }
 
   void triggerMove() {
-    Position p = raster_->getPositionFor(currentColumn_, currentRow_);
+    Position p = pano_.getPosition(panoState_.getPanoPosition().getPositionIndex());
     moveCallback_(p);
   }
 
- private:
   Logger& LOG;
-  Raster* raster_;
-  Shots shots_;
   SingleTimer timer_;
-  state_t state_;
-  uint32_t currentColumn_;
-  uint32_t currentRow_;
-  uint32_t currentShot_;
-  cameraCallback_t cameraCallback_;
-  pictureCallback_t beforePictureCallback_;
-  pictureCallback_t afterPictureCallback_;
-  moveCallback_t moveCallback_;
-  progressCallback_t progressCallback_;
-  panoFinishCallback_t panoFinishCallback_;
-  statusCallback_t statusCallback_;
+
+  Pano pano_;
+  MovementTiming movementTiming_;
+  PanoState panoState_;
+
+  MoveCallback_t moveCallback_;
+  CameraCallback_t cameraCallback_;
+  StatusCallback_t statusCallback_;
 };

@@ -4,7 +4,6 @@
 #include <qrcode.h>
 
 #include "distributor.h"
-
 #include "pano/panoutils.h"
 
 //------------------------------------------------------------------------------
@@ -35,9 +34,10 @@ void MenuItemQR::render(MenuItem &menu)
 
   Distributor::getInstance().getView();
 
-  PanoUtils::toJson(json, Distributor::getInstance().getView(), Distributor::getInstance().getPicture(),
-                    Distributor::getInstance().getRaster(), Distributor::getInstance().getShots());
-  qrcode_initText(&qrcode, qrcodeData, version, ECC_HIGH, json.c_str());
+  // PanoUtils::toJson(json, Distributor::getInstance().getView(), Distributor::getInstance().getPicture(),
+  //                   Distributor::getInstance().getRaster(), Distributor::getInstance().getShots());
+  //  qrcode_initText(&qrcode, qrcodeData, version, ECC_HIGH, json.c_str());
+  qrcode_initText(&qrcode, qrcodeData, version, ECC_HIGH, "implement Me!!!");
 
   //   Serial.printf("| Version | Buffer | Size |\n");
   //   Serial.printf("| --- | --- | --- |\n");
@@ -57,14 +57,6 @@ void MenuItemQR::render(MenuItem &menu)
         u8g2->drawPixel(x, y);
       }
     }
-  }
-
-  if (!Distributor::getInstance().getRaster()) {
-    DisplayUtils::drawStringAt(getU8g2(), 70, 10, false, false, "no raster");
-  }
-
-  if (!Distributor::getInstance().getShots()) {
-    DisplayUtils::drawStringAt(getU8g2(), 70, 30, false, false, "no shots");
   }
 
   u8g2->sendBuffer();

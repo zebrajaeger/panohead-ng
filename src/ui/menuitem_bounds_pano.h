@@ -2,7 +2,6 @@
 
 #include "distributor.h"
 #include "menuitem_bounds.h"
-#include "pano/picture.h"
 
 class MenuItemBoundsPano : public MenuItemBounds {
  public:

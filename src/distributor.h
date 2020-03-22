@@ -6,10 +6,9 @@
 #include "data/power.h"
 #include "data/value.h"
 #include "data/view.h"
-#include "pano/picture.h"
-#include "pano/raster.h"
-#include "pano/shot.h"
+#include "data/picture.h"
 #include "util/loggerfactory.h"
+#include "pano/shot/shot_row.h"
 
 class Distributor {
  public:
@@ -38,8 +37,7 @@ class Distributor {
   Value<int32_t>& getDelayAfterMove() { return delayAfterMove_; }
   Value<int32_t>& getFocusTime() { return focusTime_; }
   Value<int32_t>& getTriggerTime() { return triggerTime_; }
-  Value<Raster*>& getRaster() { return raster_; }
-  Value<Shots*>& getShots() { return shots_; }
+  Value<ShotRow>& getShots() { return shots_; }
   Value<Position>& getPosition() { return position_; }
   Value<Position>& getLevel() { return level_; }
   Value<Position>& getJoystick() { return joystick_; }
@@ -73,8 +71,7 @@ class Distributor {
   Value<int32_t> delayAfterMove_;
   Value<int32_t> focusTime_;
   Value<int32_t> triggerTime_;
-  Value<Raster*> raster_;
-  Value<Shots*> shots_;
+  Value<ShotRow> shots_;
   Value<Position> position_;
   Value<Position> level_;
   Value<Position> joystick_;
