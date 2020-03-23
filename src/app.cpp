@@ -283,7 +283,8 @@ void App::setupPanoAutomat()
     });
 
     // panoAutomat_.onStatus(
-    //     [this](uint32_t columnIndex, uint32_t rowIndex, uint32_t shotIndex, PanoAutomat::state_t stateFrom, PanoAutomat::state_t stateTo) {
+    //     [this](uint32_t columnIndex, uint32_t rowIndex, uint32_t shotIndex, PanoAutomat::state_t stateFrom, PanoAutomat::state_t stateTo)
+    //     {
     //       const char *stateName = PanoAutomat::stateToName(stateTo);
     //       LOG.d("@%d,%d[%d], %s -> %s", columnIndex, rowIndex, shotIndex, PanoAutomat::stateToName(stateFrom),
     //             PanoAutomat::stateToName(stateTo));
@@ -405,6 +406,9 @@ void App::setupStatistics()
       joystick_.statistics();
       display_.statistics();
       // analogSetAttenuation(ADC_0db);
+      uint32_t freeHeap = heap_caps_get_free_size(MALLOC_CAP_8BIT);
+      uint32_t largestBlock = heap_caps_get_largest_free_block(MALLOC_CAP_8BIT);
+      LOG.i("Heap: available: %'d bytes, largest block: %'d", freeHeap, largestBlock);
     });
   } else {
     LOG.e("Statistic failed");

@@ -39,6 +39,7 @@ Motorized panoramic head based on
 ## TODO
 
 - Schematic
+- ~~print out heapt statistics: https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/system/heap_debug.html#heap-information~~
 - ~~Improve voltage supply for joystick. TL431 + Resistor and Capacitor for 2.5V joystick voltage.~~
 - ~~Change SPI pins due to firmware flash error~~
 - ~~Sliding menu.~~
