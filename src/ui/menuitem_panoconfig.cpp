@@ -10,30 +10,40 @@ MenuItemPanoConfig::MenuItemPanoConfig(Display *display, const std::string &name
 //------------------------------------------------------------------------------
 {
   add(new MenuItemBase(display, ".."));
-  add((new MenuItemNumber(display, "Delay after move", "s", 10000))
+
+  add((new MenuItemNumber(display, "Del aft mov", "s", 10000))
           ->onSave([this](const MenuItemNumber &self) {
-            int32_t v = self.getValue();
-            LOG.d("MEEEEEEEEEP %d", v);
-             Distributor::getInstance().getDelayAfterMove().set(v); })
+            Distributor::i.getMovementTiming().get().setDelayAfterMoveMs(self.getValue());
+            Distributor::i.getMovementTiming().propagateChange();
+          })
           ->onEnter([](MenuItem &self) {
             MenuItemNumber &menuItemNumber = (MenuItemNumber &)self;
-            Distributor::i.getDelayAfterMove().get([&menuItemNumber](int32_t value) { menuItemNumber.setValue(value); });
+            Distributor::i.getMovementTiming().get(
+                [&menuItemNumber](const MovementTiming &value) { 
+                  menuItemNumber.setValue(value.getDelayAfterMoveMs()); });
           }));
-  add((new MenuItemNumber(display, "Focus time", "s", 10000))
-          ->onSave([this](const MenuItemNumber &self) { Distributor::getInstance().getFocusTime().set(self.getValue()); })
+
+  add((new MenuItemNumber(display, "Del btw shts", "s", 10000))
+          ->onSave([this](const MenuItemNumber &self) {
+            Distributor::i.getMovementTiming().get().setDelayBetweenShotsMs(self.getValue());
+            Distributor::i.getMovementTiming().propagateChange();
+          })
           ->onEnter([](MenuItem &self) {
             MenuItemNumber &menuItemNumber = (MenuItemNumber &)self;
-            Distributor::i.getFocusTime().get([&menuItemNumber](int32_t value) { menuItemNumber.setValue(value); });
+            Distributor::i.getMovementTiming().get(
+                [&menuItemNumber](const MovementTiming &value) { menuItemNumber.setValue(value.getDelayBetweenShotsMs()); });
           }));
-  add((new MenuItemNumber(display, "Trigger time", "s", 10000))
-          ->onSave([this](const MenuItemNumber &self) { Distributor::getInstance().getTriggerTime().set(self.getValue()); })
+
+  add((new MenuItemNumber(display, "Del lst sht", "s", 10000))
+          ->onSave([this](const MenuItemNumber &self) {
+            Distributor::i.getMovementTiming().get().setDelayAfterLastShotMs(self.getValue());
+            Distributor::i.getMovementTiming().propagateChange();
+          })
           ->onEnter([](MenuItem &self) {
             MenuItemNumber &menuItemNumber = (MenuItemNumber &)self;
-            Distributor::i.getTriggerTime().get([&menuItemNumber](int32_t value) { menuItemNumber.setValue(value); });
+            Distributor::i.getMovementTiming().get(
+                [&menuItemNumber](const MovementTiming &value) { menuItemNumber.setValue(value.getDelayAfterLastShotMs()); });
           }));
-  // panoConfig->add(new MenuItemBase(u8g2, "Delay between shots"));
-  // panoConfig->add(new MenuItemBase(u8g2, "Shot count"));
-  // panoConfig->add(new MenuItemBase(u8g2, "shots"));
 
   onRender([this](MenuItem &menu) {
     U8G2 *u8g2 = getU8g2();

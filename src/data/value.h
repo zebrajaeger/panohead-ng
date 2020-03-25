@@ -66,6 +66,9 @@ class Value {
   // listeners
   void addListener(ValueListenerCallback_t listener) { listeners_.push_back(listener); }
   Value<V>& operator+=(ValueListenerCallback_t listener) { listeners_.push_back(listener); return *this; }
+  /**
+   * @param instantlyBehavior is only for the adding listener time. it does not change the behavior later.
+   */
   void addListener(InstantlyBehavior_t instantlyBehavior, ValueListenerCallback_t listener) {
     listeners_.push_back(listener);
     switch (instantlyBehavior) {
@@ -73,7 +76,7 @@ class Value {
         // nothing to do;
         break;
       case CALL_IF_VALID:
-        if (isValid_) {
+        if (isValid_) { 
           listener(*this);
         }
         break;

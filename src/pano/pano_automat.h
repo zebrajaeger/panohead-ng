@@ -39,6 +39,7 @@ class PanoAutomat {
 
   void start(Pano pano) {
     panoState_.reset();
+    pano_ = pano;
 
     setState(MOVE);
     triggerMove();
@@ -58,10 +59,14 @@ class PanoAutomat {
   void onStatus(StatusCallback_t cb) { statusCallback_ = cb; }
 
   void statistic() {
-    LOG.i("Timing: delayAfterMoveMs:%d, delayBetweenShotsMs:%d, delayAfterLastShotMs:%d", movementTiming_.getDelayAfterMoveMs(),
+    LOG.i("Timing: delayAfterMove:%dms, delayBetweenShots:%dms, delayAfterLastShot:%dms", movementTiming_.getDelayAfterMoveMs(),
           movementTiming_.getDelayBetweenShotsMs(), movementTiming_.getDelayAfterLastShotMs());
 
-    panoState_.statistic();
+    LOG.i("AutomatState: %s", stateToName(panoState_.getAutomatState()));
+
+    const PanoPosition& panoPos = panoState_.getPanoPosition();
+    LOG.i("PanoPos.shot: %d/%d", panoPos.getShotIndex(), panoPos.getShotCount());
+    LOG.i("PanoPos.pos: %d/%d", panoPos.getPositionIndex(), panoPos.getPositionCount());
   }
 
  private:

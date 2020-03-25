@@ -4,11 +4,10 @@
 
 #include "automat_state.h"
 #include "pano_position.h"
-#include "util/logger.h"
 
 class PanoState {
  public:
-  PanoState() : LOG(LoggerFactory::getLogger("PanoState")), automatState_(AutomatState_t::UNINITIALIZED), panoPosition_() {}
+  PanoState() : automatState_(AutomatState_t::UNINITIALIZED), panoPosition_() {}
 
   void reset() {
     automatState_ = AutomatState_t::UNINITIALIZED;
@@ -21,17 +20,13 @@ class PanoState {
     return old;
   }
 
-  AutomatState_t getAutomatState() { return automatState_; }
+  AutomatState_t getAutomatState() const { return automatState_; }
   const PanoPosition& getPanoPosition() const { return panoPosition_; }
   PanoPosition& getPanoPosition() { return panoPosition_; }
 
-  void statistic() {
-    LOG.i("automatState_: %s", stateToName(automatState_));
-    panoPosition_.statistic();
-  }
+  bool operator==(const PanoState& b) const { return automatState_ == b.automatState_ && panoPosition_ == b.panoPosition_; }
 
  private:
-  Logger& LOG;
   AutomatState_t automatState_;
   PanoPosition panoPosition_;
 };

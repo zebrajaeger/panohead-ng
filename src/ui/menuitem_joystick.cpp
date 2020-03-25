@@ -34,7 +34,7 @@ void MenuItemJoystick::render(MenuItem &menu)
   u8g2->drawCircle(64, 32, 31);
   u8g2->drawCircle(64, 32, 3);
 
-  Position &pos = Distributor::getInstance().getJoystick().get();
+  Position &pos = Distributor::i.getJoystick().get();
   double x = pos.getX();
   double y = pos.getY();
   if (x < -1.0) x = -1.0;

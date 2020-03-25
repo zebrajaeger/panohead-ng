@@ -21,6 +21,8 @@ class Shot {
   uint32_t getTriggerTimeMs() const { return triggerTimeMs_; }
   void getTriggerTimeMs(uint32_t triggerTimeMs) { triggerTimeMs_ = triggerTimeMs; }
 
+  bool isComplete() { return isEnabled_ ? focusTimeMs_ > 0 && triggerTimeMs_ > 0 : true; }
+
   bool operator==(const Shot& b) const { return focusTimeMs_ == b.focusTimeMs_ && triggerTimeMs_ == b.triggerTimeMs_; }
   bool operator!=(const Shot& b) const { return focusTimeMs_ != b.focusTimeMs_ || triggerTimeMs_ != b.triggerTimeMs_; }
   operator bool() const { return isEnabled_; }

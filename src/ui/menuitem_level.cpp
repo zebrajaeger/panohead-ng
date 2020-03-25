@@ -19,7 +19,7 @@ MenuItemLevel::MenuItemLevel(Display *display, const std::string &name)
     return false;
   });
 
-  Distributor::getInstance().getLevel().addListener([this](const Value<Position> &value) { requireRepaint(); });
+  Distributor::i.getLevel().addListener([this](const Value<Position> &value) { requireRepaint(); });
 }
 
 //------------------------------------------------------------------------------
@@ -35,7 +35,7 @@ void MenuItemLevel::render(MenuItem &menu)
   u8g2->drawCircle(64, 32, 31);
   u8g2->drawCircle(64, 32, 3);
 
-  Position &pos = Distributor::getInstance().getLevel().get();
+  Position &pos = Distributor::i.getLevel().get();
   // Serial.printf("RENDER %f %f\n", pos.getX(), pos.getY());
   double x = pos.getX();
   double y = pos.getY();

@@ -18,14 +18,14 @@ MenuItemPower::MenuItemPower(Display *display, const std::string &name)
     self.goUp();
     return false;
   });
-  Distributor::getInstance().getPower().addListener([this](const Value<Power> &value) { requireRepaint(); });
+  Distributor::i.getPower().addListener([this](const Value<Power> &value) { requireRepaint(); });
 }
 
 //------------------------------------------------------------------------------
 void MenuItemPower::render(MenuItem &menu)
 //------------------------------------------------------------------------------
 {
-  const Power &power = Distributor::getInstance().getPower().get();
+  const Power &power = Distributor::i.getPower().get();
   U8G2 *u8g2 = getU8g2();
   u8g2->clearBuffer();
 

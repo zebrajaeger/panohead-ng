@@ -66,6 +66,16 @@ class ShotRow {
     return true;
   }
 
+  bool isComplete() {
+    uint32_t size = getCapacity();
+    for (uint32_t i = 0; i < size; ++i) {
+      if (!shots_[(std::size_t)i].isComplete()) {
+        return false;
+      }
+    }
+    return true;
+  }
+
  private:
   void move(uint32_t from, uint32_t to) {
     shots_[(std::size_t)from] = shots_[(std::size_t)to];

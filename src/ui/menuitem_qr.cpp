@@ -32,7 +32,7 @@ void MenuItemQR::render(MenuItem &menu)
   uint8_t qrcodeData[qrcode_getBufferSize(version)];
   String json;
 
-  Distributor::getInstance().getView();
+  Distributor::i.getView();
 
   // PanoUtils::toJson(json, Distributor::getInstance().getView(), Distributor::getInstance().getPicture(),
   //                   Distributor::getInstance().getRaster(), Distributor::getInstance().getShots());

@@ -2,13 +2,14 @@
 
 #include <Arduino.h>
 
-#include "util/logger.h"
-
 class PanoPosition {
  public:
-  PanoPosition() : LOG(LoggerFactory::getLogger("PanoPosition")), shotCount_(0), shotIndex_(0), positionCount_(0), positionIndex_(0) {}
+  PanoPosition() : shotCount_(0), shotIndex_(0), positionCount_(0), positionIndex_(0) {}
 
+  uint32_t getShotCount() const { return shotCount_; }
   uint32_t getShotIndex() const { return shotIndex_; }
+
+  uint32_t getPositionCount() const { return positionCount_; }
   uint32_t getPositionIndex() const { return positionIndex_; }
 
   void reset() { positionIndex_ = 0; }
@@ -43,14 +44,7 @@ class PanoPosition {
 
   operator bool() const { return positionIndex_ < positionCount_; }
 
-  void statistic() {
-    LOG.i("shot: i%d/c%d", shotIndex_, shotCount_);
-    LOG.i("pos: i%d/c%d", positionIndex_, positionCount_);
-  }
-
  private:
-  Logger& LOG;
-
   uint32_t shotCount_;
   uint32_t shotIndex_;
 

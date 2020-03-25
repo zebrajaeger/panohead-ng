@@ -49,7 +49,6 @@ class App {
   Logger &LOG;
   KVStore kvStore_;
   
-  Distributor &distributor_ = Distributor::getInstance();
   Statistic statistic_;
   PCF8574 io_;
   Display display_;

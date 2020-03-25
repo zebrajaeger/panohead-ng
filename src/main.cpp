@@ -2,7 +2,7 @@
 
 #include "app.h"
 
-App app;
+App *app;
 
 Logger &LOG(LoggerFactory::getLogger("MAIN"));
 
@@ -67,8 +67,9 @@ void setup()
   LOG.i("========================================");
 
   beginWiFi();
-
-  app.setup();
+  
+  app = new App();
+  app->setup();
   LOG.i("========================================");
   LOG.i("Run App...");
   LOG.i("========================================");
@@ -79,6 +80,6 @@ void loop()
 // --------------------------------------------------------------------------------
 {
   if (loopWiFi()) {
-    app.loop();
+    app->loop();
   }
 }

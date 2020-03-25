@@ -18,9 +18,9 @@ MenuItemMain::MenuItemMain(Display *display, const std::string &name)
     : MenuItemBase(display, name)
 //------------------------------------------------------------------------------
 {
-  add(new MenuItemPanoConfig(display, "Pan cfg"));
-  add(new MenuItemBoundsPano(display, "Pan bnd"));
-  add(new MenuItemBoundsPicture(display, "Pic bnd"));
+  add(new MenuItemPanoConfig(display, "Move cfg"));
+  add(new MenuItemBoundsPano(display, "Pano rect"));
+  add(new MenuItemBoundsPicture(display, "Pic rect"));
   add(new MenuItemOverlap(display, "Pic ovl"));
   add(new MenuItemTakePano(display, "Take pano"));
   add(new MenuItemQR(display, "QR"));

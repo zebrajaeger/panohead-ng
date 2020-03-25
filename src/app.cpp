@@ -12,7 +12,6 @@
 App::App()
     : LOG(LoggerFactory::getLogger("APP")),
       kvStore_(),
-      distributor_(Distributor::getInstance()),
       statistic_(),
       io_(),
       display_(),
@@ -76,28 +75,43 @@ void App::setupKVStore(const char *name)
 {
   if (kvStore_.begin(name)) {
     LOG.i("KVStore initialized");
+    // ===== Read values =====
+
+    // pic overlay x and y
+    Distributor::i.getPicture().set(Picture());  // set default
     kvStore_.get64("pic.ovl.x", [this](const KVStore::kv64_t &value) {
       LOG.i("kv-get pic.ovl.x = %f %", value.f);
-      Distributor::getInstance().getPicture().get().setOverlapWidth(value.f);
+      (*Distributor::i.getPicture()).setOverlapWidth(value.f);
+      Distributor::i.getPicture().propagateChange();
     });
     kvStore_.get64("pic.ovl.y", [this](const KVStore::kv64_t &value) {
       LOG.i("kv-get pic.ovl.y = %f %", value.f);
-      Distributor::getInstance().getPicture().get().setOverlapHeight(value.f);
-    });
-    kvStore_.get32("pano.delAfMov", [this](const KVStore::kv32_t &value) {
-      LOG.i("kv-get pano.delAfMov = %d ms", value.i);
-      Distributor::getInstance().getDelayAfterMove().set(value.i);
-    });
-    kvStore_.get32("pano.focTime", [this](const KVStore::kv32_t &value) {
-      LOG.i("kv-get pano.focTime = %d ms", value.i);
-      Distributor::getInstance().getFocusTime().set(value.i);
-    });
-    kvStore_.get32("pano.trigTime", [this](const KVStore::kv32_t &value) {
-      LOG.i("kv-get pano.trigTime = %d ms", value.i);
-      Distributor::getInstance().getTriggerTime().set(value.i);
+      (*Distributor::i.getPicture()).setOverlapHeight(value.f);
+      Distributor::i.getPicture().propagateChange();
     });
 
-    Distributor::getInstance().getPicture().addListener([this](const Value<Picture> &value) {
+    // timing
+    Distributor::i.getMovementTiming().set(MovementTiming());  // set default
+    kvStore_.get32("pano.delAfMov", [this](const KVStore::kv32_t &value) {
+      LOG.i("kv-get pano.delAfMov = %d ms", value.i);
+      (*Distributor::i.getMovementTiming()).setDelayAfterMoveMs(value.u);
+      Distributor::i.getMovementTiming().propagateChange();
+    });
+    kvStore_.get32("pano.delBtSht", [this](const KVStore::kv32_t &value) {
+      LOG.i("kv-get pano.delBtSht = %d ms", value.i);
+      (*Distributor::i.getMovementTiming()).setDelayBetweenShotsMs(value.u);
+      Distributor::i.getMovementTiming().propagateChange();
+    });
+    kvStore_.get32("pano.delLsSht", [this](const KVStore::kv32_t &value) {
+      LOG.i("kv-get pano.delLsSht = %d ms", value.i);
+      (*Distributor::i.getMovementTiming()).setDelayAfterLastShotMs(value.u);
+      Distributor::i.getMovementTiming().propagateChange();
+    });
+
+    // ===== Write values =====
+
+    // picture
+    Distributor::i.getPicture().addListener([this](const Value<Picture> &value) {
       KVStore::kv64_t temp;
       temp.f = (*value).getOverlapWidth();
       LOG.i("kv-set pic.ovl.x = %f %", temp.f);
@@ -107,27 +121,19 @@ void App::setupKVStore(const char *name)
       kvStore_.set64("pic.ovl.y", temp);
       kvStore_.commit();
     });
-    Distributor::getInstance().getDelayAfterMove().addListener([this](const Value<int32_t> &value) {
+
+    // timing
+    Distributor::i.getMovementTiming().addListener([this](const Value<MovementTiming> &movementTiming) {
       KVStore::kv32_t temp;
-      temp.i = *value;
-      LOG.i("kv-set pano.delAfMov = %d ms", temp.i);
-      kvStore_.set32("pano.delAfMov", temp);
+      temp.u = (*movementTiming).getDelayAfterMoveMs();
+      kvStore_.get32("pano.delAfMov", temp);
+      temp.u = (*movementTiming).getDelayBetweenShotsMs();
+      kvStore_.get32("pano.delBtSht", temp);
+      temp.u = (*movementTiming).getDelayAfterLastShotMs();
+      kvStore_.get32("pano.delLsSht", temp);
       kvStore_.commit();
     });
-    Distributor::getInstance().getFocusTime().addListener([this](const Value<int32_t> &value) {
-      KVStore::kv32_t temp;
-      temp.i = *value;
-      LOG.i("kv-set pano.focTime = %d ms", temp.i);
-      kvStore_.set32("pano.focTime", temp);
-      kvStore_.commit();
-    });
-    Distributor::getInstance().getTriggerTime().addListener([this](const Value<int32_t> &value) {
-      KVStore::kv32_t temp;
-      temp.i = *value;
-      LOG.i("kv-set pano.trigTime = %d ms", temp.i);
-      kvStore_.set32("pano.trigTime", temp);
-      kvStore_.commit();
-    });
+
   } else {
     LOG.e("KVStore failed");
   }
@@ -215,8 +221,8 @@ void App::setupMotorDriver(uint8_t pinCS, uint8_t pinClockSource, uint8_t clockS
     motorDriver_.onStatusChange([this](uint8_t axisIndex, const std::array<bool, 3> &axisMoving) {
       if (!axisMoving[0] && !axisMoving[1] && !axisMoving[2]) {
         panoAutomat_.triggerMoveDone();
-        distributor_.getAxisMovingX().set(axisMoving[0]);
-        distributor_.getAxisMovingY().set(axisMoving[1]);
+        Distributor::i.getAxisMovingX().set(axisMoving[0]);
+        Distributor::i.getAxisMovingY().set(axisMoving[1]);
       }
     });
 
@@ -224,13 +230,13 @@ void App::setupMotorDriver(uint8_t pinCS, uint8_t pinClockSource, uint8_t clockS
       switch (axisIndex) {
         case 0:
           // display.setPositionX(pos);
-          distributor_.getPosition().get().setX(pos);
-          distributor_.getPosition().propagateChange();
+          Distributor::i.getPosition().get().setX(pos);
+          Distributor::i.getPosition().propagateChange();
           break;
         case 1:
           // display.setPositionY(pos);
-          distributor_.getPosition().get().setY(pos);
-          distributor_.getPosition().propagateChange();
+          Distributor::i.getPosition().get().setY(pos);
+          Distributor::i.getPosition().propagateChange();
           break;
         default:
           break;
@@ -262,29 +268,22 @@ void App::setupPanoAutomat()
     LOG.i("PanoAutomat initialized");
 
     panoAutomat_.onCamera([this](bool focus, bool trigger) {
-      // LOG.d("Camera: %d, %d", focus, trigger);
+      LOG.d("Camera: %d, %d", focus, trigger);
       camera_.set(focus, trigger);
-      distributor_.getCameraFocus().set(focus);
-      distributor_.getCameraTrigger().set(trigger);
+      Distributor::i.getCameraFocus().set(focus);
+      Distributor::i.getCameraTrigger().set(trigger);
     });
 
     panoAutomat_.onMove([this](Position pos) {
-      // LOG.d("GoTo: %f, %f", pos.getX(), pos.getY());
+      LOG.d("GoTo: %f, %f", pos.getX(), pos.getY());
       motorDriver_.goTo(0, pos.getX());
       motorDriver_.goTo(1, pos.getY());
     });
 
-    // panoAutomat_.onStatus(
-    //     [this](uint32_t columnIndex, uint32_t rowIndex, uint32_t shotIndex, PanoAutomat::state_t stateFrom, PanoAutomat::state_t stateTo)
-    //     {
-    //       const char *stateName = PanoAutomat::stateToName(stateTo);
-    //       LOG.d("@%d,%d[%d], %s -> %s", columnIndex, rowIndex, shotIndex, PanoAutomat::stateToName(stateFrom),
-    //             PanoAutomat::stateToName(stateTo));
-    //       distributor_.getPanoAutomatStatus().set(stateName);
-    //       distributor_.getPanoAutomatColumn().set(columnIndex);
-    //       distributor_.getPanoAutomatRow().set(rowIndex);
-    //       distributor_.getPanoAutomatShot().set(shotIndex);
-    //     });
+    panoAutomat_.onStatus([this](const Pano &pano, const PanoState &panoState) {
+      LOG.d("PanoState: %s", stateToName(panoState.getAutomatState()));
+      Distributor::i.getPanoState().set(panoState);
+    });
   } else {
     LOG.e("PanoAutomat failed");
   }
@@ -353,7 +352,7 @@ void App::setupJoystick()
       } else {
         motorDriver_.jogV(1, 0.0);
       }
-      distributor_.getJoystick().set(joyPos);
+      Distributor::i.getJoystick().set(joyPos);
       statusLed_.set(!led);  // low active
     });
   } else {
@@ -367,7 +366,7 @@ void App::setupPositionSensor()
 {
   if (positionSensor_.begin()) {
     LOG.i("Position sensor initialized");
-    positionSensor_.onData([this](PositionSensor &self) { distributor_.getLevel().set(Position(self.getRevX(), self.getRevX())); });
+    positionSensor_.onData([this](PositionSensor &self) { Distributor::i.getLevel().set(Position(self.getRevX(), self.getRevX())); });
   } else {
     LOG.e("Position sensor failed");
   }
@@ -379,7 +378,7 @@ void App::setupPowerSensor()
 {
   if (powerSensor_.begin()) {
     LOG.i("Power sensor initialized");
-    powerSensor_.onData([this](const Power &power) { distributor_.getPower().set(power); });
+    powerSensor_.onData([this](const Power &power) { Distributor::i.getPower().set(power); });
   } else {
     LOG.e("Power sensor failed");
   }
@@ -401,6 +400,7 @@ void App::setupStatistics()
       uint32_t freeHeap = heap_caps_get_free_size(MALLOC_CAP_8BIT);
       uint32_t largestBlock = heap_caps_get_largest_free_block(MALLOC_CAP_8BIT);
       LOG.i("Heap: available: %'d bytes, largest block: %'d", freeHeap, largestBlock);
+      LOG.i("Stack.highwatermark: %d", uxTaskGetStackHighWaterMark(NULL));
     });
   } else {
     LOG.e("Statistic failed");

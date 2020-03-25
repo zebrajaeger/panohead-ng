@@ -27,7 +27,7 @@ MenuItemBounds::MenuItemBounds(Display *display, const std::string &name, bool s
     view_.clear();
   });
 
-  Distributor::getInstance().getPosition().addListener([this](const Value<Position> &value) { requireRepaint(); });
+  Distributor::i.getPosition().addListener([this](const Value<Position> &value) { requireRepaint(); });
 
   add(new MenuItemBase(display, "TogglePartial"));
   add(new MenuItemBase(display, "Top"));
@@ -150,7 +150,7 @@ void MenuItemBounds::render_(bool togglePartial, bool top, bool right, bool bott
   }
 
   // pos:
-  Position &pos = Distributor::getInstance().getPosition().get();
+  Position &pos = Distributor::i.getPosition().get();
   u8g2->setFont(u8g2_font_timR10_tf);
   u8g2->drawStr(71, 8, "x:");
   DisplayUtils::drawAngleAt(u8g2, 87, -2, false, false, PanoUtils::revToDeg(pos.getX()));
@@ -178,7 +178,7 @@ bool MenuItemBounds::pushButtonSetBounds(MenuItem &menu)
   bool right = index == Index::RIGHT || index == Index::TOP_RIGHT || index == Index::BOTTOM_RIGHT;
 
   if (top || bottom || left || right) {
-    Position &pos = Distributor::getInstance().getPosition().get();
+    Position &pos = Distributor::i.getPosition().get();
     if (top) {
       LOG.i("Set TOP to %f", pos.getY());
       view_.setY1(pos.getY());
