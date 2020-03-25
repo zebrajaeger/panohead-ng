@@ -192,15 +192,7 @@ void App::setupEncoder(uint8_t gpioA, uint8_t gpioB, uint8_t gpioButton)
 {
   encoder_.begin(gpioA, gpioB, gpioButton);
   encoder_.onValueChanged([this](int16_t oldValue, int16_t newValue) { display_.encoderChanged(newValue - oldValue); });
-  encoder_.onButtonChanged([this](Encoder::ButtonState buttonState) {
-    if (buttonState == Encoder::ButtonState::PUSHED) {
-      LOG.d("Button.push");
-      display_.buttonPushed();
-    }
-    if (buttonState == Encoder::ButtonState::RELEASED) {
-      LOG.d("Button.released");
-    }
-  });
+  encoder_.onButtonPushed([this] { display_.buttonPushed(); });
 }
 
 // --------------------------------------------------------------------------------

@@ -25,19 +25,20 @@ Encoder::Encoder()
       encoderAPin_(-1),
       encoderBPin_(-1),
       encoderButtonPin_(-1),
-      encoderVccPin_(-1),
       encoderPos_(0),
       previousEncoderPos_(0),
       previousAB_(0),
-      previousButtonState_(false),
       encoderStates_{0, -1, 1, 0, 1, 0, 0, -1, -1, 0, 0, 1, 0, 1, -1, 0},
+      previousButtonState_(false),
+      debouncer_(),
       valueCallback_(),
-      buttonCallback_()
+      buttonCallback_(),
+      buttonPushCallback_()
 //------------------------------------------------------------------------------
 {}
 
 //------------------------------------------------------------------------------
-bool Encoder::begin(uint8_t encoder_APin, uint8_t encoder_BPin, uint8_t encoder_ButtonPin, uint8_t encoder_VccPin)
+bool Encoder::begin(uint8_t encoder_APin, uint8_t encoder_BPin, uint8_t encoder_ButtonPin, uint32_t buttonDebounceTimeMs)
 //------------------------------------------------------------------------------
 {
   // A
@@ -55,12 +56,16 @@ bool Encoder::begin(uint8_t encoder_APin, uint8_t encoder_BPin, uint8_t encoder_
     pinMode(encoderButtonPin_, INPUT_PULLDOWN);
   }
 
-  // Vcc for encoder
-  encoderVccPin_ = encoder_VccPin;
-  if (encoderVccPin_ >= 0) {
-    pinMode(encoderVccPin_, OUTPUT);
-    digitalWrite(encoderVccPin_, 1);
-  }
+  // Button debouncing
+  debouncer_.begin(buttonDebounceTimeMs);
+  debouncer_.onChange([this](bool newState) {
+    if (buttonCallback_) {
+      buttonCallback_(newState);
+    }
+    if (newState && buttonPushCallback_) {
+      buttonPushCallback_();
+    }
+  });
 
   // Interrrupts
   Callback<void()>::func = std::bind(&Encoder::isr, this);
@@ -84,12 +89,14 @@ void Encoder::loop()
     }
   }
 
-  if (buttonCallback_) {
-    ButtonState s = getButtonState();
-    if (s == PUSHED || s == RELEASED) {
-      buttonCallback_(s);
-    }
+  ButtonState s = getButtonState();
+  if (s == PUSHED) {
+    debouncer_.triggerChange(true);
+  } else if (s == RELEASED) {
+    debouncer_.triggerChange(false);
   }
+
+  debouncer_.loop();
 }
 
 //------------------------------------------------------------------------------
@@ -99,33 +106,6 @@ void Encoder::statistics()
   LOG.i("LastValue:%d Value: %d", previousEncoderPos_, encoderPos_);
   LOG.i("ButtonState:%s", buttonStateToName(getButtonState(true)));
   LOG.i("PinState A:%d B:%d K:%d", digitalRead(encoderAPin_), digitalRead(encoderBPin_), digitalRead(encoderButtonPin_));
-}
-
-//------------------------------------------------------------------------------
-void Encoder::onValueChanged(ValueCallback_t cb)
-//------------------------------------------------------------------------------
-{
-  valueCallback_ = cb;
-}
-//------------------------------------------------------------------------------
-void Encoder::onButtonChanged(ButtonCallback_t cb)
-//------------------------------------------------------------------------------
-{
-  buttonCallback_ = cb;
-}
-
-//------------------------------------------------------------------------------
-int16_t Encoder::getValue() const
-//------------------------------------------------------------------------------
-{
-  return encoderPos_;
-}
-
-//------------------------------------------------------------------------------
-void Encoder::setValue(int16_t v)
-//------------------------------------------------------------------------------
-{
-  encoderPos_ = v;
 }
 
 //------------------------------------------------------------------------------
