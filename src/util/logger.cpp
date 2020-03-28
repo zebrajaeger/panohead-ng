@@ -17,7 +17,8 @@
 
 #include "logger.h"
 
-const char* Logger::level_str_[6] = {"F", "E", "W", "I", "D", "V"};
+const char* Logger::level_str_[7] = {"X", "F", "E", "W", "I", "D", "V"};
+const char* Logger::color_str_[7] = {"", "\u001b[31m", "\u001b[31m", "\u001b[33m", "\u001b[37m", "\u001b[35m", "\u001b[34m"};
 
 //------------------------------------------------------------------------------
 void Logger::setLoglevel(const std::string module, Loglevel loglevel)
@@ -39,7 +40,6 @@ void Logger::fatal(const char* msg, ...) const
 //------------------------------------------------------------------------------
 {
   if (isFatal()) {
-    write("\u001b[41m");  // background red
     printPrefix(FATAL);
 
     char buffer[1024];
@@ -49,8 +49,7 @@ void Logger::fatal(const char* msg, ...) const
     va_end(args);
     write(&buffer[0]);
 
-    write("\u001b[0m");  // reset
-    write('\n');
+    printPostfix(FATAL);
   }
 }
 
@@ -59,7 +58,6 @@ void Logger::error(const char* msg, ...) const
 //------------------------------------------------------------------------------
 {
   if (isError()) {
-    write("\u001b[31;1m");  // bright red
     printPrefix(ERROR);
 
     char buffer[1024];
@@ -69,8 +67,7 @@ void Logger::error(const char* msg, ...) const
     va_end(args);
     write(&buffer[0]);
 
-    write("\u001b[0m");  // reset
-    write('\n');
+    printPostfix(ERROR);
   }
 }
 
@@ -79,7 +76,6 @@ void Logger::warn(const char* msg, ...) const
 //------------------------------------------------------------------------------
 {
   if (isWarn()) {
-    write("\u001b[33;1m");  // bright yellow
     printPrefix(WARN);
 
     char buffer[1024];
@@ -89,8 +85,7 @@ void Logger::warn(const char* msg, ...) const
     va_end(args);
     write(&buffer[0]);
 
-    write("\u001b[0m");  // reset
-    write('\n');
+    printPostfix(WARN);
   }
 }
 
@@ -108,7 +103,7 @@ void Logger::info(const char* msg, ...) const
     va_end(args);
     write(&buffer[0]);
 
-    write('\n');
+    printPostfix(INFO);
   }
 }
 
@@ -126,7 +121,7 @@ void Logger::debug(const char* msg, ...) const
     va_end(args);
     write(&buffer[0]);
 
-    write('\n');
+    printPostfix(DEBUG);
   }
 }
 
@@ -142,10 +137,9 @@ void Logger::verbose(const char* msg, ...) const
     va_start(args, msg);
     vsprintf(buffer, msg, args);
     va_end(args);
-    // print(&buffer[0]);
     write(&buffer[0]);
 
-    write('\n');
+    printPostfix(VERBOSE);
   }
 }
 
@@ -184,6 +178,7 @@ void Logger::printPrefix(Loglevel loglevel) const
   auto hour = duration_cast<hours>(mins);
   mins -= duration_cast<minutes>(hour);
 
+  Serial.print(color_str_[loglevel]);
   Serial.print("* [");
   Serial.print(level_str_[loglevel]);
   Serial.print("] [");
@@ -191,4 +186,12 @@ void Logger::printPrefix(Loglevel loglevel) const
   Serial.print("] [");
   Serial.print(module_.c_str());
   Serial.print("] - ");
+}
+
+//------------------------------------------------------------------------------
+void Logger::printPostfix(Loglevel loglevel) const
+//------------------------------------------------------------------------------
+{
+  write("\u001b[0m");
+  write('\n');
 }

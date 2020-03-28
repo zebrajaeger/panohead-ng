@@ -105,8 +105,10 @@ class Logger : public Print {
   Logger(const std::string& module);
   friend class LoggerFactory;
   void printPrefix(Loglevel loglevel) const;
+  void printPostfix(Loglevel loglevel) const;
 
-  static const char* level_str_[6];
+  static const char* level_str_[7];
+  static const char* color_str_[7];
 
   const std::string module_;
   char buffer[LOGGER_BUFFER_SIZE];

@@ -83,7 +83,7 @@ class KVStore {
         LOG.d("(G32-1)Got value for key: '%s'", key);
         return true;
       } else if (err == ESP_ERR_NVS_NOT_FOUND) {
-        LOG.e("(G32-2)Value for key: '%s' not found.");
+        LOG.w("(G32-2)Value for key: '%s' not found.");
       } else {
         LOG.e("(G32-3)Failed to read value for key: '%s'. Reason: %s", key, esp_err_to_name(err));
       }
@@ -104,7 +104,7 @@ class KVStore {
         LOG.d("(G64-1)Got value for key: '%s'", key);
         return true;
       } else if (err == ESP_ERR_NVS_NOT_FOUND) {
-        LOG.e("(G64-2)Value for key: '%s' not found.");
+        LOG.w("(G64-2)Value for key: '%s' not found.");
       } else {
         LOG.e("(G64-3)Failed to read value for key: '%s'. Reason: %s", key, esp_err_to_name(err));
       }
