@@ -3,7 +3,7 @@
 #include <functional>
 
 #include "data/view.h"
-#include "menuitem_base.h"
+#include "ui/menuitem_base.h"
 #include "util/loggerfactory.h"
 
 class MenuItemBounds : public MenuItemBase {

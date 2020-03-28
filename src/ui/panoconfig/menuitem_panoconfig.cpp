@@ -1,8 +1,8 @@
 #include "menuitem_panoconfig.h"
 
-#include "displayutils.h"
 #include "distributor.h"
-#include "menuitem_number.h"
+#include "ui/displayutils.h"
+#include "ui/menuitem_number.h"
 
 //------------------------------------------------------------------------------
 MenuItemPanoConfig::MenuItemPanoConfig(Display *display, const std::string &name)
@@ -19,8 +19,7 @@ MenuItemPanoConfig::MenuItemPanoConfig(Display *display, const std::string &name
           ->onEnter([](MenuItem &self) {
             MenuItemNumber &menuItemNumber = (MenuItemNumber &)self;
             Distributor::i.getMovementTiming().get(
-                [&menuItemNumber](const MovementTiming &value) { 
-                  menuItemNumber.setValue(value.getDelayAfterMoveMs()); });
+                [&menuItemNumber](const MovementTiming &value) { menuItemNumber.setValue(value.getDelayAfterMoveMs()); });
           }));
 
   add((new MenuItemNumber(display, "Del btw shts", "s", 10000))

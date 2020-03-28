@@ -3,12 +3,13 @@
 #include <functional>
 
 #include "distributor.h"
-#include "menuitem_base.h"
 #include "menuitem_shot.h"
+#include "ui/menuitem_base.h"
 
 class MenuItemShots : public MenuItemBase {
  public:
-  MenuItemShots(Display *display, const std::string &name) : MenuItemBase(display, name), selectionIndexOk_(0), shotItem_(NULL) {
+  MenuItemShots(Display *display, const std::string &name)
+      : MenuItemBase(display, name), selectionIndexSort_(0), selectionIndexOk_(0), shotItem_(NULL) {
     // shots
     ShotRow &shots = *(Distributor::i.getShots());
     char buf[10];
@@ -17,8 +18,12 @@ class MenuItemShots : public MenuItemBase {
       add(new MenuItem((char *)&buf));
     }
 
-    // index
-    selectionIndexOk_ = shots.getCapacity();
+    // Sort
+    selectionIndexSort_ = shots.getCapacity();
+    add(new MenuItem("Sort"));
+
+    // Ok
+    selectionIndexOk_ = selectionIndexSort_ + 1;
     add(new MenuItem("Ok"));
 
     // "hidden" Shot
@@ -32,10 +37,10 @@ class MenuItemShots : public MenuItemBase {
       if (selectionIndex == selectionIndexOk_) {
         goUp();
       } else {
-        shotItem_->setShotIndex(selectionIndex); // first items are shots
+        shotItem_->setShotIndex(selectionIndex);
         setActiveItem("Shot");
       }
-        return false;
+      return false;
     });
   }
 
@@ -73,12 +78,16 @@ class MenuItemShots : public MenuItemBase {
       }
     }
 
+    // sort
+    DisplayUtils::drawSymbolAt(u8g2, 00, 64, selected == selectionIndexSort_, 0xf2);
+
     // ok
-    DisplayUtils::drawSymbolAt(u8g2, 64 + 8, 60, selected == selectionIndexOk_, 0x73);
+    DisplayUtils::drawSymbolAt(u8g2, 64 + 8, 64, selected == selectionIndexOk_, 0x73);
 
     u8g2->sendBuffer();
   }
 
+  uint8_t selectionIndexSort_;
   uint8_t selectionIndexOk_;
   MenuItemShot *shotItem_;
 };

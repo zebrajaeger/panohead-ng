@@ -28,6 +28,30 @@ class DisplayUtils {
     drawStringAt(u8g2, x, y, selected, invers, (char *)&buf);
   }
 
+  enum NumberSelection { NONE, FULL, PART, ALL };
+  //------------------------------------------------------------------------------
+  static void drawNumberAt(U8G2 *u8g2, uint8_t x, uint8_t y, NumberSelection selection, bool invers, uint32_t value)
+  //------------------------------------------------------------------------------
+  {
+    uint8_t height = u8g2->getMaxCharHeight() - 3;
+
+    int32_t full = value / 1000;
+    int32_t part = (value - (full * 1000)) / 100;
+
+    char buf[20];
+    sprintf(buf, " %5d", full);
+    DisplayUtils::drawStringAt(u8g2, x, y, selection == FULL, false, (char *)&buf);
+
+    DisplayUtils::drawStringAt(u8g2, x + 25, y, false, false, ".");
+
+    sprintf(buf, "%1d", part);
+    DisplayUtils::drawStringAt(u8g2, x + 30, y, selection == PART, false, (char *)&buf);
+
+    if (selection == ALL) {
+      u8g2->drawFrame(x, y, 50, height + 1);
+    }
+  }
+
   //------------------------------------------------------------------------------
   static void drawStringAt(U8G2 *u8g2, uint8_t x, uint8_t y, bool selected, bool invers, const char *text)
   //------------------------------------------------------------------------------

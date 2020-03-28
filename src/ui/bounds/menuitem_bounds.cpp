@@ -1,8 +1,8 @@
 #include "menuitem_bounds.h"
 
-#include "displayutils.h"
 #include "distributor.h"
 #include "pano/panoutils.h"
+#include "ui/displayutils.h"
 
 //------------------------------------------------------------------------------
 MenuItemBounds::MenuItemBounds(Display *display, const std::string &name, bool showPartialOption)

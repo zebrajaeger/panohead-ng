@@ -1,8 +1,8 @@
 #include "menuitem_overlap.h"
 
-#include "displayutils.h"
 #include "distributor.h"
-#include "menuitem_number.h"
+#include "ui/displayutils.h"
+#include "ui/menuitem_number.h"
 
 //------------------------------------------------------------------------------
 MenuItemOverlap::MenuItemOverlap(Display *display, const std::string &name)

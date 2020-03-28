@@ -2,7 +2,7 @@
 
 #include <functional>
 
-#include "menuitem_base.h"
+#include "ui/menuitem_base.h"
 
 class MenuItemTakePano : public MenuItemBase {
  public:

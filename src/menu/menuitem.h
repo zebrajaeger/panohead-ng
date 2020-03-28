@@ -47,6 +47,7 @@ class MenuItem {
   const std::vector<MenuItem*>& getItems() const { return items_; }
   const Selector& getSelector() const { return selector_; }
   Selector& getSelector() { return selector_; }
+  uint16_t getSelectedIndex() { return selector_.getIndex(); }
 
   void encoderChanged(int16_t diff);
   void buttonPushed();
