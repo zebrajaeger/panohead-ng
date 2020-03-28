@@ -23,6 +23,9 @@ class ShotRow {
 
   const Shot* getShot(uint32_t index) const { return const_cast<ShotRow*>(this)->getShot(index); }
 
+  Shot& getShotRaw(uint32_t index) { return shots_[(std::size_t)index]; }
+  const Shot& getShotRaw(uint32_t index) const { return shots_[(std::size_t)index]; }
+
   Shot* getShot(uint32_t index) {
     uint32_t count = 0;
     uint32_t size = getCapacity();
