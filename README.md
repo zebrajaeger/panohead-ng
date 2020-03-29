@@ -63,12 +63,12 @@ Motorized panoramic head based on
   - ~~Show leveling.~~ Display to small...
 - ~~JOGGING in velocity Mode!?. Maybe that works better than in position mode.~~
   - Also Encoder for jogging!? For more accurate movement.
-- Sub Menu for PANO Settings.
-  - Number of shots per position.
+- ~~Sub Menu for PANO Settings.~~
+  - ~~Number of shots per position.~~
   - ~~Focus time per shot.~~
   - ~~Trigger  time per shot.~~
   - ~~Delay after movement.~~
-  - Delay between shots.
+  - ~~Delay between shots.~~
 - Sub Menu for PANO.
   - Pause and Stop for PANO mode.
   - Show current column,row,shot; focus,trigger; current image of whole images.
