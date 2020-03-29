@@ -36,10 +36,15 @@ Motorized panoramic head based on
 - 2 x Step-Up (to ~12V) module based on [MT3608](https://prom-electric.ru/media/MT3608.pdf) to power stepper driver.
 - Step Down (to ~3.3V) module based on [MP2315](https://www.monolithicpower.com/en/documentview/productdocument/index/version/2/document_type/Datasheet/lang/en/sku/MP2315/document_id/513/) to power logic.
 
-## TODO
+## TODO Bugs 
+
+- After a while joystick stops working.
+- pano bounds menu ignores diesabled borders.
+
+## TODO Features 
 
 - Schematic
-- ~~print out heapt statistics: https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/system/heap_debug.html#heap-information~~
+- ~~[print out heapt statistics](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/system/heap_debug.html#heap-information)~~
 - ~~Improve voltage supply for joystick. TL431 + Resistor and Capacitor for 2.5V joystick voltage.~~
 - ~~Change SPI pins due to firmware flash error~~
 - ~~Sliding menu.~~
@@ -71,7 +76,7 @@ Motorized panoramic head based on
   - ~~Delay between shots.~~
 - Sub Menu for PANO.
   - Pause and Stop for PANO mode.
-  - Show current column,row,shot; focus,trigger; current image of whole images.
+  - Show current position, ~~column,row,~~ shot; ~~focus,trigger~~; State; current image of all images.
 - ~~SubMenu to show battery Voltage.~~
   - Edit Battery level warning.
 - Shaking sensor.
@@ -82,8 +87,8 @@ Motorized panoramic head based on
   - ~~Check current level to avoid useless calculations. isDebug(), isInfo(), ...~~
   - Using Lambdas? LOG.onDebug([]{ LOG.d("foo: %f", myComplicatedCalculation(); )})
 - WiFi
-  - WS Server.
-  - Angular Frontend.
+  - Websockewt and/or REST Server.
+  - Angular Frontend 10+ (ivy renderer).
 
 ## Technical stuff
 
