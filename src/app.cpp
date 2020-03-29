@@ -75,68 +75,144 @@ void App::setupKVStore(const char *name)
 {
   if (kvStore_.begin(name)) {
     LOG.i("KVStore initialized");
-    // ===== Read values =====
-
-    // pic overlay x and y
-    Distributor::i.getPicture().set(Picture());  // set default
-    kvStore_.get64("pic.ovl.x", [this](const KVStore::kv64_t &value) {
-      LOG.i("kv-get pic.ovl.x = %f %", value.f);
-      (*Distributor::i.getPicture()).setOverlapWidth(value.f);
-      Distributor::i.getPicture().propagateChange();
-    });
-    kvStore_.get64("pic.ovl.y", [this](const KVStore::kv64_t &value) {
-      LOG.i("kv-get pic.ovl.y = %f %", value.f);
-      (*Distributor::i.getPicture()).setOverlapHeight(value.f);
-      Distributor::i.getPicture().propagateChange();
-    });
-
-    // timing
-    Distributor::i.getMovementTiming().set(MovementTiming());  // set default
-    kvStore_.get32("pano.delAfMov", [this](const KVStore::kv32_t &value) {
-      LOG.i("kv-get pano.delAfMov = %d ms", value.i);
-      (*Distributor::i.getMovementTiming()).setDelayAfterMoveMs(value.u);
-      Distributor::i.getMovementTiming().propagateChange();
-    });
-    kvStore_.get32("pano.delBtSht", [this](const KVStore::kv32_t &value) {
-      LOG.i("kv-get pano.delBtSht = %d ms", value.i);
-      (*Distributor::i.getMovementTiming()).setDelayBetweenShotsMs(value.u);
-      Distributor::i.getMovementTiming().propagateChange();
-    });
-    kvStore_.get32("pano.delLsSht", [this](const KVStore::kv32_t &value) {
-      LOG.i("kv-get pano.delLsSht = %d ms", value.i);
-      (*Distributor::i.getMovementTiming()).setDelayAfterLastShotMs(value.u);
-      Distributor::i.getMovementTiming().propagateChange();
-    });
-
-    // ===== Write values =====
-
-    // picture
-    Distributor::i.getPicture().addListener([this](const Value<Picture> &value) {
-      KVStore::kv64_t temp;
-      temp.f = (*value).getOverlapWidth();
-      LOG.i("kv-set pic.ovl.x = %f %", temp.f);
-      kvStore_.set64("pic.ovl.x", temp);
-      temp.f = (*value).getOverlapHeight();
-      LOG.i("kv-set pic.ovl.y = %f %", temp.f);
-      kvStore_.set64("pic.ovl.y", temp);
-      kvStore_.commit();
-    });
-
-    // timing
-    Distributor::i.getMovementTiming().addListener([this](const Value<MovementTiming> &movementTiming) {
-      KVStore::kv32_t temp;
-      temp.u = (*movementTiming).getDelayAfterMoveMs();
-      kvStore_.get32("pano.delAfMov", temp);
-      temp.u = (*movementTiming).getDelayBetweenShotsMs();
-      kvStore_.get32("pano.delBtSht", temp);
-      temp.u = (*movementTiming).getDelayAfterLastShotMs();
-      kvStore_.get32("pano.delLsSht", temp);
-      kvStore_.commit();
-    });
-
+    setupKVStorePicOverlap(name);
+    setupKVStoreTiming(name);
+    setupKVStoreShots(name);
   } else {
     LOG.e("KVStore failed");
   }
+}
+
+// --------------------------------------------------------------------------------
+void App::setupKVStorePicOverlap(const char *name)
+// --------------------------------------------------------------------------------
+{
+  // Read
+  Distributor::i.getPicture().set(Picture());  // set default
+  kvStore_.get64("pic.ovl.x", [this](const KVStore::kv64_t &value) {
+    LOG.i("kv-get pic.ovl.x = %f %", value.f);
+    (*Distributor::i.getPicture()).setOverlapWidth(value.f);
+    Distributor::i.getPicture().propagateChange();
+  });
+  kvStore_.get64("pic.ovl.y", [this](const KVStore::kv64_t &value) {
+    LOG.i("kv-get pic.ovl.y = %f %", value.f);
+    (*Distributor::i.getPicture()).setOverlapHeight(value.f);
+    Distributor::i.getPicture().propagateChange();
+  });
+
+  // Write
+  Distributor::i.getPicture().addListener([this](const Value<Picture> &value) {
+    KVStore::kv64_t temp;
+    temp.f = (*value).getOverlapWidth();
+    LOG.i("kv-set pic.ovl.x = %f %", temp.f);
+    kvStore_.set64("pic.ovl.x", temp);
+    temp.f = (*value).getOverlapHeight();
+    LOG.i("kv-set pic.ovl.y = %f %", temp.f);
+    kvStore_.set64("pic.ovl.y", temp);
+    kvStore_.commit();
+  });
+}
+
+// --------------------------------------------------------------------------------
+void App::setupKVStoreTiming(const char *name)
+// --------------------------------------------------------------------------------
+{
+  // Read
+  Distributor::i.getMovementTiming().set(MovementTiming());  // set default
+  kvStore_.get32("pano.delAfMov", [this](const KVStore::kv32_t &value) {
+    LOG.i("kv-get pano.delAfMov = %d ms", value.i);
+    (*Distributor::i.getMovementTiming()).setDelayAfterMoveMs(value.u);
+    Distributor::i.getMovementTiming().propagateChange();
+  });
+  kvStore_.get32("pano.delBtSht", [this](const KVStore::kv32_t &value) {
+    LOG.i("kv-get pano.delBtSht = %d ms", value.i);
+    (*Distributor::i.getMovementTiming()).setDelayBetweenShotsMs(value.u);
+    Distributor::i.getMovementTiming().propagateChange();
+  });
+  kvStore_.get32("pano.delLsSht", [this](const KVStore::kv32_t &value) {
+    LOG.i("kv-get pano.delLsSht = %d ms", value.i);
+    (*Distributor::i.getMovementTiming()).setDelayAfterLastShotMs(value.u);
+    Distributor::i.getMovementTiming().propagateChange();
+  });
+
+  // Write
+  Distributor::i.getMovementTiming().addListener([this](const Value<MovementTiming> &movementTiming) {
+    KVStore::kv32_t temp;
+    temp.u = (*movementTiming).getDelayAfterMoveMs();
+    kvStore_.get32("pano.delAfMov", temp);
+    temp.u = (*movementTiming).getDelayBetweenShotsMs();
+    kvStore_.get32("pano.delBtSht", temp);
+    temp.u = (*movementTiming).getDelayAfterLastShotMs();
+    kvStore_.get32("pano.delLsSht", temp);
+    kvStore_.commit();
+  });
+}
+
+// --------------------------------------------------------------------------------
+void App::setupKVStoreShots(const char *name)
+// --------------------------------------------------------------------------------
+{
+  {  // open new scope to separate read and write / variable names to prevent bugs/side effects
+    ShotRow &shots = *(Distributor::i.getShots());
+    uint8_t size = shots.getCapacity();
+    char buf[20];
+    char *pBuf = (char *)&buf;
+    KVStore::kv8_t kv8;
+    KVStore::kv32_t kv32;
+
+    // Read
+    bool changed = false;
+    for (uint8_t i = 0; i < size; ++i) {
+      Shot &shot = shots.getShotRaw(i);
+
+      sprintf(pBuf, "shot.%04d.en", i);
+      if (kvStore_.get8(pBuf, kv8)) {
+        shot.setEnabled(kv8.b);
+        changed = true;
+      }
+
+      sprintf(pBuf, "shot.%04d.foc", i);
+      if (kvStore_.get32(pBuf, kv32)) {
+        shot.setFocusTimeMs(kv32.u);
+        changed = true;
+      }
+
+      sprintf(pBuf, "shot.%04d.trg", i);
+      if (kvStore_.get32(pBuf, kv32)) {
+        shot.setTriggerTimeMs(kv32.u);
+        changed = true;
+      }
+    }
+    if (changed) {
+      Distributor::i.getShots().propagateChange();
+    }
+  }
+
+  // Write
+  Distributor::i.getShots().addListener([this](const Value<ShotRow> &value) {
+    const ShotRow &shots = *value;
+    uint8_t size = shots.getCapacity();
+    char buf[20];
+    char *pBuf = (char *)&buf;
+    KVStore::kv8_t kv8;
+    KVStore::kv32_t kv32;
+
+    for (uint8_t i = 0; i < size; ++i) {
+      const Shot &shot = shots.getShotRaw(i);
+
+      kv8.b = shot.getEnabled();
+      sprintf(pBuf, "shot.%04d.en", i);
+      kvStore_.set8(pBuf, kv8);
+
+      kv32.u = shot.getFocusTimeMs();
+      sprintf(pBuf, "shot.%04d.foc", i);
+      kvStore_.set32(pBuf, kv32);
+
+      kv32.u = shot.getTriggerTimeMs();
+      sprintf(pBuf, "shot.%04d.trg", i);
+      kvStore_.set32(pBuf, kv32);
+    }
+  });
 }
 
 // --------------------------------------------------------------------------------

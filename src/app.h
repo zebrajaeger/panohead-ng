@@ -32,6 +32,9 @@ class App {
 
  private:
   void setupKVStore(const char* name);
+  void setupKVStorePicOverlap(const char* name);
+  void setupKVStoreTiming(const char* name);
+  void setupKVStoreShots(const char* name);
   void setupI2C(uint8_t sda, uint8_t scl, uint32_t speed);
   void setupIO();
   void setupLed(uint8_t statusLedPin);

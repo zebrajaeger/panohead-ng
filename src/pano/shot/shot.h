@@ -19,7 +19,7 @@ class Shot {
 
   // trigger time
   uint32_t getTriggerTimeMs() const { return triggerTimeMs_; }
-  void getTriggerTimeMs(uint32_t triggerTimeMs) { triggerTimeMs_ = triggerTimeMs; }
+  void setTriggerTimeMs(uint32_t triggerTimeMs) { triggerTimeMs_ = triggerTimeMs; }
 
   bool isComplete() { return isEnabled_ ? focusTimeMs_ > 0 && triggerTimeMs_ > 0 : true; }
 

@@ -237,6 +237,7 @@ MenuItem* MenuItem::onSelectionChanged(SelectionChangedCallback_t cb)
   selectionChangedCallback_ = cb;
   return this;
 }
+
 //------------------------------------------------------------------------------
 MenuItem* MenuItem::onEnter(EnterItemCallback_t cb)
 //------------------------------------------------------------------------------
@@ -261,6 +262,7 @@ MenuItem* MenuItem::enable()
   setEnabled(true);
   return this;
 }
+
 //------------------------------------------------------------------------------
 MenuItem* MenuItem::disable()
 //------------------------------------------------------------------------------

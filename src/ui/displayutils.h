@@ -5,8 +5,35 @@
 
 class DisplayUtils {
  public:
+  enum Symbol {
+    PAUSE = 0xd2,
+    PLAY = 0xd3,
+    STOP = 0xda,
+    BATTERY_EMPTY = 0x05A,
+    BATTERY_FULL = 0x05B,
+    OK = 0x73,
+    CHECKED = 0x78,
+    UNCHECKED = 0x79,
+    CLOCK = 0x7B,
+    COMPASS = 0x88,
+    LOCKED = 0xca,
+    UNLOCKED = 0xcb,
+    PIN = 0xe8,
+    ONOFFSWITCH = 0xeb,
+    SORT = 0xf2,
+    TRASH = 0x10f,
+    WARN = 0x118,
+    REPAIR = 0x11a,
+    CANCEL = 0x11b,
+
+    PANO_PARTIAL=0x8c,
+    PANO_FULL=0xf6,
+  };
+
+  enum NumberSelection { NONE, FULL, PART, ALL };
+
   //------------------------------------------------------------------------------
-  static void drawSymbolAt(U8G2 *u8g2, uint8_t x, uint8_t y, bool selected, uint16_t symbol)
+  static void drawSymbolAt(U8G2 *u8g2, uint8_t x, uint8_t y, bool selected, Symbol symbol)
   //------------------------------------------------------------------------------
   {
     u8g2->setFont(u8g2_font_open_iconic_all_2x_t);
@@ -28,7 +55,6 @@ class DisplayUtils {
     drawStringAt(u8g2, x, y, selected, invers, (char *)&buf);
   }
 
-  enum NumberSelection { NONE, FULL, PART, ALL };
   //------------------------------------------------------------------------------
   static void drawNumberAt(U8G2 *u8g2, uint8_t x, uint8_t y, NumberSelection selection, bool invers, uint32_t value)
   //------------------------------------------------------------------------------

@@ -106,7 +106,8 @@ void MenuItemBounds::render_(bool togglePartial, bool top, bool right, bool bott
 
   if (showPartialOption_) {
     // partial / full pano
-    DisplayUtils::drawSymbolAt(u8g2, 22, 24 + 16, togglePartial, view_.isPartial() ? 0x8c : 0xf6);
+    DisplayUtils::drawSymbolAt(u8g2, 22, 24 + 16, togglePartial,
+                               view_.isPartial() ? DisplayUtils::Symbol::PANO_PARTIAL : DisplayUtils::Symbol::PANO_FULL);
   }
 
   // top
@@ -158,11 +159,11 @@ void MenuItemBounds::render_(bool togglePartial, bool top, bool right, bool bott
   DisplayUtils::drawAngleAt(u8g2, 87, 12, false, false, PanoUtils::revToDeg(pos.getY()));
 
   // ok
-  DisplayUtils::drawSymbolAt(u8g2, 64 + 8, 60, ok, 0x73);
+  DisplayUtils::drawSymbolAt(u8g2, 64 + 8, 60, ok, DisplayUtils::Symbol::OK);
 
   // cancel
   u8g2->setFont(u8g2_font_open_iconic_check_2x_t);
-  DisplayUtils::drawSymbolAt(u8g2, 64 + 8 + 24, 60, cancel, 0x11b);
+  DisplayUtils::drawSymbolAt(u8g2, 64 + 8 + 24, 60, cancel, DisplayUtils::Symbol::CANCEL);
 
   u8g2->sendBuffer();
 }

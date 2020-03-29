@@ -143,11 +143,11 @@ void MenuItemNumber::render_(bool selFull, bool selPart, bool selOk, bool selCan
   DisplayUtils::drawStringAt(u8g2, 75, 24, false, false, postfix_.c_str());
 
   // ok
-  DisplayUtils::drawSymbolAt(u8g2, 64 + 8, 60, selOk, 0x73);
+  DisplayUtils::drawSymbolAt(u8g2, 64 + 8, 60, selOk, DisplayUtils::Symbol::OK);
 
   // cancel
   u8g2->setFont(u8g2_font_open_iconic_check_2x_t);
-  DisplayUtils::drawSymbolAt(u8g2, 64 + 8 + 24, 60, selCancel, 0x11b);
+  DisplayUtils::drawSymbolAt(u8g2, 64 + 8 + 24, 60, selCancel, DisplayUtils::Symbol::CANCEL);
 
   u8g2->sendBuffer();
 }
