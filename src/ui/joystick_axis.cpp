@@ -34,7 +34,7 @@ void JoystickAxis::begin(float threshold, float preliminaryDistanceFormCenter, b
 void JoystickAxis::statistics()
 //------------------------------------------------------------------------------
 {
-  LOG.d("AC:%d Raw(min:%f, center:%f, max:%f) border(minB:%f, minC:%f, maxC:%f, maxB:%f)", autoCalibrate_, rawMin_, rawCenter_, rawMax_,
+  LOG.s("AC:%d Raw(min:%f, center:%f, max:%f) border(minB:%f, minC:%f, maxC:%f, maxB:%f)", autoCalibrate_, rawMin_, rawCenter_, rawMax_,
         minBorder_, minCenter_, maxCenter_, maxBorder_);
 }
 

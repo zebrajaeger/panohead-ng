@@ -59,14 +59,14 @@ class PanoAutomat {
   void onStatus(StatusCallback_t cb) { statusCallback_ = cb; }
 
   void statistic() {
-    LOG.i("Timing: delayAfterMove:%dms, delayBetweenShots:%dms, delayAfterLastShot:%dms", movementTiming_.getDelayAfterMoveMs(),
+    LOG.s("Timing: delayAfterMove:%dms, delayBetweenShots:%dms, delayAfterLastShot:%dms", movementTiming_.getDelayAfterMoveMs(),
           movementTiming_.getDelayBetweenShotsMs(), movementTiming_.getDelayAfterLastShotMs());
 
-    LOG.i("AutomatState: %s", stateToName(panoState_.getAutomatState()));
+    LOG.s("AutomatState: %s", stateToName(panoState_.getAutomatState()));
 
     const PanoPosition& panoPos = panoState_.getPanoPosition();
-    LOG.i("PanoPos.shot: %d/%d", panoPos.getShotIndex(), panoPos.getShotCount());
-    LOG.i("PanoPos.pos: %d/%d", panoPos.getPositionIndex(), panoPos.getPositionCount());
+    LOG.s("PanoPos.shot: %d/%d", panoPos.getShotIndex(), panoPos.getShotCount());
+    LOG.s("PanoPos.pos: %d/%d", panoPos.getPositionIndex(), panoPos.getPositionCount());
   }
 
  private:

@@ -19,6 +19,7 @@
 
 #include <Arduino.h>
 #include <Print.h>
+
 #include <chrono>
 #include <map>
 
@@ -30,7 +31,7 @@
 
 class Logger : public Print {
  public:
-  enum Loglevel { OFF = 0, FATAL = 1, ERROR = 2, WARN = 3, INFO = 4, DEBUG = 5, VERBOSE = 6 };
+  enum Loglevel { OFF = 0, FATAL = 1, ERROR = 2, WARN = 3, INFO = 4, STATISTIC = 5, DEBUG = 6, VERBOSE = 7, SIZE=8 };
 
   static void setLoglevel(const std::string module, Loglevel loglevel);
 
@@ -77,6 +78,16 @@ class Logger : public Print {
   }
   void info(const char* msg, ...) const;
 
+  // statistic
+  inline bool isS() const { return isStatistic(); }
+  inline bool isStatistic() const { return loglevel_ <= STATISTIC; }
+
+  template <typename... Args>
+  inline void s(const char* msg, Args... args) const {
+    statistic(msg, args...);
+  }
+  void statistic(const char* msg, ...) const;
+
   // debug
   inline bool isD() const { return isDebug(); }
   inline bool isDebug() const { return loglevel_ <= DEBUG; }
@@ -107,8 +118,8 @@ class Logger : public Print {
   void printPrefix(Loglevel loglevel) const;
   void printPostfix(Loglevel loglevel) const;
 
-  static const char* level_str_[7];
-  static const char* color_str_[7];
+  static const char* level_str_[Loglevel::SIZE];
+  static const char* color_str_[Loglevel::SIZE];
 
   const std::string module_;
   char buffer[LOGGER_BUFFER_SIZE];

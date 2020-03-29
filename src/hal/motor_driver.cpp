@@ -82,16 +82,16 @@ void MotorDriver::statistic()
 {
   TMC429::Status s = tmc429_.getStatus();
   for (uint8_t i = 0; i < 3; ++i) {
-    LOG.d("# AXIS: %d", i);
+    LOG.s("# AXIS: %d", i);
     if (i == 0) {
-      LOG.d("#    @TargetPos: %d ", s.at_target_position_0);
+      LOG.s("#    @TargetPos: %d ", s.at_target_position_0);
     } else if (i == 1) {
-      LOG.d("#    @TargetPos: %d ", s.at_target_position_1);
+      LOG.s("#    @TargetPos: %d ", s.at_target_position_1);
     } else if (i == 2) {
-      LOG.d("#    @TargetPos: %d ", s.at_target_position_2);
+      LOG.s("#    @TargetPos: %d ", s.at_target_position_2);
     }
-    LOG.d("#    -POS curr: %d -> target: %d, off: %d", tmc429_.getActualPosition(i), tmc429_.getTargetPosition(i), axisOffset_[i]);
-    LOG.d("#    -V   curr: %d", tmc429_.getActualVelocityInHz(i));
+    LOG.s("#    -POS curr: %d -> target: %d, off: %d", tmc429_.getActualPosition(i), tmc429_.getTargetPosition(i), axisOffset_[i]);
+    LOG.s("#    -V   curr: %d", tmc429_.getActualVelocityInHz(i));
   }
 }
 

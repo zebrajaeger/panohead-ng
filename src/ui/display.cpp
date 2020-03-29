@@ -35,7 +35,7 @@ bool Display::begin()
   return true;
 }
 
-void Display::statistics() { LOG.d("Selected: %s", menu_.getActivePath().c_str()); }
+void Display::statistics() { LOG.s("Selected: %s", menu_.getActivePath().c_str()); }
 void Display::bootStart() { menu_.setActiveItem("boot"); }
 void Display::bootFinished() { menu_.setActiveItem("main"); }
 void Display::loop() { menu_.loop(); }

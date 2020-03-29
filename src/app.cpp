@@ -467,7 +467,7 @@ void App::setupStatistics()
   if (statistic_.begin()) {
     LOG.i("Statistic initialized");
     statistic_.onStatistic([this]() {
-      // encoder_.statistics();
+      //  encoder_.statistics();
       // motorDriver_.statistic();
       panoAutomat_.statistic();
       joystick_.statistics();
@@ -475,8 +475,8 @@ void App::setupStatistics()
       // analogSetAttenuation(ADC_0db);
       uint32_t freeHeap = heap_caps_get_free_size(MALLOC_CAP_8BIT);
       uint32_t largestBlock = heap_caps_get_largest_free_block(MALLOC_CAP_8BIT);
-      LOG.i("Heap: available: %'d bytes, largest block: %'d", freeHeap, largestBlock);
-      LOG.i("Stack.highwatermark: %d", uxTaskGetStackHighWaterMark(NULL));
+      LOG.s("Heap: available: %'d bytes, largest block: %'d", freeHeap, largestBlock);
+      LOG.s("Stack.highwatermark: %d", uxTaskGetStackHighWaterMark(NULL));
     });
   } else {
     LOG.e("Statistic failed");

@@ -17,8 +17,9 @@
 
 #include "logger.h"
 
-const char* Logger::level_str_[7] = {"X", "F", "E", "W", "I", "D", "V"};
-const char* Logger::color_str_[7] = {"", "\u001b[31m", "\u001b[31m", "\u001b[33m", "\u001b[37m", "\u001b[35m", "\u001b[34m"};
+const char* Logger::level_str_[Loglevel::SIZE] = {"X", "F", "E", "W", "I", "S", "D", "V"};
+const char* Logger::color_str_[Loglevel::SIZE] = {"\u001B[41m\u001B[30m", "\u001b[31m", "\u001b[31m", "\u001b[33m",
+                                                  "\033[1;37m",           "\u001b[36m", "\u001b[35m", "\u001b[34m"};
 
 //------------------------------------------------------------------------------
 void Logger::setLoglevel(const std::string module, Loglevel loglevel)
@@ -104,6 +105,24 @@ void Logger::info(const char* msg, ...) const
     write(&buffer[0]);
 
     printPostfix(INFO);
+  }
+}
+
+//------------------------------------------------------------------------------
+void Logger::statistic(const char* msg, ...) const
+//------------------------------------------------------------------------------
+{
+  if (isStatistic()) {
+    printPrefix(STATISTIC);
+
+    char buffer[1024];
+    va_list args;
+    va_start(args, msg);
+    vsprintf(buffer, msg, args);
+    va_end(args);
+    write(&buffer[0]);
+
+    printPostfix(STATISTIC);
   }
 }
 

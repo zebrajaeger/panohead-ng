@@ -42,14 +42,14 @@ void Statistic::loop()
 {
   ++loopCount_;
   if (lastMeasurementTime_ < esp_timer_get_time()) {
-    LOG.i("========== Statistic BEGIN ==========");
+    LOG.s("========== Statistic BEGIN ==========");
     printStatistic();
     loopCount_ = 0;
     lastMeasurementTime_ = lastMeasurementTime_ + period_;
     if (cb_) {
       cb_();
     }
-    LOG.i("========== Statistic END ==========");
+    LOG.s("========== Statistic END ==========");
   }
 }
 
@@ -68,5 +68,5 @@ void Statistic::printStatistic()
   uint64_t lastPeriodTime = lastMeasurementTime_ - period_;
   uint64_t delta = currentTime - lastPeriodTime;
   uint64_t loopsPerSecond = (loopCount_ * 1000000) / delta;
-  LOG.i("# %" PRIu64 " loops in %" PRIu64 "ms (%" PRIu64 " loops/s)", loopCount_, delta, loopsPerSecond);
+  LOG.s("# %" PRIu64 " loops in %" PRIu64 "ms (%" PRIu64 " loops/s)", loopCount_, delta, loopsPerSecond);
 }

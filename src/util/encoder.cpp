@@ -103,9 +103,9 @@ void Encoder::loop()
 void Encoder::statistics()
 //------------------------------------------------------------------------------
 {
-  LOG.i("LastValue:%d Value: %d", previousEncoderPos_, encoderPos_);
-  LOG.i("ButtonState:%s", buttonStateToName(getButtonState(true)));
-  LOG.i("PinState A:%d B:%d K:%d", digitalRead(encoderAPin_), digitalRead(encoderBPin_), digitalRead(encoderButtonPin_));
+  LOG.s("LastValue:%d Value: %d", previousEncoderPos_, encoderPos_);
+  LOG.s("ButtonState:%s", buttonStateToName(getButtonState(true)));
+  LOG.s("PinState A:%d B:%d K:%d", digitalRead(encoderAPin_), digitalRead(encoderBPin_), digitalRead(encoderButtonPin_));
 }
 
 //------------------------------------------------------------------------------
