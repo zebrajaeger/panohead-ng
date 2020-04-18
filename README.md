@@ -48,7 +48,11 @@ Motorized panoramic head based on
 - ~~Improve voltage supply for joystick. TL431 + Resistor and Capacitor for 2.5V joystick voltage.~~
 - ~~Change SPI pins due to firmware flash error~~
 - ~~Sliding menu.~~
-- Voltage supervisor for defined Reset. First try: TL7702ACP
+- Voltage supervisor for defined Reset
+  - First try: ~~TL7702ACP~~ Does not work. Needs higher supply voltage (~5V) to work properly and detect undervoltage.
+  - Next canidate: MAX809S / IMP809S (JLPCB 33k)
+    - To evaluate: MIC1832, DS1832, MAX803T, MAX803S, MAX803R, AIC809N-26PU, AIC809N-29PU
+    - To check:  , TPS3823, TPS383x, APX803, CAT823STDI-GT3, CN61CN33, MAX809S(JLPCB 33k), SGM809-RXN3L/TR(JLPCB 10k),LP5300B6F 10k, TLV803SDBZR 8k
 - Store joystick calibration.
 - ~~Power menu.~~
 - ~~Status LED~~
