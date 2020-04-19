@@ -36,12 +36,53 @@ Motorized panoramic head based on
 - 2 x Step-Up (to ~12V) module based on [MT3608](https://prom-electric.ru/media/MT3608.pdf) to power stepper driver.
 - Step Down (to ~3.3V) module based on [MP2315](https://www.monolithicpower.com/en/documentview/productdocument/index/version/2/document_type/Datasheet/lang/en/sku/MP2315/document_id/513/) to power logic.
 
-## TODO Bugs 
+## Multible Modules
+
+### Stepper Module (one for every axis)
+
+Close to the stepepr Motor.
+
+- TMC2208 Driver.
+- Step up MT3608 Module for TMC2208 V_m.
+- Linear 3.3V AMS1117-3.3 for TMC2208 V_io connected to V_m or V_bat.
+- Big capcitor for V_bat.
+
+### Camera Module
+
+Close to the camera as possible for short trigger cable and good movement detection.
+
+- Movement detection MPU9255.
+- Focus/Trigger Plug.
+- Optocouplers to keep cam save. 
+
+### Main Module
+
+- Controller.
+  - ESP32 dual core 240MHz, 16Mbit flash (WROOM module).
+    - JTAG connector.
+    - Program connector and logic (2 transistors and capacitor on !EN).
+    - 'Reset' and 'Program' Button.
+  - Voltage Supervisor (see TODO section).
+  - TMC429.
+  - Current/Voltage/Power meter INA219.
+  - IO Expander.
+  - [SDCard].
+- UI.
+  - OLED Display 128x64.
+  - LED Focus.
+  - LED Trigger.
+  - LED Jogging.
+  - Rotary encoder with switch.
+  - XY-Joystick.
+    - Voltage referenz TL431.
+    - A/D ADS1115.
+
+## TODO Bugs
 
 - After a while joystick stops working.
 - pano bounds menu ignores diesabled borders.
 
-## TODO Features 
+## TODO Features
 
 - Schematic
 - ~~[print out heapt statistics](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/system/heap_debug.html#heap-information)~~
