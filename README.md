@@ -55,9 +55,9 @@ Close to the camera as possible for short trigger cable and good movement detect
 
 Connections to main module: GND, V_33, DSA, SCL, Focus, Trigger
 
-- i²C Movement detection MPU9255.
-- Focus/Trigger Plug.
-- Optocouplers to keep cam save.
+- I²C Movement detection: MPU9255.
+- Focus/Trigger Plug: 3,5mm stereo earphone plug.
+- Optocouplers to keep cam save: with transistor output and low leakage current.
 
 ### Development Module
 
@@ -65,7 +65,7 @@ Connections to main module: GND, V_33, !EN, !RESET, TX, RX
 
 - CH340 USB to serial converter.
 - !EN/!RESET logic (2 transistors and capacitor on !EN).
-- 3.3V Step down V_usb to V_33, MP2315 based.
+- 3.3V Step down V_usb to V_33: MP2315 based module.
 - USB-Connector
 - Programming connector.
 
@@ -74,27 +74,27 @@ Connections to main module: GND, V_33, !EN, !RESET, TX, RX
 Connection to stepper module X, stepper module Y, cam module, battery
 
 - Power.
-  - Current/Voltage/Power meter INA219.
-  - Step down V_bat to V_33, MP2315 based.
-  - Voltage Supervisor (see TODO section).
+  - I²C Current/Voltage/Power meter: INA219.
+  - Step down V_bat to V_33: MP2315 based module.
+  - Voltage Supervisor: see TODO section.
 - Controller.
   - ESP32 dual core 240MHz, 16Mbit flash (WROOM module).
     - Programming connector.
     - [JTAG connector].
     - 'Reset' and 'Program' Button.
-  - TMC429.
+  - SPI Stepper controller: TMC429.
   - [SDCard].
 - UI.
   - I²C OLED Display 128x64.
-  - I²C IO Expander PCF8574.
-    - LED Power
+  - I²C IO Expander: PCF8574.
+    - LED Power.
     - LED Jogging.
     - LED Focus and Camera module 'Focus'.
     - LED Trigger and Camera module 'Trigger'.
-  - Rotary encoder with switch.
-  - XY-Joystick.
-    - Voltage referenz TL431.
-    - I²C A/D ADS1115.
+  - A/B Rotary encoder with switch.
+  - XY-analog Joystick.
+    - Voltage referenz 2,5V: TL431.
+    - I²C A/D: ADS1115.
 
 ## TODO Bugs
 
