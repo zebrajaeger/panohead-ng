@@ -40,7 +40,9 @@ Motorized panoramic head based on
 
 ### Stepper Module (one for every axis)
 
-Close to the stepepr Motor.
+Close to the stepper Motor.
+
+Connections to main module: GND, V_bat, !EN_V_m, !EN_stepper, Step, Dir, Uart
 
 - TMC2208 Driver.
 - Step up MT3608 Module for TMC2208 V_m.
@@ -51,31 +53,48 @@ Close to the stepepr Motor.
 
 Close to the camera as possible for short trigger cable and good movement detection.
 
-- Movement detection MPU9255.
+Connections to main module: GND, V_33, DSA, SCL, Focus, Trigger
+
+- i²C Movement detection MPU9255.
 - Focus/Trigger Plug.
-- Optocouplers to keep cam save. 
+- Optocouplers to keep cam save.
+
+### Development Module
+
+Connections to main module: GND, V_33, !EN, !RESET, TX, RX
+
+- CH340 USB to serial converter.
+- !EN/!RESET logic (2 transistors and capacitor on !EN).
+- 3.3V Step down V_usb to V_33, MP2315 based.
+- USB-Connector
+- Programming connector.
 
 ### Main Module
 
+Connection to stepper module X, stepper module Y, cam module, battery
+
+- Power.
+  - Current/Voltage/Power meter INA219.
+  - Step down V_bat to V_33, MP2315 based.
+  - Voltage Supervisor (see TODO section).
 - Controller.
   - ESP32 dual core 240MHz, 16Mbit flash (WROOM module).
-    - JTAG connector.
-    - Program connector and logic (2 transistors and capacitor on !EN).
+    - Programming connector.
+    - [JTAG connector].
     - 'Reset' and 'Program' Button.
-  - Voltage Supervisor (see TODO section).
   - TMC429.
-  - Current/Voltage/Power meter INA219.
-  - IO Expander.
   - [SDCard].
 - UI.
-  - OLED Display 128x64.
-  - LED Focus.
-  - LED Trigger.
-  - LED Jogging.
+  - I²C OLED Display 128x64.
+  - I²C IO Expander PCF8574.
+    - LED Power
+    - LED Jogging.
+    - LED Focus and Camera module 'Focus'.
+    - LED Trigger and Camera module 'Trigger'.
   - Rotary encoder with switch.
   - XY-Joystick.
     - Voltage referenz TL431.
-    - A/D ADS1115.
+    - I²C A/D ADS1115.
 
 ## TODO Bugs
 
