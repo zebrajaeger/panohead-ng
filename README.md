@@ -112,3 +112,32 @@ Motorized panoramic head based on
   - ca 1W with disabled steppers
   - ca. 5W with stopped steppers (and TMC2208 coolstep2)
   - ca. 17W peak with both stepepers moving.
+
+## Mechanical
+
+### decrease swinging and weigth
+
+- decrease mass/weighth.
+  - Carbon tubes instead aluminium generic profiles.
+  - Mass more close to rotation axis.
+  - Worm gear 1:60 instead planetary gear (self-locking, 90° motor angle, no wired transmit ration).
+  - shorter steel axis, maybe replace steel by carbon and/or tube.
+- stiffness.
+  - Carbon tubes instead aluminium generic profiles.
+  - More connection between the two rods.
+  - Better 90° connection with carbon rods and glued aluminium tubes (connectable).
+- backlash.
+  - Bigger last GT2 gear ~120 tooth instead 60 (more resolution, more torque).
+  - Worm gear 1:60 instead planetary gear (self-locking, 90° motor angle, no wired transmit ration).
+
+### Place and protect electronics
+
+TODO
+
+### Place user interface
+
+TODO
+
+### Place Battery
+
+TODO
